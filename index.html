@@ -6,6 +6,7 @@
     <title>فيلا حسن | جولة معمارية ثلاثية الأبعاد</title>
     <meta name="description" content="استكشف الدور الأول لفيلا حسن في جولة تفاعلية ثلاثية الأبعاد، مع التنقل بين الغرف والتحكم في الإضاءة وزوايا العرض.">
     <meta name="theme-color" content="#080e19">
+    <meta name="application-version" content="2.0-lighting-modes">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:site_name" content="Villa Hassan">
@@ -1465,6 +1466,43 @@ Check your Browserslist config to be sure that your targets are set up correctly
             .welcome-instructions { gap: 6px; padding: 10px 0; margin: 10px 0; }
             #client-status { margin-top: 7px; } }
         @media (prefers-reduced-motion: reduce) { .welcome-card, #client-welcome { transition: none; } }
+
+        #lighting-modes-button { position: fixed; right: max(14px, env(safe-area-inset-right));
+            bottom: var(--lighting-button-bottom, 76px); width: 50px; height: 50px;
+            z-index: 43; border: 1px solid #c9a35e88; border-radius: 16px;
+            background: #101827ee; color: #f9cd75; box-shadow: 0 5px 20px #0007;
+            cursor: pointer; font-size: 20px; display: grid; place-items: center; }
+        #lighting-modes-button[aria-expanded="true"] { background: #b8892e; color: #101827; }
+        #lighting-modes-backdrop { position: fixed; inset: 0; z-index: 42; background: transparent; border: 0; }
+        #lighting-modes-panel { position: fixed; right: max(14px, env(safe-area-inset-right));
+            bottom: var(--lighting-panel-bottom, 140px); z-index: 44; width: min(324px, calc(100vw - 28px));
+            max-height: calc(100dvh - var(--lighting-panel-bottom, 140px) - 16px);
+            overflow-y: auto; touch-action: pan-y; padding: 13px; border-radius: 18px; }
+        .lighting-modes-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+        .lighting-modes-heading h2 { margin: 0; font-size: 13px; color: #fde3a7; font-weight: 800; }
+        #lighting-mode-current { display: block; margin-top: 3px; font-size: 10px; color: #94a3b8; }
+        .lighting-preset { width: 100%; display: flex; gap: 11px; align-items: center; text-align: right;
+            padding: 10px; margin-top: 6px; border: 1px solid #334155; border-radius: 12px;
+            background: #121e31; color: #e2e8f0; cursor: pointer; }
+        .lighting-preset:hover { background: #20304a; }
+        .lighting-preset[aria-pressed="true"] { border-color: #e9bc64; background: #3a2e19; }
+        .lighting-preset > i { color: #edc778; width: 20px; text-align: center; }
+        .lighting-preset strong { display: block; font-size: 12px; }
+        .lighting-preset small { display: block; font-size: 10px; color: #a8b6c8; line-height: 1.6; margin-top: 2px; }
+        #lighting-presets-note { font-size: 9px; color: #8496ae; margin: 10px 2px 0; }
+        .bulb-pin { gap: 5px !important; min-height: 29px; direction: ltr; }
+        .bulb-pin .bulb-percent { font: 700 10px Tahoma, sans-serif; color: #e2e8f0; }
+        .bulb-color-swatch { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #ffffff88;
+            flex-shrink: 0; box-shadow: 0 0 5px currentColor; }
+        .bulb-timer { font: 9px Tahoma, sans-serif; color: #7dd3fc; }
+        @media (max-height: 520px) {
+            #lighting-modes-panel { padding: 9px; }
+            .lighting-preset { padding: 7px 9px; margin-top: 4px; }
+            .lighting-preset strong { font-size: 11px; }
+            .lighting-preset small { font-size: 9px; }
+            #lighting-presets-note { margin-top: 5px; font-size: 8px; }
+            .lighting-modes-heading { margin-bottom: 5px; }
+        }
     </style>
 </head>
 <body>
@@ -1705,7 +1743,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             </label>
             <label class="flex items-center gap-2 text-amber-300 cursor-pointer col-span-2 pt-1 border-t border-slate-800">
                 <input type="checkbox" checked onchange="toggleSmartBulbPins(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
-                <span>إظهار لمبات الإضاءة التفاعلية في الغرف</span>
+                <span>أيقونات اللمبات داخل الغرفة المختارة</span>
             </label>
             <label class="flex items-center gap-2 text-slate-300 cursor-pointer col-span-2 pt-1 border-t border-slate-800">
                 <input type="checkbox" onchange="toggleWallXRay(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
@@ -1853,6 +1891,17 @@ Check your Browserslist config to be sure that your targets are set up correctly
         <button class="focus-action" onclick="selectZoneFromDock('overview')" aria-label="العودة لكامل الفيلا" title="العودة لكامل الفيلا"><i class="fa-solid fa-expand"></i></button>
     </div>
     <div id="scene-error" class="glass-panel" role="alert" hidden></div>
+
+    <button id="lighting-modes-button" type="button" onclick="toggleLightingModes(event)" title="أوضاع الإضاءة" aria-label="أوضاع الإضاءة" aria-controls="lighting-modes-panel" aria-expanded="false"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></button>
+    <button id="lighting-modes-backdrop" type="button" hidden onclick="closeLightingModes()" aria-label="إغلاق أوضاع الإضاءة" tabindex="-1"></button>
+    <section id="lighting-modes-panel" class="glass-panel" hidden aria-labelledby="lighting-modes-title">
+        <div class="lighting-modes-heading"><div><h2 id="lighting-modes-title">أوضاع الإضاءة</h2><span id="lighting-mode-current">إعدادات مخصصة</span></div><button class="focus-action" type="button" onclick="closeLightingModes(true)" aria-label="إغلاق القائمة"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <button id="preset-sleep" class="lighting-preset" type="button" aria-pressed="false" onclick="applyLightingPreset('sleep')"><i class="fa-solid fa-moon" aria-hidden="true"></i><span><strong>وضع النوم</strong><small>إضاءة هادئة في كل الفيلا · 10%</small></span></button>
+        <button id="preset-living" class="lighting-preset" type="button" aria-pressed="false" onclick="applyLightingPreset('living')"><i class="fa-solid fa-couch" aria-hidden="true"></i><span><strong>وضع المعيشة</strong><small>الصالة 100% · باقي الأماكن مطفأة</small></span></button>
+        <button id="preset-away" class="lighting-preset" type="button" aria-pressed="false" onclick="applyLightingPreset('away')"><i class="fa-solid fa-house" aria-hidden="true"></i><span><strong>وضع عدم التواجد</strong><small>الصالة 50% · باقي الأماكن 15%</small></span></button>
+        <button id="preset-all" class="lighting-preset" type="button" aria-pressed="false" onclick="toggleAllLights()"><i id="preset-all-icon" class="fa-solid fa-power-off" aria-hidden="true"></i><span><strong id="preset-all-label">إغلاق الكل</strong><small id="preset-all-description">إطفاء كل اللمبات والإضاءة المخفية</small></span></button>
+        <p id="lighting-presets-note">الأوضاع تستخدم العرض الليلي، مع الاحتفاظ بألوان اللمبات.</p>
+    </section>
 
     <!-- RESTORED INTERACTIVE BOTTOM DOCK FOR ROOM / PLACE SELECTION -->
     <nav id="bottom-places-dock" class="fixed bottom-2.5 inset-x-0 z-30 flex justify-center px-2 pointer-events-none">
@@ -2148,6 +2197,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
         let interactiveObjects = [];
         let cameraAnim = null;
         let isNightMode = true;
+        let activeLightingPreset = 'custom';
+        let isApplyingLightingPreset = false;
+        const LIGHTING_PRESETS = {
+            sleep: { label: 'وضع النوم', roomBrightness: 10, livingBrightness: 10 },
+            living: { label: 'وضع المعيشة', roomBrightness: 0, livingBrightness: 100 },
+            away: { label: 'وضع عدم التواجد', roomBrightness: 15, livingBrightness: 50 }
+        };
 
         // UI Auto-Hide & Contextual Selection State
         let toolbarHideTimer = null;
@@ -2365,6 +2421,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            // Architecture is static: rebuild shadow maps only after scene geometry changes.
+            renderer.shadowMap.autoUpdate = false;
+            renderer.shadowMap.needsUpdate = true;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.toneMappingExposure = 0.98;
@@ -2380,6 +2439,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             // Detect orbit/pan/zoom start to immediately clear menus & contextual cards out of the way
             controls.addEventListener('start', () => {
+                closeLightingModes();
                 isUserOrbiting = true;
                 cameraWasManuallyMoved = true;
                 document.getElementById('labels-container').style.opacity = '0.45';
@@ -2430,6 +2490,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
             updateFocusedRoomLabel();
             setupRadialArcInteraction();
             setupRaycasterInteraction();
+            syncLightingPresetUI();
+            requestLightingShadowUpdate();
 
             // Start initial auto-hide timer for the top pill bar (3.5 seconds)
             scheduleToolbarAutoHide(3800);
@@ -2486,7 +2548,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             dirLight.shadow.bias = -0.0005;
             scene.add(dirLight);
 
-            // Interactive Smart Lights in each room (3D Bulb Fixture + PointLight + State)
+            // Local downlights with soft shadows keep lighting concentrated in its room.
             const glowCanvas = document.createElement('canvas');
             glowCanvas.width = glowCanvas.height = 64;
             const glowContext = glowCanvas.getContext('2d');
@@ -2513,10 +2575,17 @@ Check your Browserslist config to be sure that your targets are set up correctly
             nightLights = [];
 
             roomLightSpecs.forEach((spec, idx) => {
-                const pl = new THREE.PointLight(spec.color, spec.maxI * 0.85, spec.dist * 0.78, 1.7);
-                pl.position.set(spec.x, spec.y, spec.z);
+                const pl = new THREE.SpotLight(spec.color, spec.maxI, spec.dist * 0.92, 1.06, 0.62, 1.3);
+                pl.position.set(spec.x, spec.zone === 'stairs' ? 3.15 : spec.y + 0.35, spec.z);
+                pl.target.position.set(spec.x, 0, spec.z);
+                pl.castShadow = true;
+                pl.shadow.mapSize.set(512, 512);
+                pl.shadow.camera.near = 0.12;
+                pl.shadow.camera.far = spec.dist;
+                pl.shadow.bias = -0.0004;
+                pl.shadow.normalBias = 0.018;
                 pl.userData = { baseIntensity: spec.maxI };
-                scene.add(pl);
+                scene.add(pl, pl.target);
                 nightLights.push(pl);
 
                 const fixtureGroup = new THREE.Group();
@@ -2554,6 +2623,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 glowSprite.scale.set(0.85, 0.85, 1);
                 fixtureGroup.add(glowSprite);
 
+                fixtureGroup.visible = false;
                 scene.add(fixtureGroup);
 
                 const smartLightObj = {
@@ -2572,7 +2642,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     isOn: true,
                     brightness: 90,
                     colorHex: spec.color,
-                    colorRatio: idx === 5 ? 0.98 : (idx === 3 ? 0.48 : 0.16),
+                    colorRatio: (COLOR_SPECTRUM_STOPS.find(stop => stop.hex === spec.color) || COLOR_SPECTRUM_STOPS[1]).t,
                     maxIntensity: spec.maxI,
                     timerMinutes: 0,
                     timerRemainingSec: 0,
@@ -2606,7 +2676,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             if (lightObj.isOn && lightObj.brightness > 0) {
                 const ratio = lightObj.brightness / 100;
-                const envMultiplier = isNightMode ? 0.68 : 0.35;
+                const envMultiplier = isNightMode ? 1.65 : 0.70;
                 lightObj.pointLight.intensity = lightObj.maxIntensity * ratio * envMultiplier;
                 lightObj.bulbMat.emissive.copy(c);
                 lightObj.bulbMat.emissiveIntensity = 0.6 + ratio * 1.6;
@@ -2616,19 +2686,24 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 lightObj.pointLight.intensity = 0;
                 lightObj.bulbMat.emissive.setHex(0x000000);
                 lightObj.bulbMat.emissiveIntensity = 0;
-                lightObj.haloMat.opacity = 0.04;
+                lightObj.haloMat.opacity = 0;
             }
 
             updateSmartBulbPinUI(lightObj);
+            if (!isApplyingLightingPreset) {
+                syncLightingDecor();
+                syncLightingPresetUI();
+            }
         }
 
-        function createWarmLEDStrip(w, h, d, x, y, z) {
+        function createWarmLEDStrip(w, h, d, x, y, z, zone) {
             const mat = new THREE.MeshStandardMaterial({
                 color: 0xffedd5,
                 emissive: 0xff9d2e,
                 emissiveIntensity: 0.8,
                 roughness: 0.2
             });
+            mat.userData.zone = zone;
             emissiveMaterials.push(mat);
             const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
             mesh.position.set(x, y, z);
@@ -2959,7 +3034,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             furnitureGroup.add(bedGroup);
             registerInteractiveItem(bedGroup, 'masterBed', 'masterBedroom');
-            createWarmLEDStrip(0.06, 0.04, 2.05, -1.36, 1.15, -3.60);
+            createWarmLEDStrip(0.06, 0.04, 2.05, -1.36, 1.15, -3.60, 'masterBedroom');
 
             // 3. Bed-Foot Chaise / Ottoman Bench Unit (75 × 200 cm) right in front of the bed
             const chaiseGroup = new THREE.Group();
@@ -3089,8 +3164,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
             registerInteractiveItem(closetGroup, 'wardrobeCloset', 'dressing');
 
             // Warm LED Closet Strips
-            createWarmLEDStrip(0.04, 0.04, 2.50, -3.42, 1.22, -4.40);
-            createWarmLEDStrip(0.04, 0.04, 3.60, -2.14, 1.22, -4.20);
+            createWarmLEDStrip(0.04, 0.04, 2.50, -3.42, 1.22, -4.40, 'dressing');
+            createWarmLEDStrip(0.04, 0.04, 3.60, -2.14, 1.22, -4.20, 'dressing');
         }
 
         // ============================================================================
@@ -3133,7 +3208,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             const sinkBowl = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.16, 0.14, 24), ceramicWhite);
             sinkBowl.position.set(-6.38, 0.85, -4.45);
             bathVanityGroup.add(sinkBowl);
-            createWarmLEDStrip(0.05, 0.04, 1.70, -6.12, 0.76, -4.45);
+            createWarmLEDStrip(0.05, 0.04, 1.70, -6.12, 0.76, -4.45, 'bathroom');
 
             // 4. Walk-in Glass Shower Enclosure (168 × 114 cm) at top-right of bathroom
             const showerGlass1 = new THREE.Mesh(new THREE.BoxGeometry(1.14, 1.35, 0.03), glassMat);
@@ -3364,6 +3439,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 emissive: 0xf59e0b,
                 emissiveIntensity: 1.1
             });
+            glowRingMat.userData.zone = 'lobbyPlanter';
             emissiveMaterials.push(glowRingMat);
             const glowRing = new THREE.Mesh(new THREE.TorusGeometry(0.81, 0.025, 12, 36), glowRingMat);
             glowRing.rotation.x = Math.PI / 2;
@@ -3580,6 +3656,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             smartLights.forEach(lightObj => {
                 const pin = document.createElement('button');
                 pin.type = 'button';
+                pin.style.display = 'none';
                 pin.className = 'bulb-pin rounded-full px-2 py-1 flex items-center gap-1 border shadow-lg backdrop-blur-md';
                 pin.title = `${lightObj.name} - انقر للتحكم بالإضاءة`;
                 pin.onclick = (e) => {
@@ -3599,27 +3676,18 @@ Check your Browserslist config to be sure that your targets are set up correctly
         function updateSmartBulbPinUI(lightObj) {
             if (!lightObj || !lightObj.pinEl) return;
             const pin = lightObj.pinEl;
-            const timerText = lightObj.timerRemainingSec > 0
-                ? `<span class="text-[8.5px] font-mono text-sky-300">${Math.ceil(lightObj.timerRemainingSec / 60)}د</span>`
-                : `<span class="text-[8.5px] font-mono opacity-90">${lightObj.isOn ? lightObj.brightness + '%' : 'مطفأ'}</span>`;
-
-            if (lightObj.isOn && lightObj.brightness > 0) {
-                pin.style.backgroundColor = 'rgba(15, 23, 42, 0.88)';
-                pin.style.borderColor = lightObj.colorHex;
-                pin.style.boxShadow = `0 0 14px ${lightObj.colorHex}80`;
-                pin.innerHTML = `
-                    <i class="fa-solid fa-lightbulb text-xs" style="color: ${lightObj.colorHex}; filter: drop-shadow(0 0 5px ${lightObj.colorHex});"></i>
-                    ${timerText}
-                `;
-            } else {
-                pin.style.backgroundColor = 'rgba(15, 23, 42, 0.75)';
-                pin.style.borderColor = 'rgba(148, 163, 184, 0.35)';
-                pin.style.boxShadow = '0 4px 10px rgba(0,0,0,0.4)';
-                pin.innerHTML = `
-                    <i class="fa-regular fa-lightbulb text-xs text-slate-400"></i>
-                    <span class="text-[8.5px] font-mono text-slate-400">مطفأ</span>
-                `;
-            }
+            const on = lightObj.isOn && lightObj.brightness > 0;
+            const percent = on ? lightObj.brightness : 0;
+            const label = `${lightObj.name} — شدة الإضاءة ${percent}% — اللون ${lightObj.colorHex}`;
+            pin.title = label;
+            pin.setAttribute('aria-label', label);
+            pin.style.backgroundColor = 'rgba(10, 17, 29, 0.94)';
+            pin.style.borderColor = on ? lightObj.colorHex : '#64748b';
+            pin.style.boxShadow = on ? `0 0 12px ${lightObj.colorHex}55` : '0 3px 12px #0006';
+            pin.innerHTML = `<i class="${on ? 'fa-solid' : 'fa-regular'} fa-lightbulb" aria-hidden="true" style="font-size:14px;color:${on ? lightObj.colorHex : '#94a3b8'}"></i>
+                <span class="bulb-percent">${percent}%</span>
+                <span class="bulb-color-swatch" style="background:${lightObj.colorHex};color:${lightObj.colorHex}" title="اللون ${lightObj.colorHex}" aria-hidden="true"></span>
+                ${lightObj.timerRemainingSec > 0 ? `<span class="bulb-timer">${Math.ceil(lightObj.timerRemainingSec / 60)}د</span>` : ''}`;
         }
 
         function updateHTMLOverlaysPosition() {
@@ -3658,41 +3726,23 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 }
             });
 
-            // In overview, keep bulb buttons clear of room names (especially on phones).
-            // Batch layout reads before writes; focused-room pins remain at their true 3D projection.
-            const labelRects = focusedZoneKey === 'overview' && showRoomLabelsFlag
-                ? labelDOMElements.filter(item => item.el.style.display !== 'none').map(item => item.el.getBoundingClientRect()) : [];
-            const pinSizes = bulbPinElements.map(light => ({
-                width: light.pinEl ? light.pinEl.offsetWidth || 52 : 52,
-                height: light.pinEl ? light.pinEl.offsetHeight || 24 : 24
-            }));
-            const placedPinRects = [];
-            bulbPinElements.forEach((lightObj, index) => {
+            bulbPinElements.forEach(lightObj => {
                 if (!lightObj.pinEl) return;
-                if (!showSmartBulbPinsFlag || (focusedZoneKey !== 'overview' && lightObj.zone !== focusedZoneKey)) {
+                const show = showSmartBulbPinsFlag && focusedZoneKey !== 'overview'
+                    && lightObj.zone === focusedZoneKey && !cameraAnim;
+                lightObj.fixtureGroup.visible = show;
+                if (!show) {
                     lightObj.pinEl.style.display = 'none';
                     return;
                 }
-                const v = lightObj.pos.clone().project(camera);
-                if (v.z > 1) {
+                const v = lightObj.fixtureGroup.getWorldPosition(new THREE.Vector3()).project(camera);
+                // Reject positions behind the camera or outside the viewport; never clamp to a false location.
+                const px = (v.x + 1) * halfW;
+                const py = (1 - v.y) * halfH;
+                if (v.z < -1 || v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) {
                     lightObj.pinEl.style.display = 'none';
                 } else {
                     lightObj.pinEl.style.display = 'flex';
-                    const px = (v.x * halfW) + halfW;
-                    let py = -(v.y * halfH) + halfH;
-                    const size = pinSizes[index];
-                    if (labelRects.length) {
-                        const obstacles = labelRects.concat(placedPinRects);
-                        for (let attempt = 0; attempt < obstacles.length + 1; attempt++) {
-                            const overlap = obstacles.find(rect => px + size.width / 2 > rect.left - 4
-                                && px - size.width / 2 < rect.right + 4
-                                && py + size.height / 2 > rect.top - 5 && py - size.height / 2 < rect.bottom + 5);
-                            if (!overlap) break;
-                            py = overlap.top - size.height / 2 - 6;
-                        }
-                        placedPinRects.push({ left: px - size.width / 2, right: px + size.width / 2,
-                            top: py - size.height / 2, bottom: py + size.height / 2 });
-                    }
                     lightObj.pinEl.style.left = `${px}px`;
                     lightObj.pinEl.style.top = `${py}px`;
                 }
@@ -3725,6 +3775,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         }
 
         function openRadialLightMenu(lightObj, screenX, screenY) {
+            closeLightingModes();
             if (!lightObj) return;
             activeSmartLight = lightObj;
             activeRadialArcMode = null;
@@ -3809,6 +3860,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             if (event) event.stopPropagation();
             if (!activeSmartLight) return;
 
+            markLightingCustom();
             activeSmartLight.isOn = !activeSmartLight.isOn;
             if (activeSmartLight.isOn && activeSmartLight.brightness === 0) {
                 activeSmartLight.brightness = 85;
@@ -3991,6 +4043,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             }
 
             const ratio = Math.max(0, Math.min(1, relAngle / ARC_SWEEP_DEG));
+            markLightingCustom();
             renderRadialArcGeometry(ratio, activeRadialArcMode);
 
             if (activeRadialArcMode === 'brightness') {
@@ -4038,6 +4091,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         lightObj.timerInterval = null;
                         lightObj.timerMinutes = 0;
                         lightObj.isOn = false;
+                        markLightingCustom();
                         applySmartLightState(lightObj);
                         if (activeSmartLight === lightObj) syncRadialMenuDisplay();
                         showToast(`انتهى المؤقت: تم إطفاء ${lightObj.name} تلقائياً`);
@@ -4103,6 +4157,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         }
 
         function togglePopoverMenu(menuKey, event) {
+            closeLightingModes();
             if (event) event.stopPropagation();
             closeRadialLightMenu();
             hideContextCard();
@@ -4209,12 +4264,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
         function toggleSelectedObjectVisibility() {
             if (!selectedTargetGroup) return;
             selectedTargetGroup.visible = !selectedTargetGroup.visible;
+            requestLightingShadowUpdate();
             document.getElementById('ctx-vis-text').textContent = selectedTargetGroup.visible ? 'إخفاء مؤقت' : 'إظهار العنصر';
             if (selectionBoxHelper) selectionBoxHelper.visible = selectedTargetGroup.visible;
         }
 
         // Bottom Dock & Zone Navigation
         function selectZoneFromDock(zoneKey, showCard = false, labelName = '', anchor = null) {
+            closeLightingModes();
             closeAllPopovers();
             closeRadialLightMenu();
             hideContextCard();
@@ -4248,6 +4305,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             document.getElementById('focused-light-btn').hidden = !getFocusedLight();
             const dock = document.getElementById('bottom-places-dock').getBoundingClientRect();
             document.documentElement.style.setProperty('--dock-top-space', `${window.innerHeight - dock.top + 9}px`);
+            updateLightingModesLayout();
         }
 
         function getBottomOverlayHeight() {
@@ -4364,6 +4422,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             doorWindowMeshes.forEach(dw => {
                 dw.mesh.scale.y = Math.max(0.08, currentWallHeight - dw.sill);
             });
+            requestLightingShadowUpdate();
             if (focusedZoneKey !== 'overview' && !cameraWasManuallyMoved) focusZone(focusedZoneKey);
         }
 
@@ -4396,10 +4455,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 if (qText) qText.textContent = 'ليلي 3000K';
                 scene.background.setHex(0x050811);
                 scene.fog.color.setHex(0x050811);
-                ambientLight.intensity = 0.065;
-                hemiLight.intensity = 0.085;
-                dirLight.intensity = 0.10;
-                renderer.toneMappingExposure = 0.98;
+                ambientLight.intensity = 0.035;
+                hemiLight.intensity = 0.045;
+                dirLight.intensity = 0.045;
+                renderer.toneMappingExposure = 1.05;
             } else {
                 if (nightBtn) nightBtn.classList.remove('btn-active');
                 if (dayBtn) dayBtn.classList.add('btn-active');
@@ -4414,7 +4473,98 @@ Check your Browserslist config to be sure that your targets are set up correctly
             }
 
             smartLights.forEach(sl => applySmartLightState(sl));
-            emissiveMaterials.forEach(mat => { mat.emissiveIntensity = isNightMode ? 1.15 : 0.45; });
+            syncLightingDecor();
+        }
+
+        function syncLightingDecor() {
+            emissiveMaterials.forEach(material => {
+                const lights = smartLights.filter(light => light.zone === material.userData.zone && light.isOn && light.brightness > 0);
+                const strongest = lights.sort((a, b) => b.brightness - a.brightness)[0];
+                material.emissiveIntensity = strongest ? (isNightMode ? 1.25 : 0.45) * strongest.brightness / 100 : 0;
+                if (strongest) material.emissive.set(strongest.colorHex);
+            });
+        }
+
+        function requestLightingShadowUpdate() {
+            if (renderer) renderer.shadowMap.needsUpdate = true;
+        }
+
+        function markLightingCustom() {
+            activeLightingPreset = 'custom';
+        }
+
+        function syncLightingPresetUI() {
+            const allOff = smartLights.length > 0 && smartLights.every(light => !light.isOn || light.brightness <= 0);
+            for (const name of Object.keys(LIGHTING_PRESETS)) {
+                const button = document.getElementById(`preset-${name}`);
+                if (button) button.setAttribute('aria-pressed', String(!allOff && activeLightingPreset === name));
+            }
+            const allButton = document.getElementById('preset-all');
+            if (!allButton) return;
+            allButton.setAttribute('aria-pressed', String(allOff));
+            document.getElementById('preset-all-label').textContent = allOff ? 'تشغيل الكل' : 'إغلاق الكل';
+            document.getElementById('preset-all-description').textContent = allOff ? 'تشغيل كل اللمبات على شدة 90%' : 'إطفاء كل اللمبات والإضاءة المخفية';
+            document.getElementById('preset-all-icon').className = allOff ? 'fa-solid fa-lightbulb' : 'fa-solid fa-power-off';
+            document.getElementById('lighting-mode-current').textContent = allOff ? 'كل الإضاءة مطفأة'
+                : LIGHTING_PRESETS[activeLightingPreset]?.label || (activeLightingPreset === 'all-on' ? 'كل الإضاءة تعمل · 90%' : 'إعدادات مخصصة');
+            document.querySelector('#lighting-modes-button i').className = allOff ? 'fa-regular fa-lightbulb' : 'fa-solid fa-lightbulb';
+        }
+
+        function updateLightingModesLayout() {
+            const bottom = getBottomOverlayHeight();
+            document.documentElement.style.setProperty('--lighting-button-bottom', `${bottom + 12}px`);
+            document.documentElement.style.setProperty('--lighting-panel-bottom', `${bottom + (window.innerHeight < 520 ? 8 : 72)}px`);
+        }
+
+        function toggleLightingModes(event) {
+            if (event) event.stopPropagation();
+            const panel = document.getElementById('lighting-modes-panel');
+            if (!panel.hidden) { closeLightingModes(true); return; }
+            closeAllPopovers();
+            closeRadialLightMenu();
+            hideContextCard();
+            updateLightingModesLayout();
+            syncLightingPresetUI();
+            panel.hidden = false;
+            document.getElementById('lighting-modes-backdrop').hidden = false;
+            document.getElementById('lighting-modes-button').setAttribute('aria-expanded', 'true');
+        }
+
+        function closeLightingModes(returnFocus = false) {
+            document.getElementById('lighting-modes-panel').hidden = true;
+            document.getElementById('lighting-modes-backdrop').hidden = true;
+            document.getElementById('lighting-modes-button').setAttribute('aria-expanded', 'false');
+            if (returnFocus) document.getElementById('lighting-modes-button').focus({ preventScroll: true });
+        }
+
+        function applyLightingPreset(name) {
+            if (!LIGHTING_PRESETS[name] && name !== 'all-off' && name !== 'all-on') return;
+            isApplyingLightingPreset = true;
+            setLightingMode('night');
+            for (const light of smartLights) {
+                if (light.timerInterval) clearInterval(light.timerInterval);
+                light.timerInterval = null;
+                light.timerMinutes = 0;
+                light.timerRemainingSec = 0;
+                const preset = LIGHTING_PRESETS[name];
+                const brightness = preset ? (light.zone === 'livingRoom' ? preset.livingBrightness : preset.roomBrightness)
+                    : (name === 'all-on' ? 90 : 0);
+                light.brightness = brightness;
+                light.isOn = brightness > 0;
+                applySmartLightState(light);
+            }
+            activeLightingPreset = name;
+            isApplyingLightingPreset = false;
+            syncLightingDecor();
+            syncLightingPresetUI();
+            syncRadialMenuDisplay();
+            closeLightingModes(true);
+            showToast(LIGHTING_PRESETS[name]?.label || (name === 'all-on' ? 'تم تشغيل كل الإضاءة' : 'تم إغلاق كل الإضاءة'));
+        }
+
+        function toggleAllLights() {
+            const allOff = smartLights.every(light => !light.isOn || light.brightness <= 0);
+            applyLightingPreset(allOff ? 'all-on' : 'all-off');
         }
 
         function toggleDayNightQuick(event) {
@@ -4425,6 +4575,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         function toggleGroupVisibility(groupName, visible) {
             if (groupName === 'furniture' && furnitureGroup) furnitureGroup.visible = visible;
             if (groupName === 'plants' && plantsGroup) plantsGroup.visible = visible;
+            requestLightingShadowUpdate();
         }
 
         function toggleRoomLabels(visible) {
@@ -4441,10 +4592,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
         function toggleSmartBulbPins(visible) {
             showSmartBulbPinsFlag = visible;
-            smartLights.forEach(sl => {
-                sl.fixtureGroup.visible = visible;
-            });
             if (!visible) closeRadialLightMenu();
+            updateHTMLOverlaysPosition();
         }
 
         function toggleWallXRay(enabled) {
@@ -4633,7 +4782,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
             document.getElementById('client-welcome').hidden = !open;
             for (const id of ['canvas-container', 'labels-container', 'main-toolbar', 'popover-rooms',
                 'popover-layers', 'radial-light-menu', 'context-card', 'focused-room-label',
-                'bottom-places-dock', 'summon-ui-btn', 'quick-home-btn', 'help-tour-btn']) {
+                'bottom-places-dock', 'summon-ui-btn', 'quick-home-btn', 'help-tour-btn',
+                'lighting-modes-button', 'lighting-modes-panel', 'lighting-modes-backdrop']) {
                 const element = document.getElementById(id);
                 if (element) element.inert = open;
             }
@@ -4645,6 +4795,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             document.getElementById('btn-menu-rooms').focus({ preventScroll: true });
         }
         function openClientHelp() {
+            closeLightingModes();
             closeRadialLightMenu();
             hideContextCard();
             closeAllPopovers();
@@ -4653,6 +4804,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             document.getElementById('client-start').focus({ preventScroll: true });
         }
         document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeLightingModes();
             if (event.key === 'Escape' && clientViewerReady && !document.getElementById('client-welcome').hidden) {
                 startClientTour();
             }

@@ -6,7 +6,7 @@
     <title>فيلا حسن | جولة معمارية ثلاثية الأبعاد</title>
     <meta name="description" content="استكشف الدور الأول لفيلا حسن في جولة تفاعلية ثلاثية الأبعاد، مع التنقل بين الغرف والتحكم في الإضاءة وزوايا العرض.">
     <meta name="theme-color" content="#080e19">
-    <meta name="application-version" content="2.2-android-drag-fix">
+    <meta name="application-version" content="2.3-approved-layout-and-lights">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:site_name" content="Villa Hassan">
@@ -1680,7 +1680,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             <button onclick="selectZoneAndClose('bathroom')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
                 <i class="fa-solid fa-bath text-sky-400 w-4 text-center"></i>
                 <div class="truncate">
-                    <div class="font-bold">الحمام والمنور</div>
+                    <div class="font-bold">الحمام الرئيسي</div>
                     <div class="text-[9px] text-slate-400">بانيو 180×81 وحوض 169</div>
                 </div>
             </button>
@@ -1694,9 +1694,33 @@ Check your Browserslist config to be sure that your targets are set up correctly
             <button onclick="selectZoneAndClose('stairs')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
                 <i class="fa-solid fa-stairs text-slate-300 w-4 text-center"></i>
                 <div class="truncate">
-                    <div class="font-bold">الدرج والمغاسل</div>
-                    <div class="text-[9px] text-slate-400">مغاسل 210×160 وحمام</div>
+                    <div class="font-bold">الدرج</div>
+                    <div class="text-[9px] text-slate-400">جانب مفتوح على البهو</div>
                 </div>
+            </button>
+            <button onclick="selectZoneAndClose('leftBedroom')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-bed text-amber-400 w-4 text-center"></i>
+                <div class="truncate"><div class="font-bold">الغرفة اليسرى</div><div class="text-[9px] text-slate-400">غرفة نوم · إضاءة مستقلة</div></div>
+            </button>
+            <button onclick="selectZoneAndClose('rightBedroom')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-bed text-amber-400 w-4 text-center"></i>
+                <div class="truncate"><div class="font-bold">الغرفة اليمنى</div><div class="text-[9px] text-slate-400">غرفة نوم · إضاءة مستقلة</div></div>
+            </button>
+            <button onclick="selectZoneAndClose('terraceLounge')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-couch text-emerald-400 w-4 text-center"></i>
+                <div class="truncate"><div class="font-bold">جلسة التراس</div><div class="text-[9px] text-slate-400">أعلى اليمين · إضاءة مستقلة</div></div>
+            </button>
+            <button onclick="selectZoneAndClose('guestBathroom')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-bath text-sky-400 w-4 text-center"></i>
+                <div class="truncate"><div class="font-bold">حمام الضيوف</div><div class="text-[9px] text-slate-400">بجوار الدرج · إضاءة مستقلة</div></div>
+            </button>
+            <button onclick="selectZoneAndClose('washbasins')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-sink text-sky-400 w-4 text-center"></i>
+                <div class="truncate"><div class="font-bold">المغاسل</div><div class="text-[9px] text-slate-400">بجوار الدرج · إضاءة مستقلة</div></div>
+            </button>
+            <button onclick="selectZoneAndClose('courtyard')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-seedling text-emerald-400 w-4 text-center"></i>
+                <div class="truncate"><div class="font-bold">التراس الأيسر</div><div class="text-[9px] text-slate-400">أعلى اليسار · إضاءة مستقلة</div></div>
             </button>
         </div>
     </div>
@@ -1953,7 +1977,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             </button>
             <button id="dock-bathroom" onclick="selectZoneFromDock('bathroom')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <i class="fa-solid fa-bath text-sky-400"></i>
-                <span>الحمام والمنور</span>
+                <span>الحمام الرئيسي</span>
             </button>
             <button id="dock-terrace" onclick="selectZoneFromDock('terrace')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <i class="fa-solid fa-tree text-emerald-400"></i>
@@ -1961,7 +1985,25 @@ Check your Browserslist config to be sure that your targets are set up correctly
             </button>
             <button id="dock-stairs" onclick="selectZoneFromDock('stairs')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <i class="fa-solid fa-stairs text-slate-300"></i>
-                <span>الدرج والمغاسل</span>
+                <span>الدرج</span>
+            </button>
+            <button id="dock-leftBedroom" onclick="selectZoneFromDock('leftBedroom')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-bed text-amber-400"></i><span>الغرفة اليسرى</span>
+            </button>
+            <button id="dock-rightBedroom" onclick="selectZoneFromDock('rightBedroom')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-bed text-amber-400"></i><span>الغرفة اليمنى</span>
+            </button>
+            <button id="dock-terraceLounge" onclick="selectZoneFromDock('terraceLounge')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-couch text-emerald-400"></i><span>جلسة التراس</span>
+            </button>
+            <button id="dock-guestBathroom" onclick="selectZoneFromDock('guestBathroom')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-bath text-sky-400"></i><span>حمام الضيوف</span>
+            </button>
+            <button id="dock-washbasins" onclick="selectZoneFromDock('washbasins')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-sink text-sky-400"></i><span>المغاسل</span>
+            </button>
+            <button id="dock-courtyard" onclick="selectZoneFromDock('courtyard')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-seedling text-emerald-400"></i><span>التراس الأيسر</span>
             </button>
         </div>
     </nav>
@@ -1978,12 +2020,48 @@ Check your Browserslist config to be sure that your targets are set up correctly
         // Reconstructed from "فيلا حسن بالاثاث الدور الاول ملون-Model.pdf"
         // ============================================================================
         const ZONE_SPECS = {
+            leftBedroom: {
+                title: "الغرفة اليسرى", tag: "غرفة نوم", desc: "سرير مواجه لتلفزيون معلّق على جدار الباب، مع فتحة الباب المصححة وإضاءة مستقلة.",
+                dim1: "سرير 198×165 سم", dim2: "باب 80 سم",
+                camPos: { x: -4.4, y: 5, z: 2.8 },
+                target: { x: -4.15, y: 0.5, z: -0.125 }
+            },
+            rightBedroom: {
+                title: "الغرفة اليمنى", tag: "غرفة نوم", desc: "رأس السرير على جدار الباب، والتلفزيون على الجدار المقابل، مع مدخل بعرض 90 سم وإضاءة مستقلة.",
+                dim1: "سرير 198×165 سم", dim2: "باب 90 سم",
+                camPos: { x: 7, y: 5, z: 8 },
+                target: { x: 5.25, y: 0.5, z: 4.8 }
+            },
+            terraceLounge: {
+                title: "جلسة التراس", tag: "أعلى اليمين", desc: "جلسة خارجية حول طاولة دائرية، بإضاءة موضعية مستقلة عن إضاءة الحديقة.",
+                dim1: "طاولة قطر Ø70 سم", dim2: "إضاءة مستقلة",
+                camPos: { x: 9, y: 5, z: -4 },
+                target: { x: 7.1, y: 0.5, z: -7.05 }
+            },
+            guestBathroom: {
+                title: "حمام الضيوف", tag: "بجوار الدرج", desc: "دورة مياه الضيوف بجانب المغاسل، مع إضاءة مستقلة يمكن ضبط شدتها ولونها ومؤقتها.",
+                dim1: "إضاءة مستقلة", dim2: "حمام الضيوف",
+                camPos: { x: -5.8, y: 4, z: 4 },
+                target: { x: -5.575, y: 0.5, z: 2.05 }
+            },
+            washbasins: {
+                title: "المغاسل", tag: "بجوار الدرج", desc: "منطقة مغاسل الضيوف بكونتر رخامي وحوض نباتات، وإضاءة مستقلة عن الدرج والحمام.",
+                dim1: "كونتر 210×45 سم", dim2: "إضاءة مستقلة",
+                camPos: { x: -3.2, y: 4, z: 4 },
+                target: { x: -3.225, y: 0.5, z: 2.05 }
+            },
+            courtyard: {
+                title: "التراس الأيسر", tag: "أعلى اليسار", desc: "تراس صغير مزروع أعلى الحمام الرئيسي، مع إضاءة محلية مستقلة.",
+                dim1: "تراس مزروع", dim2: "إضاءة مستقلة",
+                camPos: { x: -5.6, y: 4, z: -4 },
+                target: { x: -5.67, y: 0.5, z: -7.45 }
+            },
             overview: {
                 title: "فيلا حسن بالأثاث - الدور الأول",
                 tag: "مقياس 1:100",
-                desc: "نموذج ثلاثي الأبعاد كامل للدور الأول يشمل جناح النوم الرئيسي، الجلسة القوسية، غرفة الملابس، الحمام، التراس، الصالة القوسية، وبهو الدرج.",
+                desc: "مخطط تفاعلي للدور الأول يشمل ثلاث غرف نوم والصالة والتراسات والمغاسل والحمامات، مع 14 إضاءة قابلة للتحكم.",
                 dim1: "15.3 × 15.0 م",
-                dim2: "9 فراغات رئيسية",
+                dim2: "13 مكانًا · 14 إضاءة",
                 camPos: { x: 0.5, y: 15.5, z: 13.5 },
                 target: { x: 0.5, y: 0.4, z: -0.6 }
             },
@@ -2024,29 +2102,29 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 target: { x: -2.8, y: 0.6, z: -3.7 }
             },
             bathroom: {
-                title: "الحمام الرئيسي والمنور المزروع",
+                title: "الحمام الرئيسي",
                 tag: "أعلى اليسار",
-                desc: "يضم بانيو بيضاوي (180×81 سم) بجوار حوض نباتات داخلي (169×40 سم)، ومغسلة رخامية (177×50 سم)، وشاور زجاجي (168×114 سم)، ومنور علوي (73×75 سم).",
+                desc: "بانيو بيضاوي (180×81 سم)، وحوض نباتات داخلي (169×40 سم)، ومغسلة رخامية (177×50 سم)، وشاور زجاجي (168×114 سم). للتراس الأيسر اختيار وإضاءة مستقلان.",
                 dim1: "بانيو 180×81 سم",
                 dim2: "حوض نباتات 169×40",
                 camPos: { x: -5.4, y: 6.2, z: 0.8 },
                 target: { x: -5.4, y: 0.5, z: -4.5 }
             },
             terrace: {
-                title: "التراس الخارجي والحديقة اليمنى",
+                title: "حديقة التراس اليمنى",
                 tag: "يمين الفيلا",
-                desc: "يضم جلسة استرخاء علوية بطاولة دائرية (Ø70 سم) وأحواض محيطية (45 سم)، وحديقة سفلية بحوضين وسطيين (90×260 سم) وممرات جانبية بعرض 105 سم.",
+                desc: "حديقة التراس اليمنى بحوضين وسطيين (90×260 سم) وممرات جانبية بعرض 105 سم. للجلسة العلوية اختيار وإضاءة مستقلان.",
                 dim1: "أحواض 90×260 سم",
                 dim2: "ممرات 105 سم",
                 camPos: { x: 10.5, y: 6.5, z: -1.0 },
                 target: { x: 7.0, y: 0.5, z: -5.0 }
             },
             stairs: {
-                title: "الدرج الرئيسي والمغاسل ودورة المياه",
+                title: "الدرج الرئيسي",
                 tag: "أسفل اليسار",
-                desc: "يضم السلم الرئيسي بـ 3 قلبات ودرابزين زجاجي، ويعلوه قسم المغاسل (210×160 سم) مع حوض مغسلة (45 سم) وحوض نباتات، ودورة مياه للضيوف (100×160 سم).",
-                dim1: "مغاسل 210×160 سم",
-                dim2: "حمام 100×160 سم",
+                desc: "درج رئيسي بثلاث قلبات ودرابزين زجاجي، مع فتح الجانب المواجه للبهو بالكامل وإضاءة مستقلة للدرج.",
+                dim1: "3 قلبات",
+                dim2: "جانب مفتوح على البهو",
                 camPos: { x: -4.2, y: 6.2, z: 9.2 },
                 target: { x: -4.2, y: 0.5, z: 3.8 }
             }
@@ -2054,6 +2132,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
         // Granular Item Metadata for Specific Clicked Furniture & Planters
         const ITEM_SPECS = {
+            leftBedroomBed: { title: "سرير الغرفة اليسرى", tag: "الغرفة اليسرى", desc: "رأس السرير على الجدار المقابل لجدار الباب، مواجهًا للتلفزيون.", dim1: "مرتبة 198×165 سم", dim2: "رأس سرير خشبي", zone: "leftBedroom" },
+            leftBedroomTV: { title: "تلفزيون الغرفة اليسرى", tag: "الغرفة اليسرى", desc: "تلفزيون معلّق على جدار الباب في مواجهة السرير.", dim1: "عرض 138 سم", dim2: "على جدار الباب", zone: "leftBedroom" },
+            rightBedroomBed: { title: "سرير الغرفة اليمنى", tag: "الغرفة اليمنى", desc: "رأس السرير على نفس جدار الباب، بعيدًا عن مسار فتحه، ومواجهًا للتلفزيون.", dim1: "مرتبة 198×165 سم", dim2: "على جدار الباب", zone: "rightBedroom" },
+            rightBedroomTV: { title: "تلفزيون الغرفة اليمنى", tag: "الغرفة اليمنى", desc: "تلفزيون على الجدار المقابل للسرير والباب.", dim1: "عرض 138 سم", dim2: "مقابل السرير", zone: "rightBedroom" },
+            guestWashbasins: { title: "مغاسل الضيوف", tag: "المغاسل", desc: "كونتر المغاسل وحوض النباتات بإضاءة مستقلة عن الدرج.", dim1: "كونتر 210×45 سم", dim2: "إضاءة مستقلة", zone: "washbasins" },
+            guestBathroomFixtures: { title: "حمام الضيوف", tag: "حمام الضيوف", desc: "دورة مياه الضيوف بجانب المغاسل مع إضاءة موضعية مستقلة.", dim1: "مغسلة + دورة مياه", dim2: "إضاءة مستقلة", zone: "guestBathroom" },
             masterBed: {
                 title: "السرير المزدوج الرئيسي + الكومودينو",
                 tag: "غرفة النوم",
@@ -2124,7 +2208,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 desc: "حوض زراعي في المنور العلوي خلف الحمام الرئيسي بأبعاد 73×75 سم تحيط به ممرات 59 سم و56 سم و80 سم.",
                 dim1: "حوض 73 × 75 سم",
                 dim2: "ممرات 59 / 80 سم",
-                zone: "bathroom"
+                zone: "courtyard"
             },
             livingCurvedSofa: {
                 title: "الكنبة القوسية الرئيسية بالصالة",
@@ -2180,7 +2264,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 desc: "كرسيا استرخاء خارجيان مع طاولة قهوة دائرية بقطر 70 سم تحيط بها أحواض زهور بعرض 45 سم.",
                 dim1: "طاولة قطر Ø70 سم",
                 dim2: "أحواض محيطية 45 سم",
-                zone: "terrace"
+                zone: "terraceLounge"
             },
             terraceGardenBeds: {
                 title: "أحواض الحديقة الوسطية بالتراس",
@@ -2191,11 +2275,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 zone: "terrace"
             },
             mainStaircase: {
-                title: "السلم الرئيسي ومغاسل الضيوف",
+                title: "السلم الرئيسي",
                 tag: "أسفل اليسار",
-                desc: "درج رئيسي بـ 3 قلبات ودرابزين زجاجي، يعلوه قسم المغاسل (210×160 سم) مع حوض نباتات ودورة مياه (100×160 سم).",
-                dim1: "مغاسل 210×160 سم",
-                dim2: "دورة مياه 100×160 سم",
+                desc: "درج رئيسي بثلاث قلبات ودرابزين زجاجي، مفتوح من الجانب على البهو بعد إزالة الجدار المحدد.",
+                dim1: "3 قلبات",
+                dim2: "جانب مفتوح على البهو",
                 zone: "stairs"
             }
         };
@@ -2252,13 +2336,19 @@ Check your Browserslist config to be sure that your targets are set up correctly
         let cameraWasManualAtGestureStart = false;
         const VILLA_VIEW_BOUNDS = [-7.0, -8.9, 8.95, 7.05];
         const ROOM_VIEW_BOUNDS = {
+            leftBedroom: [-6.65, -1.65, -1.65, 1.40],
+            rightBedroom: [3.10, 2.60, 7.40, 7.00],
+            terraceLounge: [5.40, -8.65, 8.80, -6.05],
+            guestBathroom: [-6.65, 1.10, -4.50, 3.00],
+            washbasins: [-4.80, 1.10, -1.65, 3.00],
+            courtyard: [-6.90, -8.85, -4.45, -6.05],
             masterBedroom: [-1.60, -6.70, 5.70, -1.40],
             dressing: [-4.25, -6.35, -1.30, -1.35],
-            bathroom: [-6.90, -8.85, -3.95, -1.35],
-            terrace: [5.40, -8.65, 8.80, -1.65],
+            bathroom: [-6.90, -6.35, -3.95, -1.35],
+            terrace: [5.40, -6.35, 8.80, -1.65],
             livingRoom: [-1.95, -1.95, 3.40, 2.85],
             lobbyPlanter: [-1.95, 2.35, 3.40, 7.00],
-            stairs: [-6.85, 1.10, -1.65, 7.00]
+            stairs: [-6.85, 2.70, -1.65, 7.00]
         };
         let selectionBoxHelper = null;
         let isUserOrbiting = false;
@@ -2269,13 +2359,16 @@ Check your Browserslist config to be sure that your targets are set up correctly
             { id: 'masterBedroom', name: 'جلسة قوسية علوية', sub: '362 × 91 سم', x: 2.05, y: 1.2, z: -5.75, color: 'amber' },
             { id: 'dressing', name: 'غرفة الملابس', sub: '260 × 370 سم', x: -2.8, y: 1.4, z: -3.7, color: 'sky' },
             { id: 'bathroom', name: 'الحمام الرئيسي', sub: '262 × 450 سم', x: -5.4, y: 1.4, z: -3.8, color: 'sky' },
-            { id: 'bathroom', name: 'منور علوي مزروع', sub: 'حوض 73×75 سم', x: -5.7, y: 1.2, z: -7.4, color: 'emerald' },
-            { id: 'terrace', name: 'جلسة التراس العلوية', sub: 'طاولة Ø70 سم', x: 7.05, y: 1.2, z: -7.0, color: 'emerald' },
+            { id: 'courtyard', name: 'التراس الأيسر', sub: 'حوض 73×75 سم', x: -5.7, y: 1.2, z: -7.4, color: 'emerald' },
+            { id: 'terraceLounge', name: 'جلسة التراس العلوية', sub: 'طاولة Ø70 سم', x: 7.05, y: 1.2, z: -7.0, color: 'emerald' },
             { id: 'terrace', name: 'حديقة التراس اليمنى', sub: 'أحواض 90×260 سم', x: 7.05, y: 1.2, z: -3.7, color: 'emerald' },
             { id: 'livingRoom', name: 'الصالة العائلية (الكنبة القوسية)', sub: 'قوس 448 × 96 سم', x: 0.7, y: 1.4, z: 0.4, color: 'amber' },
             { id: 'lobbyPlanter', name: 'بهو الدرج والحوض الدائري', sub: 'قطر Ø160 سم', x: 0.6, y: 1.3, z: 4.6, color: 'emerald' },
             { id: 'stairs', name: 'الدرج الرئيسي', sub: '3 قلبات', x: -4.1, y: 1.4, z: 4.7, color: 'slate' },
-            { id: 'stairs', name: 'مغاسل ودورة مياه', sub: '210×160 / 100×160', x: -3.8, y: 1.3, z: 2.0, color: 'sky' }
+            { id: 'washbasins', name: 'المغاسل', sub: 'كونتر 210×45 سم', x: -3.3, y: 1.1, z: 2.0, color: 'sky' },
+            { id: 'guestBathroom', name: 'حمام الضيوف', sub: 'إضاءة مستقلة', x: -5.6, y: 1.1, z: 2.0, color: 'sky' },
+            { id: 'leftBedroom', name: 'الغرفة اليسرى', sub: 'سرير + تلفزيون', x: -4.15, y: 1.2, z: -.15, color: 'amber' },
+            { id: 'rightBedroom', name: 'الغرفة اليمنى', sub: 'سرير + تلفزيون', x: 5.3, y: 1.2, z: 4.8, color: 'amber' }
         ];
 
         // Exact Dimension Badges from the PDF blueprint
@@ -2513,6 +2606,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             buildFloorsAndSlabs();
             buildAllWallsAndOpenings();
             buildMasterBedroomSuite();
+            buildSecondaryBedrooms();
             buildDressingRoom();
             buildMasterBathroomAndCourtyard();
             buildRightOutdoorTerrace();
@@ -2554,6 +2648,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         const COLOR_SPECTRUM_STOPS = [
             { t: 0.00, hex: '#ff8c1a', name: 'دافئ شموع 2700K' },
             { t: 0.16, hex: '#ffb454', name: 'دافئ 3000K' },
+            { t: 0.24, hex: '#ffcf94', name: 'دافئ ناعم' },
             { t: 0.32, hex: '#fff4e6', name: 'أبيض ناعم 4000K' },
             { t: 0.48, hex: '#38bdf8', name: 'سماوي نهاري' },
             { t: 0.64, hex: '#818cf8', name: 'أزرق ملكي' },
@@ -2597,6 +2692,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
             glowContext.fillRect(0, 0, 64, 64);
             const bulbGlowTexture = new THREE.CanvasTexture(glowCanvas);
             const roomLightSpecs = [
+                { id: 'bulb_rightBedroom', name: 'إضاءة الغرفة اليمنى', zone: 'rightBedroom', x: 5.36, y: 1.80, z: 5.53, maxI: 2.15, dist: 7, range: 7, angle: 1.0, penumbra: 0.65, color: '#ffcf94' },
+                { id: 'bulb_leftBedroom', name: 'إضاءة الغرفة اليسرى', zone: 'leftBedroom', x: -4.14, y: 1.80, z: 0.42, maxI: 1.85, dist: 7, range: 7, angle: 1.05, penumbra: 0.65, color: '#ffcf94' },
+                { id: 'bulb_terraceLounge', name: 'إضاءة جلسة التراس', zone: 'terraceLounge', x: 7.15, y: 1.80, z: -7.05, maxI: 1.7, dist: 7, range: 7, angle: 1.0, penumbra: 0.65, color: '#ffcf94' },
+                { id: 'bulb_guestBathroom', name: 'إضاءة حمام الضيوف', zone: 'guestBathroom', x: -5.82, y: 1.80, z: 2.06, maxI: 1.15, dist: 7, range: 7, angle: 0.64, penumbra: 0.65, color: '#ffcf94' },
+                { id: 'bulb_washbasins', name: 'إضاءة المغاسل', zone: 'washbasins', x: -3.58, y: 1.80, z: 2.06, maxI: 1.35, dist: 7, range: 7, angle: 0.7, penumbra: 0.65, color: '#ffcf94' },
+                { id: 'bulb_courtyard', name: 'إضاءة التراس الأيسر', zone: 'courtyard', x: -5.67, y: 1.80, z: -7.45, maxI: 1.5, dist: 7, range: 7, angle: 0.88, penumbra: 0.65, color: '#ffcf94' },
                 { id: 'bulb_masterBed', name: 'لمبة غرفة النوم', zone: 'masterBedroom', x: -0.40, y: 1.75, z: -3.60, maxI: 2.2, dist: 7.5, color: '#ffb454' },
                 { id: 'bulb_bayLounge', name: 'لمبة الجلسة القوسية', zone: 'masterBedroom', x: 2.05, y: 1.75, z: -5.45, maxI: 2.0, dist: 6.5, color: '#ffb454' },
                 { id: 'bulb_dressing', name: 'لمبة غرفة الملابس', zone: 'dressing', x: -2.80, y: 1.80, z: -3.70, maxI: 1.9, dist: 6.0, color: '#fff4e6' },
@@ -2604,14 +2705,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 { id: 'bulb_living', name: 'ثريا الصالة العائلية', zone: 'livingRoom', x: 0.80, y: 1.85, z: 0.45, maxI: 2.6, dist: 9.0, color: '#ffb454' },
                 { id: 'bulb_lobby', name: 'لمبة بهو الحوض', zone: 'lobbyPlanter', x: 0.59, y: 1.70, z: 4.60, maxI: 2.2, dist: 7.5, color: '#10b981' },
                 { id: 'bulb_terrace', name: 'إضاءة التراس والحديقة', zone: 'terrace', x: 7.05, y: 1.70, z: -4.20, maxI: 2.0, dist: 7.5, color: '#ffb454' },
-                { id: 'bulb_stairs', name: 'لمبة الدرج والمغاسل', zone: 'stairs', x: -4.10, y: 1.85, z: 4.50, maxI: 1.9, dist: 7.0, color: '#fff4e6' }
+                { id: 'bulb_stairs', name: 'لمبة الدرج', zone: 'stairs', x: -4.10, y: 1.85, z: 4.50, maxI: 1.9, dist: 7.0, color: '#fff4e6' }
             ];
 
             smartLights = [];
             nightLights = [];
 
             roomLightSpecs.forEach((spec, idx) => {
-                const pl = new THREE.SpotLight(spec.color, spec.maxI, spec.dist * 0.92, 1.06, 0.62, 1.3);
+                const pl = new THREE.SpotLight(spec.color, spec.maxI, spec.range ?? spec.dist * 0.92, spec.angle ?? 1.06, spec.penumbra ?? 0.62, 1.3);
                 pl.position.set(spec.x, spec.zone === 'stairs' ? 3.15 : spec.y + 0.35, spec.z);
                 pl.target.position.set(spec.x, 0, spec.z);
                 pl.castShadow = true;
@@ -2782,7 +2883,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             }
 
             // 1. Top-Left Planted Courtyard Floor
-            addFloorSlab(2.15, 2.50, -5.67, -7.45, terraceMat, 'bathroom');
+            addFloorSlab(2.15, 2.50, -5.67, -7.45, terraceMat, 'courtyard');
             // 2. Master Bathroom Floor (262 × 450 cm)
             addFloorSlab(2.70, 4.70, -5.40, -3.85, bathFloorMat, 'bathroom');
             // 3. Dressing Room Floor (260 × 370 cm) - Warm Parquet
@@ -2791,13 +2892,17 @@ Check your Browserslist config to be sure that your targets are set up correctly
             addFloorSlab(7.05, 4.70, 2.07, -3.85, mainFloorMat, 'masterBedroom');
             addFloorSlab(5.40, 1.45, 2.05, -5.85, mainFloorMat, 'masterBedroom');
             // 5. Right Outdoor Terrace (Upper Lounge + Lower Garden)
-            addFloorSlab(3.30, 6.75, 7.10, -5.15, terraceMat, 'terrace');
+            addFloorSlab(3.30, 2.325, 7.10, -7.3625, terraceMat, 'terraceLounge');
+            addFloorSlab(3.30, 4.425, 7.10, -3.9875, terraceMat, 'terrace');
             // 6. Central Living Room + Stair Lobby
             addFloorSlab(5.05, 8.65, 0.72, 2.52, mainFloorMat, 'livingRoom');
             // 7. Left Hallway, Powder Room, Washbasins & Staircase Zone
-            addFloorSlab(4.95, 8.65, -4.25, 2.52, mainFloorMat, 'stairs');
-            // 8. Bottom-Right Unfurnished Room
-            addFloorSlab(4.10, 4.10, 5.25, 4.80, mainFloorMat, 'overview');
+            addFloorSlab(4.95, 3.055, -4.25, -0.2775, mainFloorMat, 'leftBedroom');
+            addFloorSlab(2.075, 1.60, -5.6875, 2.05, mainFloorMat, 'guestBathroom');
+            addFloorSlab(2.875, 1.60, -3.2125, 2.05, mainFloorMat, 'washbasins');
+            addFloorSlab(4.95, 3.995, -4.25, 4.8475, mainFloorMat, 'stairs');
+            // 8. Bottom-Right Bedroom
+            addFloorSlab(4.10, 4.10, 5.25, 4.80, mainFloorMat, 'rightBedroom');
 
             // CAD Blueprint Overlay Plane
             const cadTex = createCADBlueprintTexture();
@@ -2903,6 +3008,29 @@ Check your Browserslist config to be sure that your targets are set up correctly
             }
         }
 
+        // Hinged leaves use a local pivot at the jamb. Unit-height groups track the wall-height control.
+        function addHingedBedroomDoor(zone, x, z, width, angle) {
+            const hinge = new THREE.Group();
+            hinge.name = `Door_${zone}`;
+            hinge.position.set(x, 0, z);
+            hinge.rotation.y = angle;
+            const material = new THREE.MeshStandardMaterial({ color: 0x805c3e, roughness: 0.65 });
+            const leaf = new THREE.Mesh(new THREE.BoxGeometry(width - 0.05, 0.94, 0.045), material);
+            leaf.position.set(width / 2, 0.47, 0);
+            leaf.castShadow = true;
+            leaf.receiveShadow = true;
+            const handle = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.025 / 1.35, 0.07),
+                new THREE.MeshStandardMaterial({ color: 0xb38d4c, roughness: 0.3, metalness: 0.7 }));
+            handle.position.set(width - 0.14, 0.75 / 1.35, -0.04);
+            hinge.add(leaf, handle);
+            hinge.scale.y = currentWallHeight;
+            hinge.traverse(child => {
+                if (child.isMesh) { child.userData.zone = zone; interactiveObjects.push(child); }
+            });
+            structureGroup.add(hinge);
+            doorWindowMeshes.push({ mesh: hinge, sill: 0 });
+        }
+
         function buildAllWallsAndOpenings() {
             // 1. Top-Left Planted Courtyard Walls
             addWallSegment(-6.75, -8.70, -4.60, -8.70, 0.22);
@@ -2953,12 +3081,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             // 10. Central Living Room & Lobby Left Wall (X = -1.80) & Right Wall (X = 3.25)
             addWallSegment(-1.80, -1.80, -1.80, 1.50, 0.20);
-            addWallSegment(-1.80, 2.75, -1.80, 6.85, 0.20);
+            // Approved: the full stair-to-lobby side is open (review marks 3 and 4).
 
             // Right wall of Living Room (84 cm top + 247 cm big window + 132 cm + bottom lobby wall)
             addWallSegment(3.25, -1.80, 3.25, -0.96, 0.22);
             addWindowOrDoor(3.25, -0.96, 3.25, 1.51, 'window');
-            addWallSegment(3.25, 1.51, 3.25, 6.85, 0.22);
+            addWallSegment(3.25, 1.51, 3.25, 3.00, 0.22);
+            addHingedBedroomDoor('rightBedroom', 3.25, 3.00, 0.90, -Math.PI / 18);
+            addWallSegment(3.25, 3.90, 3.25, 6.85, 0.22);
 
             // 11. Floating TV Partition Wall between Living Room & Stair Lobby (250 × 45 cm)
             // Openings: 122 cm on left, 126 cm on right
@@ -2989,11 +3119,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             // 12. Left Wing: Hallway, Powder Room (100×160) & Washbasins (210×160)
             addWallSegment(-6.50, -1.50, -6.50, 6.85, 0.22);
-            addWallSegment(-6.50, 1.25, -1.80, 1.25, 0.18);
+            addWallSegment(-6.50, 1.25, -2.75, 1.25, 0.18);
+            addWallSegment(-1.95, 1.25, -1.80, 1.25, 0.18);
             addWallSegment(-6.50, 2.85, -1.80, 2.85, 0.18);
             addWallSegment(-4.65, 1.25, -4.65, 2.85, 0.15);
             addWindowOrDoor(-5.35, 2.85, -4.75, 2.85, 'door');
-            addWindowOrDoor(-2.75, 1.25, -1.95, 1.25, 'door');
+            addHingedBedroomDoor('leftBedroom', -2.75, 1.25, 0.80, Math.PI * 4 / 9);
 
             // 13. Bottom Outer Wall & Bottom-Right Room Walls
             addWallSegment(-6.50, 6.85, 7.25, 6.85, 0.24);
@@ -3005,6 +3136,39 @@ Check your Browserslist config to be sure that your targets are set up correctly
         // ============================================================================
         // 8. MASTER BEDROOM SUITE & UPPER CURVED LOUNGE (Exact CAD Dimensions)
         // ============================================================================
+        function buildSecondaryBedrooms() {
+            const wood = new THREE.MeshStandardMaterial({ color: 0x805c3e, roughness: 0.65 });
+            const linen = new THREE.MeshStandardMaterial({ color: 0xe9e1d5, roughness: 0.9 });
+            const blue = new THREE.MeshStandardMaterial({ color: 0x547f8e, roughness: 0.85 });
+            const screen = new THREE.MeshStandardMaterial({ color: 0x101c29, emissive: 0x193e51, emissiveIntensity: 0.22, roughness: 0.25 });
+            function box(group, w, h, d, x, y, z, material) {
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+                mesh.position.set(x, y, z); mesh.castShadow = true; mesh.receiveShadow = true;
+                group.add(mesh);
+            }
+            function bed(zone, x, z, angle) {
+                const group = new THREE.Group(); group.name = `Bed_${zone}`;
+                box(group, 2.06, 0.30, 1.72, 0, 0.18, 0, wood);
+                box(group, 1.98, 0.20, 1.65, 0, 0.43, 0, linen);
+                box(group, 1.42, 0.06, 1.66, 0.22, 0.56, 0, blue);
+                box(group, 0.10, 1.15, 1.80, -1.02, 0.60, 0, wood);
+                for (const side of [-0.42, 0.42]) box(group, 0.38, 0.14, 0.66, -0.69, 0.60, side, linen);
+                group.position.set(x, 0, z); group.rotation.y = angle;
+                furnitureGroup.add(group); registerInteractiveItem(group, `${zone}Bed`, zone);
+            }
+            function television(zone, x, z, angle) {
+                const group = new THREE.Group(); group.name = `TV_${zone}`;
+                box(group, 1.38, 0.84, 0.055, 0, 1.02, 0, screen);
+                box(group, 1.46, 0.035, 0.12, 0, 0.56, 0, wood);
+                group.position.set(x, 0, z); group.rotation.y = angle;
+                furnitureGroup.add(group); registerInteractiveItem(group, `${zone}TV`, zone);
+            }
+            bed('leftBedroom', -4.45, -0.30, -Math.PI / 2);
+            television('leftBedroom', -4.45, 1.11, 0);
+            bed('rightBedroom', 4.44, 5.35, 0);
+            television('rightBedroom', 7.09, 5.35, Math.PI / 2);
+        }
+
         function buildMasterBedroomSuite() {
             const fabricCream = new THREE.MeshStandardMaterial({ color: 0xf5ebe0, roughness: 0.65 });
             const fabricAccent = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.55 });
@@ -3264,7 +3428,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             // 5. Top-Left Courtyard Garden Planter (73 × 75 cm with 59/56/80 cm stone paths)
             const courtyardGroup = createPlanterBox(-5.68, -7.45, 0.75, 1.15, 0.42, 6);
-            registerInteractiveItem(courtyardGroup, 'courtyardGarden', 'bathroom');
+            registerInteractiveItem(courtyardGroup, 'courtyardGarden', 'courtyard');
         }
 
         // ============================================================================
@@ -3311,7 +3475,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 terraceLoungeGroup.add(chairGrp);
             });
             furnitureGroup.add(terraceLoungeGroup);
-            registerInteractiveItem(terraceLoungeGroup, 'terraceLounge', 'terrace');
+            registerInteractiveItem(terraceLoungeGroup, 'terraceLounge', 'terraceLounge');
 
             // 2. Perimeter Planter Strips (45 cm wide) along Upper Terrace
             createPlanterBox(7.10, -8.22, 2.85, 0.45, 0.40, 8);
@@ -3519,29 +3683,31 @@ Check your Browserslist config to be sure that your targets are set up correctly
             const ceramicMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.15 });
 
             const stairsMasterGroup = new THREE.Group();
+            const washbasinsGroup = new THREE.Group();
+            const guestBathroomGroup = new THREE.Group();
 
             // 1. Washbasin Alcove (210 × 160 cm): Vanity + Basin (45 cm) + Indoor Planter
             const counter = new THREE.Mesh(new THREE.BoxGeometry(2.10, 0.78, 0.45), stepMarble);
             counter.position.set(-3.20, 0.39, 2.58);
             counter.castShadow = true;
-            stairsMasterGroup.add(counter);
+            washbasinsGroup.add(counter);
 
             const basin = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.15, 0.14, 24), ceramicMat);
             basin.position.set(-3.75, 0.85, 2.58);
-            stairsMasterGroup.add(basin);
+            washbasinsGroup.add(basin);
 
             // Small greenery planter inside the washbasin counter
             const washPlanter = createPlanterBox(-2.55, 2.58, 0.65, 0.38, 0.80, 2);
-            stairsMasterGroup.add(washPlanter);
+            washbasinsGroup.add(washPlanter);
 
             // 2. Powder Room (100 × 160 cm): WC + Wall-hung Sink
             const wcBase = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.42, 0.54), ceramicMat);
             wcBase.position.set(-5.55, 0.21, 2.52);
-            stairsMasterGroup.add(wcBase);
+            guestBathroomGroup.add(wcBase);
 
             const smallSink = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.15, 20), ceramicMat);
             smallSink.position.set(-6.18, 0.82, 1.85);
-            stairsMasterGroup.add(smallSink);
+            guestBathroomGroup.add(smallSink);
 
             // 3. Main 3-Flight U-Shaped Staircase (Bottom-Left)
             const stairGroup = new THREE.Group();
@@ -3575,6 +3741,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
             stairsMasterGroup.add(stairGroup);
             structureGroup.add(stairsMasterGroup);
             registerInteractiveItem(stairsMasterGroup, 'mainStaircase', 'stairs');
+            furnitureGroup.add(washbasinsGroup, guestBathroomGroup);
+            registerInteractiveItem(washbasinsGroup, 'guestWashbasins', 'washbasins');
+            registerInteractiveItem(guestBathroomGroup, 'guestBathroomFixtures', 'guestBathroom');
         }
 
         // Helper to build rectangular planter boxes with lush 3D greenery
@@ -4595,10 +4764,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 if (qText) qText.textContent = 'نهاري';
                 scene.background.setHex(0x0b1120);
                 scene.fog.color.setHex(0x0b1120);
-                ambientLight.intensity = 0.65;
-                hemiLight.intensity = 0.55;
-                dirLight.intensity = 1.15;
-                renderer.toneMappingExposure = 1.02;
+                ambientLight.intensity = 0.35;
+                hemiLight.intensity = 0.35;
+                dirLight.intensity = 0.75;
+                renderer.toneMappingExposure = 0.78;
             }
 
             smartLights.forEach(sl => applySmartLightState(sl));

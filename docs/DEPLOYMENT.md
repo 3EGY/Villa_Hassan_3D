@@ -2,17 +2,26 @@
 
 [العودة إلى التعريف بالمشروع](../README.md)
 
-## تحديث الكاميرا وأسماء الأماكن
+## تحديث الأثاث والأبواب والإضاءة — الإصدار 2.3
 
-1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_2.zip`.
+1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_3.zip`.
 2. افتح [المستودع](https://github.com/3EGY/Villa_Hassan_3D) ثم **Add file → Upload files**.
-3. ارفع `index.html` مكان النسخة الحالية لتطبيق تغييرات الكاميرا والأسماء وأوضاع الإضاءة.
-4. ارفع `README.md` ومجلد `docs` أيضًا لتحديث الشرح والصور. حافظ على المسار `docs/media/`.
+3. ارفع `index.html` مكان النسخة الحالية لتطبيق الأثاث وفتحات الأبواب وجدار الدرج والإضاءات الست الجديدة.
+4. ارفع `README.md` ومجلدي `docs` و`assets` أيضًا لتحديث الشرح والصور ومعاينة الرابط. حافظ على المسارات كما هي.
 5. احفظ بـ **Commit changes**، وانتظر نجاح نشر الموقع من **Actions**.
 
 لا تحتاج إلى إعادة إعداد GitHub Pages. بعد اكتمال النشر، حدّث الصفحة بـ `Ctrl + F5` على الكمبيوتر، أو افتح الرابط في تبويب خاص على الهاتف للتأكد من ظهور النسخة الجديدة.
 
 التغييرات في هذه النسخة:
+
+- سرير وتلفزيون في الغرفة اليسرى: التلفزيون على جدار الباب والسرير مقابله.
+- سرير وتلفزيون في الغرفة اليمنى: رأس السرير على جدار الباب والتلفزيون مقابله.
+- إزالة جدار الدرج المحدد بالكامل، وفتح باب الغرفة اليمنى بعرض 90 سم، وتصحيح فتحة باب الغرفة اليسرى بعرض 80 سم.
+- ست إضاءات جديدة قابلة لضبط الشدة واللون والمؤقت، تشملها أوضاع الإضاءة العامة. الإجمالي 14 إضاءة.
+- اختيارات مستقلة للغرفتين، وجلسة التراس، وحمام الضيوف، والمغاسل، والتراس الأيسر، مع تقريب الكاميرا لكل مكان.
+- استمرار إصلاح السحب المتواصل للأقواس على أندرويد من الإصدار 2.2.
+
+وتستمر تحسينات العرض السابقة:
 
 - تصغير أسماء الأماكن وإظهارها مؤقتًا عند لمس المخطط، ثم إخفائها بعد ٣٫٥ ثوانٍ.
 - اللمسة الأولى عندما تكون الأسماء مخفية تُظهرها؛ بعدها اختر اسم المكان أو استخدم الشريط السفلي مباشرة.
@@ -23,8 +32,8 @@
 إذا كان لديك checkout محلي، بعد نسخ الملفات إلى مكانها:
 
 ```powershell
-git add index.html README.md docs
-git commit -m "Improve room framing and touch labels"
+git add index.html README.md docs assets
+git commit -m "Apply approved villa layout and six smart lights"
 git push origin main
 ```
 
@@ -57,12 +66,12 @@ git push origin main
 
 ## أول رفع من Windows PowerShell
 
-يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_2.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
+يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_3.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
 
 ```powershell
 git clone https://github.com/3EGY/Villa_Hassan_3D.git
 Set-Location .\Villa_Hassan_3D
-Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_2.zip -DestinationPath . -Force
+Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_3.zip -DestinationPath . -Force
 git add index.html assets docs 404.html .nojekyll .gitignore README.md THIRD_PARTY_NOTICES.md
 git commit -m "Publish Villa Hassan interactive 3D presentation"
 git branch -M main

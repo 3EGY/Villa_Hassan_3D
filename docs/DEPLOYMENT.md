@@ -2,22 +2,29 @@
 
 [العودة إلى التعريف بالمشروع](../README.md)
 
-## تحديث صفحة التعريف والصور
+## تحديث الكاميرا وأسماء الأماكن
 
-هذا التحديث يضيف وصف المشروع والصور والمعاينة المتحركة، ويحتفظ بكود شاشة التحكم كما هو في الإصدار الثاني.
-
-1. فك ضغط حزمة `Villa_Hassan_Smart_Home.zip`.
+1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_1.zip`.
 2. افتح [المستودع](https://github.com/3EGY/Villa_Hassan_3D) ثم **Add file → Upload files**.
-3. اسحب `README.md` ومجلد `docs` كاملًا إلى جذر المستودع. حافظ على المسار `docs/media/` حتى تظهر الصور والمعاينة المتحركة.
-4. احفظ التعديل بـ **Commit changes**. سيظهر التعريف الجديد في الصفحة الرئيسية للمستودع.
+3. ارفع `index.html` مكان النسخة الحالية لتطبيق تغييرات الكاميرا والأسماء وأوضاع الإضاءة.
+4. ارفع `README.md` ومجلد `docs` أيضًا لتحديث الشرح والصور. حافظ على المسار `docs/media/`.
+5. احفظ بـ **Commit changes**، وانتظر نجاح نشر الموقع من **Actions**.
 
-لا تحتاج إلى استبدال `index.html` إذا كنت رفعت تحديث الإضاءة الثاني بالفعل، ولا تحتاج إلى إعادة إعداد GitHub Pages.
+لا تحتاج إلى إعادة إعداد GitHub Pages. بعد اكتمال النشر، حدّث الصفحة بـ `Ctrl + F5` على الكمبيوتر، أو افتح الرابط في تبويب خاص على الهاتف للتأكد من ظهور النسخة الجديدة.
+
+التغييرات في هذه النسخة:
+
+- تصغير أسماء الأماكن وإظهارها مؤقتًا عند لمس المخطط، ثم إخفائها بعد ٣٫٥ ثوانٍ.
+- اللمسة الأولى عندما تكون الأسماء مخفية تُظهرها؛ بعدها اختر اسم المكان أو استخدم الشريط السفلي مباشرة.
+- تقريب غرفة النوم على الهاتف وفق حدود الغرفة، مع زاوية تستفيد من طول الشاشة.
+- عرض أقرب للفيلا كاملة من أعلى، محسوب على المساحة المتاحة فوق الشريط السفلي.
+- كل وضع إضاءة، بما فيه إغلاق وتشغيل الكل، يعيد العرض إلى كامل الفيلا ويخفي أيقونات لمبات الغرف.
 
 إذا كان لديك checkout محلي، بعد نسخ الملفات إلى مكانها:
 
 ```powershell
-git add README.md docs
-git commit -m "Present Villa Hassan smart home control prototype"
+git add index.html README.md docs
+git commit -m "Improve room framing and touch labels"
 git push origin main
 ```
 
@@ -50,12 +57,12 @@ git push origin main
 
 ## أول رفع من Windows PowerShell
 
-يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
+يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_1.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
 
 ```powershell
 git clone https://github.com/3EGY/Villa_Hassan_3D.git
 Set-Location .\Villa_Hassan_3D
-Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home.zip -DestinationPath . -Force
+Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_1.zip -DestinationPath . -Force
 git add index.html assets docs 404.html .nojekyll .gitignore README.md THIRD_PARTY_NOTICES.md
 git commit -m "Publish Villa Hassan interactive 3D presentation"
 git branch -M main

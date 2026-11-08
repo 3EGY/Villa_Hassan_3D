@@ -4,7 +4,7 @@
 
 ## تحديث الكاميرا وأسماء الأماكن
 
-1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_1.zip`.
+1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_2.zip`.
 2. افتح [المستودع](https://github.com/3EGY/Villa_Hassan_3D) ثم **Add file → Upload files**.
 3. ارفع `index.html` مكان النسخة الحالية لتطبيق تغييرات الكاميرا والأسماء وأوضاع الإضاءة.
 4. ارفع `README.md` ومجلد `docs` أيضًا لتحديث الشرح والصور. حافظ على المسار `docs/media/`.
@@ -57,12 +57,12 @@ git push origin main
 
 ## أول رفع من Windows PowerShell
 
-يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_1.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
+يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_2.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
 
 ```powershell
 git clone https://github.com/3EGY/Villa_Hassan_3D.git
 Set-Location .\Villa_Hassan_3D
-Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_1.zip -DestinationPath . -Force
+Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_2.zip -DestinationPath . -Force
 git add index.html assets docs 404.html .nojekyll .gitignore README.md THIRD_PARTY_NOTICES.md
 git commit -m "Publish Villa Hassan interactive 3D presentation"
 git branch -M main

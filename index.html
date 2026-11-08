@@ -6,7 +6,7 @@
     <title>فيلا حسن | جولة معمارية ثلاثية الأبعاد</title>
     <meta name="description" content="استكشف الدور الأول لفيلا حسن في جولة تفاعلية ثلاثية الأبعاد، مع التنقل بين الغرف والتحكم في الإضاءة وزوايا العرض.">
     <meta name="theme-color" content="#080e19">
-    <meta name="application-version" content="2.1-camera-and-labels">
+    <meta name="application-version" content="2.2-android-drag-fix">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:site_name" content="Villa Hassan">
@@ -1364,6 +1364,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
             pointer-events: none;
             transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        /* Keep Android from claiming an arc drag as page pan/zoom and cancelling it. */
+        #radial-light-menu, #radial-arc-svg, #radial-arc-svg * {
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
         .radial-hidden {
             opacity: 0 !important;
             transform: translate(-50%, -50%) scale(0.55) !important;
@@ -2207,6 +2213,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
         let activeSmartLight = null;
         let activeRadialArcMode = null; // 'timer' | 'brightness' | 'color'
         let isDraggingRadialArc = false;
+        let radialDragPointerId = null;
         let emissiveMaterials = [];
         let ambientLight, hemiLight, dirLight;
         let currentWallHeight = 1.35;
@@ -3858,9 +3865,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
             if (event) event.stopPropagation();
             const menu = document.getElementById('radial-light-menu');
             if (menu) menu.classList.add('radial-hidden');
+            finishRadialArcDrag();
             activeSmartLight = null;
             activeRadialArcMode = null;
-            isDraggingRadialArc = false;
         }
 
         function syncRadialMenuDisplay() {
@@ -4034,34 +4041,53 @@ Check your Browserslist config to be sure that your targets are set up correctly
             return { hex: closest.hex, name: closest.name };
         }
 
+        function finishRadialArcDrag() {
+            const pointerId = radialDragPointerId;
+            radialDragPointerId = null;
+            isDraggingRadialArc = false;
+            const svg = document.getElementById('radial-arc-svg');
+            if (pointerId !== null && svg && svg.hasPointerCapture(pointerId)) {
+                svg.releasePointerCapture(pointerId);
+            }
+        }
+
         function setupRadialArcInteraction() {
             const svg = document.getElementById('radial-arc-svg');
             if (!svg) return;
 
             const onPointerDown = (e) => {
-                if (!activeSmartLight || !activeRadialArcMode) return;
+                if (!activeSmartLight || !activeRadialArcMode || radialDragPointerId !== null
+                    || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
                 e.stopPropagation();
+                if (e.cancelable) e.preventDefault();
+                radialDragPointerId = e.pointerId;
                 isDraggingRadialArc = true;
                 svg.setPointerCapture(e.pointerId);
-                e.preventDefault();
                 updateRadialArcValueFromPoint(e.clientX, e.clientY);
             };
 
             const onPointerMove = (e) => {
-                if (!isDraggingRadialArc || !activeSmartLight || !activeRadialArcMode) return;
+                if (e.pointerId !== radialDragPointerId || !isDraggingRadialArc
+                    || !activeSmartLight || !activeRadialArcMode) return;
                 e.stopPropagation();
+                if (e.cancelable) e.preventDefault();
                 updateRadialArcValueFromPoint(e.clientX, e.clientY);
             };
 
-            const onPointerUp = () => {
-                isDraggingRadialArc = false;
+            const onPointerEnd = (e) => {
+                if (e.pointerId !== radialDragPointerId) return;
+                if (e.type === 'pointerup' && activeSmartLight && activeRadialArcMode) {
+                    updateRadialArcValueFromPoint(e.clientX, e.clientY);
+                }
+                finishRadialArcDrag();
             };
 
-            svg.addEventListener('pointerdown', onPointerDown);
-            window.addEventListener('pointermove', onPointerMove);
-            window.addEventListener('pointerup', onPointerUp);
-            window.addEventListener('pointercancel', onPointerUp);
-            svg.addEventListener('lostpointercapture', onPointerUp);
+            svg.addEventListener('pointerdown', onPointerDown, { passive: false });
+            window.addEventListener('pointermove', onPointerMove, { passive: false });
+            window.addEventListener('pointerup', onPointerEnd);
+            window.addEventListener('pointercancel', onPointerEnd);
+            svg.addEventListener('lostpointercapture', onPointerEnd);
+            window.addEventListener('blur', finishRadialArcDrag);
         }
 
         function updateRadialArcValueFromPoint(clientX, clientY) {

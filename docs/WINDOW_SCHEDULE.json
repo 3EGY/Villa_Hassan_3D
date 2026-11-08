@@ -1,0 +1,112 @@
+{
+  "reference": "villa-cad-nov8-774x829",
+  "revision": "approved-2026-11-08-merged-200",
+  "units": "cm",
+  "windows": [
+    {
+      "id": "W1-W2",
+      "replaces": [
+        "W1",
+        "W2"
+      ],
+      "room": "الرئيسية · الشباك الموحّد",
+      "plan": {
+        "x": 448.5,
+        "y": 138
+      },
+      "widthCm": 200,
+      "widthSource": "user",
+      "sillCm": 90,
+      "heightCm": 150,
+      "note": "دمج W1 وW2 في شباك واحد بعرض 200 سم",
+      "headCm": 240,
+      "heightSource": "user",
+      "ready": true
+    },
+    {
+      "id": "W3",
+      "replaces": [],
+      "room": "الغرفة اليسرى",
+      "plan": {
+        "x": 58,
+        "y": 495
+      },
+      "widthCm": 100,
+      "widthSource": "estimated",
+      "sillCm": 90,
+      "heightCm": 150,
+      "note": "",
+      "headCm": 240,
+      "heightSource": "user",
+      "ready": true
+    },
+    {
+      "id": "W4",
+      "replaces": [],
+      "room": "الصالة العائلية",
+      "plan": {
+        "x": 488,
+        "y": 501
+      },
+      "widthCm": 247,
+      "widthSource": "dimension",
+      "sillCm": 40,
+      "heightCm": 200,
+      "note": "",
+      "headCm": 240,
+      "heightSource": "user",
+      "ready": true
+    },
+    {
+      "id": "W5",
+      "replaces": [],
+      "room": "حمام الضيوف",
+      "plan": {
+        "x": 58,
+        "y": 627
+      },
+      "widthCm": 60,
+      "widthSource": "estimated",
+      "sillCm": 170,
+      "heightCm": 70,
+      "note": "",
+      "headCm": 240,
+      "heightSource": "user",
+      "ready": true
+    },
+    {
+      "id": "W6",
+      "replaces": [],
+      "room": "الغرفة اليمنى · الشباك الأيسر",
+      "plan": {
+        "x": 549,
+        "y": 591
+      },
+      "widthCm": 90,
+      "widthSource": "estimated",
+      "sillCm": 40,
+      "heightCm": 200,
+      "note": "",
+      "headCm": 240,
+      "heightSource": "user",
+      "ready": true
+    },
+    {
+      "id": "W7",
+      "replaces": [],
+      "room": "الغرفة اليمنى · الشباك الأيمن",
+      "plan": {
+        "x": 624,
+        "y": 591
+      },
+      "widthCm": 90,
+      "widthSource": "estimated",
+      "sillCm": 40,
+      "heightCm": 200,
+      "note": "",
+      "headCm": 240,
+      "heightSource": "user",
+      "ready": true
+    }
+  ]
+}

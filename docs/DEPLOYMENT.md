@@ -2,11 +2,11 @@
 
 [العودة إلى التعريف بالمشروع](../README.md)
 
-## تحديث الأثاث والأبواب والإضاءة — الإصدار 2.3
+## تحديث المخطط والشبابيك — الإصدار 2.5
 
-1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_3.zip`.
+1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_5.zip`.
 2. افتح [المستودع](https://github.com/3EGY/Villa_Hassan_3D) ثم **Add file → Upload files**.
-3. ارفع `index.html` مكان النسخة الحالية لتطبيق الأثاث وفتحات الأبواب وجدار الدرج والإضاءات الست الجديدة.
+3. ارفع `index.html` مكان النسخة الحالية، وأضف `windows-review.html` لتطبيق المخطط المرجعي وفتحات الشبابيك ومحرر الارتفاعات.
 4. ارفع `README.md` ومجلدي `docs` و`assets` أيضًا لتحديث الشرح والصور ومعاينة الرابط. حافظ على المسارات كما هي.
 5. احفظ بـ **Commit changes**، وانتظر نجاح نشر الموقع من **Actions**.
 
@@ -14,9 +14,13 @@
 
 التغييرات في هذه النسخة:
 
+- دمج W1 وW2 في شباك واحد بعرض 200 سم، وتثبيت مناسيب الجلسات وارتفاعات الفتحات المعتمدة لجميع الشبابيك.
+
+- مراجعة حدود المخطط والأبواب والفرش مع الصورة الأصلية، وتثبيت 6 شبابيك بفتحات فعلية بعد دمج شباكي الرئيسية.
+- محرر ارتفاع الجلسة وارتفاع فتحة كل شباك، مع الحفظ المحلي ونسخ المقاسات.
 - سرير وتلفزيون في الغرفة اليسرى: التلفزيون على جدار الباب والسرير مقابله.
 - سرير وتلفزيون في الغرفة اليمنى: رأس السرير على جدار الباب والتلفزيون مقابله.
-- إزالة جدار الدرج المحدد بالكامل، وفتح باب الغرفة اليمنى بعرض 90 سم، وتصحيح فتحة باب الغرفة اليسرى بعرض 80 سم.
+- إزالة جدار الدرج المحدد بالكامل، وفتح باب الغرفة اليمنى بعرض 90 سم، وتصحيح فتحة باب الغرفة اليسرى بعرض تقريبي 100 سم وفق الصورة الجديدة.
 - ست إضاءات جديدة قابلة لضبط الشدة واللون والمؤقت، تشملها أوضاع الإضاءة العامة. الإجمالي 14 إضاءة.
 - اختيارات مستقلة للغرفتين، وجلسة التراس، وحمام الضيوف، والمغاسل، والتراس الأيسر، مع تقريب الكاميرا لكل مكان.
 - استمرار إصلاح السحب المتواصل للأقواس على أندرويد من الإصدار 2.2.
@@ -32,8 +36,8 @@
 إذا كان لديك checkout محلي، بعد نسخ الملفات إلى مكانها:
 
 ```powershell
-git add index.html README.md docs assets
-git commit -m "Apply approved villa layout and six smart lights"
+git add index.html windows-review.html README.md docs assets
+git commit -m "Apply approved window dimensions and merge master window"
 git push origin main
 ```
 
@@ -148,3 +152,8 @@ git push origin main
 - [إعداد مصدر النشر على GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 - [إنشاء موقع GitHub Pages ومكان index.html](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
 - [مدة ظهور التحديثات](https://docs.github.com/en/pages/quickstart)
+
+
+## تحديث v2.5
+
+ارفع محتويات الحزمة إلى جذر المستودع، بما فيها `windows-review.html` و`assets/reference-plan.png` و`docs/PLAN_REVIEW.md`. من إعدادات العرض يمكن فتح مراجعة الشبابيك. المقاسات المعتمدة مثبتة في هذه الحزمة. ملف `docs/WINDOW_SCHEDULE.json` يوثقها؛ أي تعديلات لاحقة من المحرر تحفظ في المتصفح الحالي فقط.

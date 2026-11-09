@@ -6,7 +6,7 @@
     <title>فيلا حسن | جولة معمارية ثلاثية الأبعاد</title>
     <meta name="description" content="استكشف الدور الأول لفيلا حسن في جولة تفاعلية ثلاثية الأبعاد، مع التنقل بين الغرف والتحكم في الإضاءة وزوايا العرض.">
     <meta name="theme-color" content="#080e19">
-    <meta name="application-version" content="2.8-coverings-voice">
+    <meta name="application-version" content="2.9-voice-experience">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:site_name" content="Villa Hassan">
@@ -45,6 +45,7 @@
     <link rel="stylesheet" href="./styles/voice.css">
     <link rel="stylesheet" href="./styles/window-review-dialog.css">
     <link rel="stylesheet" href="./styles/window-review.css">
+    <link rel="stylesheet" href="./styles/transparency.css">
 </head>
 <body>
 
@@ -312,10 +313,20 @@
                 <input type="checkbox" checked onchange="toggleSmartBulbPins(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
                 <span>أيقونات اللمبات داخل الغرفة المختارة</span>
             </label>
+            <label class="flex items-center gap-2 text-sky-300 cursor-pointer col-span-2">
+                <input id="covering-pins-toggle" type="checkbox" checked onchange="VillaCoveringVisuals.setPinsVisible(this.checked)" class="accent-sky-400 w-3.5 h-3.5 rounded">
+                <span>أيقونات الشتر والستائر داخل الغرفة المختارة</span>
+            </label>
             <label class="flex items-center gap-2 text-slate-300 cursor-pointer col-span-2 pt-1 border-t border-slate-800">
                 <input type="checkbox" onchange="toggleWallXRay(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
                 <span>شفافية الجدران (رؤية X-Ray كاملة للفرش)</span>
             </label>
+        </div>
+        <div class="voice-settings" dir="rtl">
+            <strong><i class="fa-solid fa-microphone-lines" aria-hidden="true"></i> إعدادات التحكم الصوتي</strong>
+            <label><input id="voice-manual-mode" type="checkbox"><span>إظهار قائمة الأوامر بدل الواجهة الصوتية المباشرة</span></label>
+            <label><input id="voice-tts-enabled" type="checkbox" checked><span>تشغيل رد صوتي من المتصفح بعد تنفيذ الأمر</span></label>
+            <small>الوضع الافتراضي: اضغط الميكروفون، تكلّم، ثم اسكت لتنفيذ الأمر. بعد 3 محاولات غير واضحة تظهر القائمة تلقائيًا.</small>
         </div>
     </div>
 
@@ -476,7 +487,7 @@
 
     <!-- Shutter, curtain, microphone: stacked directly above the existing light button. -->
     <div id="covering-button-stack" aria-label="التحكم في المنزل الذكي">
-        <button id="voice-button" class="covering-stack-button" type="button" title="الأوامر الصوتية" aria-label="الأوامر الصوتية" aria-controls="voice-panel" aria-expanded="false"><i class="fa-solid fa-microphone" aria-hidden="true"></i></button>
+        <button id="voice-button" class="covering-stack-button" type="button" title="تحدث للتحكم" aria-label="ابدأ التحكم الصوتي" aria-controls="voice-live voice-panel" aria-expanded="false"><i class="fa-solid fa-microphone" aria-hidden="true"></i></button>
         <button id="covering-button-shutter" class="covering-stack-button" type="button" title="الشتر" aria-label="أوضاع الشتر" aria-controls="covering-modes-panel" aria-expanded="false"><i class="fa-solid fa-window-maximize" aria-hidden="true"></i></button>
         <button id="covering-button-curtain" class="covering-stack-button" type="button" title="الستائر" aria-label="أوضاع الستائر" aria-controls="covering-modes-panel" aria-expanded="false"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i></button>
     </div>
@@ -526,6 +537,25 @@
         <button id="covering-radial-level" class="covering-wheel-button" type="button">تحديد المستوى</button>
         <button id="covering-radial-close" type="button" title="إغلاق دائرة التحكم"><i id="covering-radial-icon" class="fa-solid fa-window-maximize" aria-hidden="true"></i><span id="covering-radial-title">شتر</span><b id="covering-radial-number">100%</b></button>
     </div>
+
+    <!-- Voice-first interaction: no modal dialog on the first press. -->
+    <section id="voice-live" hidden aria-label="الاستماع للأوامر الصوتية" aria-live="off" dir="rtl">
+        <button id="voice-live-close" type="button" aria-label="إغلاق التحكم الصوتي" title="إغلاق"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <div id="voice-live-center">
+            <div id="voice-live-eyebrow">المساعد الصوتي · فيلا حسن</div>
+            <p id="voice-live-transcript" dir="auto">اتفضل، قول الأمر</p>
+            <p id="voice-live-feedback" role="status" aria-live="polite">بسمعك دلوقتي…</p>
+            <button id="voice-retry" type="button" hidden><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> أعد المحاولة</button>
+        </div>
+        <div id="voice-live-bottom">
+            <button id="voice-orb" type="button" aria-label="إيقاف الاستماع" title="اضغط للإيقاف أو إعادة المحاولة">
+                <span class="voice-orb-ring" aria-hidden="true"></span>
+                <span class="voice-orb-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <i class="fa-solid fa-microphone voice-orb-icon" aria-hidden="true"></i>
+            </button>
+            <span id="voice-live-hint">قل مثلًا: اقفل إضاءة غرفة النوم</span>
+        </div>
+    </section>
 
     <button id="voice-backdrop" type="button" hidden aria-label="إغلاق الأوامر الصوتية"></button>
     <section id="voice-panel" hidden role="dialog" aria-labelledby="voice-title" aria-modal="true">
@@ -625,6 +655,8 @@
     <script src="./js/devices/coverings/visuals.js"></script>
     <script src="./js/devices/coverings/controls.js"></script>
     <script src="./js/voice/voice-control.js"></script>
+    <script src="./js/voice/voice-meter.js"></script>
+    <script src="./js/voice/voice-ui.js"></script>
     <script src="./js/ui/toolbar.js"></script>
     <script src="./js/ui/room-navigation.js"></script>
     <script src="./js/scene/camera-and-view.js"></script>

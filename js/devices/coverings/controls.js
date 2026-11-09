@@ -17,6 +17,7 @@
     function closeRadial() {
         $('covering-radial').hidden=true;
         $('covering-radial-scrim').hidden=true;
+        document.body.classList.remove('covering-radial-open');
         activeId=null;dragging=false;pointerId=null;
     }
     function closePanel() {
@@ -125,6 +126,7 @@
         radial.style.left=`${cx}px`;radial.style.top=`${cy}px`;
         drawArc(device.state.position);
         radial.hidden=false;
+        document.body.classList.add('covering-radial-open');
         $('covering-radial-scrim').hidden=false;
     }
     async function send(id,action,value) {

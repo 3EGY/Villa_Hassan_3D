@@ -87,6 +87,8 @@ await test('Arabic parser normalizes dialect, digits and bedroom names',()=>{
     const p4=parse('خلي مستوى الستاير ٦٥%');
     assert.equal(p4.kind,'curtain');assert.equal(p4.action,'setPosition');assert.equal(p4.value,65);
     assert.equal(parse('خلي شدة النور 101%').error,'المستوى لازم يكون من 0 إلى 100%');
+    assert.equal(parse('خلي شدة اضاءة غرفة النوم اربعين في الميه').value,40);
+    assert.equal(parse('خلي مستوي الستائر خمسه و تلاتين في الميه').value,35);
 });
 await test('spoken commands actually dispatch to the registry adapters',async()=>{
     for(const id of ['testLightOne','testLightTwo']) {

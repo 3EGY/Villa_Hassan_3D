@@ -1,14 +1,11 @@
 /**
- * Optional, user-initiated Arabic voice commands. On-device simulation only.
- * SpeechRecognition is browser-dependent, and browser vendors may process audio
- * remotely. Never record until the user presses the microphone button.
- * Text-command fallback always available.
+ * Arabic command parser and device dispatcher. Browser microphone, speech
+ * synthesis, UI and retry handling are intentionally isolated in voice-ui.js.
+ * No generative model and no network calls by this application.
  */
 (function(global) {
     'use strict';
     const registry=global.VillaDevices;
-    let recognition=null, listening=false, initialized=false;
-    const $=id=>document.getElementById(id);
     const normalize=text=>String(text||'')
         .replace(/[\u064b-\u065f\u0670\u0640]/g,'')
         .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
@@ -31,6 +28,19 @@
         {zone:'washbasins',words:['المغاسل']},
         {zone:'courtyard',words:['الحوش','التراس الايسر']}
     ];
+    function voiceNumber(normalized) {
+        const digits=normalized.match(/(?:^|\s)(\d{1,3})(?:\s|%|٪|$)/);
+        if(digits)return Number(digits[1]);
+        const units={صفر:0,واحد:1,واحده:1,اتنين:2,اثنين:2,تنين:2,تلاته:3,ثلاثه:3,اربعه:4,خمسه:5,سته:6,سبعه:7,تمانيه:8,ثمانيه:8,تسعه:9};
+        const tens={عشره:10,عشرين:20,تلاتين:30,ثلاثين:30,اربعين:40,خمسين:50,ستين:60,سبعين:70,تمانين:80,ثمانين:80,تسعين:90,ميه:100,مئه:100};
+        const words=normalized.split(/\s+/);
+        for(let i=0;i<words.length;i++) {
+            let w=words[i].replace(/^و(?=عشرين|تلاتين|اربعين|خمسين|ستين|سبعين|تمانين|تسعين)/,'');
+            if(Object.hasOwn(tens,w)) return i>=2 && (words[i-1]==='و'||words[i-1]==='and') && Object.hasOwn(units,words[i-2]) ? tens[w]+units[words[i-2]] : tens[w];
+            if(Object.hasOwn(units,w) && (i===words.length-1 || !['و','and'].includes(words[i+1])))return units[w];
+        }
+        return null;
+    }
     function parseCommand(phrase) {
         const normalized=normalize(phrase);
         if(!normalized)return {error:'اكتب أو قل أمرًا أولًا'};
@@ -40,8 +50,7 @@
         else if(/اضا|لمب|نور|انوار|ضو/.test(normalized))kind='light';
         else return {error:'اذكر نوع الجهاز: إضاءة أو شتر أو ستائر'};
         const zone=roomAliases.find(item=>item.words.some(word=>normalized.includes(word)))?.zone||null;
-        const num=normalized.match(/\b\d{1,3}\b/);
-        const number=num?Number(num[0]):null;
+        const number=voiceNumber(normalized);
         let action, value;
         if(/وضع النهار|الصباح|نهاري/.test(normalized)&&kind!=='light')action='day';
         else if(/وضع الليل|ليلي/.test(normalized)&&kind!=='light')action='night';
@@ -76,75 +85,5 @@
         const label=kind==='light'?'الإضاءة':kind==='shutter'?'الشتر':'الستائر';
         return `تم تنفيذ الأمر على ${devices.length} من أجهزة ${label}${value!==undefined?' · '+value+'%':''}`;
     }
-    function setStatus(text,error=false) {
-        if(!$('voice-status'))return;
-        $('voice-status').textContent=text;
-        $('voice-status').classList.toggle('voice-status-error',error);
-    }
-    async function handle(text) {
-        $('voice-input').value=text;
-        setStatus('جارٍ تنفيذ الأمر...');
-        try {setStatus(await executeCommand(text));}
-        catch(error){setStatus(error.message,true);}
-    }
-    function stop() {
-        if(recognition && listening) {recognition.stop();}
-    }
-    function close() {
-        stop();$('voice-panel').hidden=true;$('voice-backdrop').hidden=true;
-        $('voice-button').setAttribute('aria-expanded','false');
-    }
-    function start() {
-        const Recognition=global.SpeechRecognition||global.webkitSpeechRecognition;
-        if(!Recognition) {
-            setStatus('التعرف الصوتي غير متاح في هذا المتصفح. استخدم مربع كتابة الأوامر.',true);
-            return;
-        }
-        if(listening){stop();return;}
-        recognition=new Recognition();
-        recognition.lang='ar-EG';
-        recognition.continuous=false;
-        recognition.interimResults=false;
-        recognition.maxAlternatives=1;
-        recognition.onstart=()=>{
-            listening=true;
-            $('voice-start').textContent='إيقاف الاستماع';
-            setStatus('أستمع الآن… قل الأمر بالعربية');
-        };
-        recognition.onresult=event=>{
-            const transcript=event.results[0]?.[0]?.transcript||'';
-            if(transcript)void handle(transcript);
-        };
-        recognition.onerror=event=>{
-            const reason=event.error==='not-allowed'?'الميكروفون غير مسموح. اسمح له من إعدادات المتصفح.'
-                :event.error==='no-speech'?'لم أسمع كلامًا واضحًا. جرّب مرة ثانية.'
-                :`فشل التعرف الصوتي (${event.error}). جرّب الكتابة.`;
-            setStatus(reason,true);
-        };
-        recognition.onend=()=>{listening=false;$('voice-start').textContent='بدء الاستماع';};
-        try {recognition.start();}catch(error){setStatus(error.message,true);}
-    }
-    function init() {
-        if(initialized)return;initialized=true;
-        $('voice-button').addEventListener('click',()=>{
-            closeRadialLightMenu();
-            global.VillaCoveringControls.closePanel();
-            const show=$('voice-panel').hidden;
-            $('voice-panel').hidden=!show;
-            $('voice-backdrop').hidden=!show;
-            $('voice-button').setAttribute('aria-expanded',String(show));
-            if(show)$('voice-input').focus({preventScroll:true});else stop();
-        });
-        $('voice-backdrop').addEventListener('click',close);
-        $('voice-close').addEventListener('click',close);
-        $('voice-start').addEventListener('click',start);
-        $('voice-form').addEventListener('submit',event=>{
-            event.preventDefault();void handle($('voice-input').value);
-        });
-        document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
-        if(!global.SpeechRecognition&&!global.webkitSpeechRecognition) {
-            setStatus('يمكنك كتابة الأوامر. التحدث يحتاج متصفحًا يدعم التعرف الصوتي.');
-        }
-    }
-    global.VillaVoiceControl=Object.freeze({init,parseCommand,executeCommand,normalize});
+    global.VillaVoiceControl=Object.freeze({parseCommand,executeCommand,normalize});
 })(window);

@@ -69,6 +69,25 @@ checked('curtain, shutter and Arabic voice modules load in dependency order', ()
   }
   for(const file of ['styles/coverings.css','styles/voice.css'])assert(styles.includes(file));
 });
+checked('voice-first modules are separate from parser and loaded in order', () => {
+  const order=['js/voice/voice-control.js','js/voice/voice-meter.js','js/voice/voice-ui.js','js/core/bootstrap.js'];
+  for(let i=0;i<order.length;i++)assert(scripts.includes(order[i]),`Missing ${order[i]}`);
+  for(let i=1;i<order.length;i++)assert(scripts.indexOf(order[i-1])<scripts.indexOf(order[i]));
+  assert(read('js/scene/init.js').includes('VillaVoiceUI.init()'));
+  assert(!read('js/voice/voice-control.js').includes('SpeechRecognition'));
+  for(const id of ['voice-live','voice-live-center','voice-live-transcript','voice-orb','voice-live-feedback','voice-retry','voice-manual-mode','voice-tts-enabled']) {
+    assert(index.includes(`id="${id}"`),`Missing voice-first element ${id}`);
+  }
+  assert(styles.includes('styles/transparency.css'));
+  assert(read('styles/transparency.css').includes('#covering-modes-panel'));
+});
+checked('covering markers follow room selection just like lighting pins', () => {
+  const js=read('js/devices/coverings/visuals.js');
+  assert(js.includes("focusedZoneKey!=='overview'"));
+  assert(js.includes('focusedZoneKey===item.spec.zoneId'));
+  assert(js.includes('showCoveringPins'));
+  assert(index.includes('id="covering-pins-toggle"'));
+});
 checked('all 3D viewer scripts load after local Three.js', () => {
   const threeIndex = scripts.indexOf('vendor/three.js');
   const orbitIndex = scripts.indexOf('vendor/OrbitControls.js');

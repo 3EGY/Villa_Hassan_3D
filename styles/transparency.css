@@ -1,0 +1,59 @@
+/* v2.9 — See the moving 3D model through all control menus.
+   Intentional low blur: strong blur would hide the scene despite translucent fills. */
+:root { --villa-control-glass: rgba(10, 20, 34, .32); --villa-item-glass: rgba(17, 34, 54, .28); }
+.glass-panel, .glass-pill, #covering-modes-panel, #voice-panel,
+#popover-rooms, #popover-layers, #context-card, #focused-room-label,
+#lighting-modes-panel, #bottom-places-dock > div, #main-toolbar > div {
+    background: var(--villa-control-glass) !important;
+    backdrop-filter: blur(3px) !important;
+    -webkit-backdrop-filter: blur(3px) !important;
+    box-shadow: 0 5px 24px rgba(0,0,0,.29) !important;
+}
+/* All group controls, including the "all shutters / all curtains" menus. */
+#covering-modes-panel :is(.covering-device-row,.covering-coupled-group button,
+ .covering-quick-actions button,.covering-device-actions button,
+ #covering-auto-form,.covering-time-grid input,.covering-form-buttons button,
+ .covering-close),
+#lighting-modes-panel :is(.lighting-preset,.focus-action),
+#voice-panel :is(#voice-start,#voice-input,#voice-form button,#voice-status,.covering-close),
+#popover-rooms button, #popover-layers button, #popover-layers .bg-slate-900\/70,
+#popover-layers .bg-slate-900\/80, #popover-rooms .bg-slate-900\/80,
+#focused-room-label .focus-action {
+    background: var(--villa-item-glass) !important;
+    backdrop-filter: none !important;
+}
+/* Keep selected state visible without painting an opaque orange rectangle. */
+#lighting-modes-panel .lighting-preset[aria-pressed="true"],
+#covering-modes-panel [aria-pressed="true"],
+#popover-layers .btn-active, #popover-rooms .btn-active,
+#bottom-places-dock .btn-active {background:rgba(195,139,43,.39) !important;}
+#covering-modes-backdrop,#covering-radial-scrim,#voice-backdrop,
+#lighting-modes-backdrop {background:transparent !important;}
+#covering-radial .covering-wheel-back {background:rgba(8,20,31,.13) !important;border-color:rgba(147,211,222,.50);box-shadow:none;}
+#covering-radial :is(.covering-wheel-button,#covering-radial-close,#covering-radial-badge) {
+    background:rgba(10,27,42,.31) !important;
+    backdrop-filter: blur(2px);
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+}
+#radial-light-menu .radial-node {background:rgba(15,23,42,.30) !important;backdrop-filter:blur(2px);}
+#radial-light-menu .radial-node-active {background:rgba(217,119,6,.51) !important;}
+/* Pins stay legible, but don't cover the mechanism behind them. */
+.covering-pin,.covering-pin-curtain {background:rgba(13,24,38,.38) !important;backdrop-filter:blur(2px);}
+.bulb-pin {background-color:rgba(10,17,29,.45) !important;backdrop-filter:blur(2px);}
+#covering-button-stack .covering-stack-button,#lighting-modes-button {
+    background:rgba(12,25,39,.42) !important;backdrop-filter:blur(3px);
+}
+#covering-button-stack .covering-stack-button[aria-expanded="true"] {background:rgba(33,108,113,.53) !important;}
+/* Preserve contrast without blocking the model. */
+#covering-modes-panel, #lighting-modes-panel, #voice-panel {text-shadow:0 1px 2px rgba(0,0,0,.75);}
+#covering-modes-panel {border-color:rgba(142,214,232,.72);}
+#covering-modes-panel .covering-device-row:hover {background:rgba(32,64,88,.42) !important;}
+#covering-modes-panel :is(button,input):focus-visible,#covering-radial button:focus-visible {
+ outline:2px solid #a5eaff;outline-offset:2px;
+}
+
+/* During individual arc adjustment, de-emphasize other floating pins. */
+body.covering-radial-open #covering-markers-layer .covering-pin,
+body.covering-radial-open #labels-container .bulb-pin {
+ opacity:.10;pointer-events:none;
+}

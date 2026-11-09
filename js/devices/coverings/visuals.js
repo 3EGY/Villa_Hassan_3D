@@ -9,6 +9,8 @@
     const cleanable = [];
     let group = null, lastFrame = 0;
     let connected = false;
+    // Like the light pins: covering markers only appear in the selected room.
+    let showCoveringPins = true;
     function mountFor(spec) {
         if (spec.windowId) {
             const windowSpec = PLAN_WINDOWS.find(w => w.id === spec.windowId);
@@ -157,8 +159,8 @@
         for(const [id,item] of nodes) {
             const marker=markers.get(id);
             if(!marker)continue;
-            const visible=!isWelcomeOpen && !cameraAnim
-                && (focusedZoneKey==='overview'||focusedZoneKey===item.spec.zoneId);
+            const visible=!isWelcomeOpen && !cameraAnim && showCoveringPins
+                && focusedZoneKey!=='overview' && focusedZoneKey===item.spec.zoneId;
             if(!visible){marker.style.display='none';continue;}
             // Offset paired markers left/right along the opening, not at random screen positions.
             const side=item.kind==='shutter' ? -.28 : .28;
@@ -182,5 +184,9 @@
         }
         updateMarkers();
     }
-    global.VillaCoveringVisuals=Object.freeze({rebuild,connect,createMarkers,frame,refreshMounts:rebuild});
+    function setPinsVisible(value) {
+        showCoveringPins = Boolean(value);
+        updateMarkers();
+    }
+    global.VillaCoveringVisuals=Object.freeze({rebuild,connect,createMarkers,frame,refreshMounts:rebuild,setPinsVisible});
 })(window);

@@ -20,7 +20,7 @@
 | أزرار اللمبات وقوس الشدة/اللون والمؤقت | `styles/radial-light.css` و`js/devices/lighting/radial-menu.js` |
 | مواقع الشتر والستائر | `js/data/coverings-config.js` |
 | التحكم الفردي والجدولة والأوامر | `js/devices/coverings/` |
-| الميكروفون وتحليل الأوامر | `js/voice/voice-control.js` |
+| الميكروفون وتحليل الأوامر | `js/voice/voice-control.js` (parser) + `voice-ui.js` (جلسة الصوت) + `voice-meter.js` (مؤشر الكلام) |
 | سجل كل الأجهزة والأوامر العامة | `js/devices/registry.js` و`docs/DEVICE_SYSTEM.md` |
 | ربط الإضاءة الحالية بسجل الأجهزة | `js/devices/lighting/adapter.js` |
 | بيانات اللمبات وتوزيعها على الغرف | `js/devices/lighting/fixtures.js` |

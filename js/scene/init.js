@@ -107,7 +107,7 @@
             updateLightingModesLayout();
             VillaCoveringControls.init();
             VillaCoveringSchedules.init();
-            VillaVoiceControl.init();
+            VillaVoiceUI.init();
             requestLightingShadowUpdate();
 
             // Start initial auto-hide timer for the top pill bar (3.5 seconds)

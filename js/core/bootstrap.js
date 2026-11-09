@@ -13,7 +13,7 @@
                 'bottom-places-dock', 'summon-ui-btn', 'quick-home-btn', 'help-tour-btn',
                 'lighting-modes-button', 'lighting-modes-panel', 'lighting-modes-backdrop',
                 'covering-button-stack', 'covering-markers-layer', 'covering-modes-panel', 'covering-modes-backdrop',
-                'covering-radial', 'covering-radial-scrim', 'voice-panel', 'voice-backdrop']) {
+                'covering-radial', 'covering-radial-scrim', 'voice-panel', 'voice-backdrop', 'voice-live']) {
                 const element = document.getElementById(id);
                 if (element) element.inert = open;
             }
@@ -28,6 +28,7 @@
         function openClientHelp() {
             closeLightingModes();
             VillaCoveringControls.closePanel();
+            window.VillaVoiceUI?.close();
             closeRadialLightMenu();
             hideContextCard();
             closeAllPopovers();

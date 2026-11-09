@@ -6,7 +6,7 @@
     <title>فيلا حسن | جولة معمارية ثلاثية الأبعاد</title>
     <meta name="description" content="استكشف الدور الأول لفيلا حسن في جولة تفاعلية ثلاثية الأبعاد، مع التنقل بين الغرف والتحكم في الإضاءة وزوايا العرض.">
     <meta name="theme-color" content="#080e19">
-    <meta name="application-version" content="2.9-voice-experience">
+    <meta name="application-version" content="3.0-coverings-mobile-voice">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:site_name" content="Villa Hassan">
@@ -42,7 +42,7 @@
     <link rel="stylesheet" href="./styles/welcome.css">
     <link rel="stylesheet" href="./styles/lighting-presets.css">
     <link rel="stylesheet" href="./styles/coverings.css">
-    <link rel="stylesheet" href="./styles/voice.css">
+    <link rel="stylesheet" href="./styles/voice.css?v=3.0.0">
     <link rel="stylesheet" href="./styles/window-review-dialog.css">
     <link rel="stylesheet" href="./styles/window-review.css">
     <link rel="stylesheet" href="./styles/transparency.css">
@@ -325,7 +325,7 @@
         <div class="voice-settings" dir="rtl">
             <strong><i class="fa-solid fa-microphone-lines" aria-hidden="true"></i> إعدادات التحكم الصوتي</strong>
             <label><input id="voice-manual-mode" type="checkbox"><span>إظهار قائمة الأوامر بدل الواجهة الصوتية المباشرة</span></label>
-            <label><input id="voice-tts-enabled" type="checkbox" checked><span>تشغيل رد صوتي من المتصفح بعد تنفيذ الأمر</span></label>
+            <label><input id="voice-tts-enabled" type="checkbox" checked><span>تشغيل رد صوتي من المتصفح بعد تنفيذ الأمر (متوقف افتراضيًا على iPhone لتفادي تعليق الاستماع)</span></label>
             <small>الوضع الافتراضي: اضغط الميكروفون، تكلّم، ثم اسكت لتنفيذ الأمر. بعد 3 محاولات غير واضحة تظهر القائمة تلقائيًا.</small>
         </div>
     </div>
@@ -635,7 +635,7 @@
     </div>
 
     <script src="./js/data/window-config.js"></script>
-    <script src="./js/data/coverings-config.js"></script>
+    <script src="./js/data/coverings-config.js?v=3.0.0"></script>
     <script src="./js/model/plan.js"></script>
     <script src="./js/model/architecture.js"></script>
     <script src="./js/data/rooms-and-items.js"></script>
@@ -652,11 +652,11 @@
     <script src="./js/scene/rooms-and-furniture.js"></script>
     <script src="./js/ui/overlays.js"></script>
     <script src="./js/devices/lighting/radial-menu.js"></script>
-    <script src="./js/devices/coverings/visuals.js"></script>
+    <script src="./js/devices/coverings/visuals.js?v=3.0.0"></script>
     <script src="./js/devices/coverings/controls.js"></script>
     <script src="./js/voice/voice-control.js"></script>
-    <script src="./js/voice/voice-meter.js"></script>
-    <script src="./js/voice/voice-ui.js"></script>
+    <script src="./js/voice/voice-meter.js?v=3.0.0"></script>
+    <script src="./js/voice/voice-ui.js?v=3.0.0"></script>
     <script src="./js/ui/toolbar.js"></script>
     <script src="./js/ui/room-navigation.js"></script>
     <script src="./js/scene/camera-and-view.js"></script>

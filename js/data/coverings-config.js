@@ -1,8 +1,8 @@
 /**
- * Villa Hassan | First-floor motor locations (v2.8)
+ * Villa Hassan | First-floor motor locations (v3.0)
  * 5 shutters: every reviewed room window except guest bathroom W5.
- * 5 curtain motors in 4 location groups: master window, terrace entrance,
- * right-bedroom pair (2 independent motors), left-bedroom window.
+ * 6 curtain motors in 5 location groups: master window, terrace entrance,
+ * right-bedroom pair (2 independent motors), left-bedroom window and living-room window.
  * The terrace entrance is a SLIDING DOOR, not an extra reviewed window.
  * To correct a location, update ONLY this catalog.
  * Position convention: 0 = completely closed, 100 = completely open.
@@ -17,7 +17,8 @@ const VILLA_COVERING_CONFIG = Object.freeze([
     {id:'curtain_terrace', kind:'curtain', zoneId:'masterBedroom', openingId:'terraceEntry', groupId:'terraceEntry', name:'ستارة دخول التراس'},
     {id:'curtain_right_left', kind:'curtain', zoneId:'rightBedroom', windowId:'W6', groupId:'rightBedroom', name:'ستارة الغرفة اليمنى · الشباك الأيسر'},
     {id:'curtain_right_right', kind:'curtain', zoneId:'rightBedroom', windowId:'W7', groupId:'rightBedroom', name:'ستارة الغرفة اليمنى · الشباك الأيمن'},
-    {id:'curtain_left', kind:'curtain', zoneId:'leftBedroom', windowId:'W3', groupId:'leftBedroom', name:'ستارة الغرفة اليسرى'}
+    {id:'curtain_left', kind:'curtain', zoneId:'leftBedroom', windowId:'W3', groupId:'leftBedroom', name:'ستارة الغرفة اليسرى'},
+    {id:'curtain_living', kind:'curtain', zoneId:'livingRoom', windowId:'W4', groupId:'livingRoom', name:'ستارة شباك صالة المعيشة'}
 ]);
 const VILLA_SPECIAL_OPENINGS = Object.freeze({
     // Exact same sliding-door dimensions and position as buildAllWallsAndOpenings().

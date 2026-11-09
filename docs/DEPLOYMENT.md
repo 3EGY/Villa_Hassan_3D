@@ -2,6 +2,17 @@
 
 [العودة إلى التعريف بالمشروع](../README.md)
 
+## التحديث الحالي v3.0 — ستارة الصالة وتصحيح وجه تركيب W3 وصوت الهاتف
+
+- فك ضغط `Villa_Hassan_Smart_Home_v3_0_Mobile_Voice_Coverings_Fix.zip` وارفع **محتوياته كاملة** إلى جذر مستودع `Villa_Hassan_3D` مع الحفاظ على المجلدات.
+- العدد بعد بدء الجولة: `VillaDevices.list().length === 25` (14 إضاءة و5 شترات و6 ستائر). شباك W3 ستارته بالداخل وشتره بالخارج، وW4 في الصالة أصبح له ستارة وشتر.
+- على Android وiPhone جرّب **عدة أوامر صوتية متتالية**؛ في Safari الرد المنطوق متوقف افتراضيًا لتقليل مشكلة تعطل الميكروفون، ويمكن تفعيله من الإعدادات. راجع [دليل v3.0 واختبارات الهواتف](MOBILE_VOICE_AND_COVERINGS_V3.md).
+- ملفات JS المعدلة تحمل `?v=3.0.0` لتفادي بقاء نسخ الكاش. اختبر أولًا في تبويب جديد، ثم حدث الصفحة إذا ظهر الإصدار السابق.
+
+فحوصات محلية: `node scripts/check-project.mjs`، `node scripts/test-devices.mjs`، `node scripts/test-coverings.mjs`، `node scripts/test-covering-geometry.mjs`، `node scripts/test-mobile-voice.mjs`.
+
+---
+
 ## تحديث v2.9 — إخفاء الأيقونات والشفافية والتحكم الصوتي المباشر
 
 1. فك ضغط **`Villa_Hassan_Smart_Home_v2_9_Transparent_Voice.zip`** وارفَع محتوياته إلى جذر مستودع GitHub Pages **مع الإبقاء على المجلدات**. النسخة لا تحتاج إلى npm أو build.

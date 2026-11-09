@@ -2,6 +2,13 @@
 (function(global) {
     'use strict';
     let tracks=null, context=null, analyser=null, animation=0, generation=0;
+    function activity(on) {
+        const layer=document.getElementById('voice-live');
+        if(layer) {
+            layer.dataset.speaking=on?'true':'false';
+            layer.style.setProperty('--voice-energy',on ? '0.9':'0.16');
+        }
+    }
     function stop() {
         generation++;
         if(animation) cancelAnimationFrame(animation);
@@ -11,10 +18,17 @@
         if(context) void context.close().catch(()=>{});
         context=null;analyser=null;
         const layer=document.getElementById('voice-live');
-        if(layer)layer.style.setProperty('--voice-energy','0.08');
+        if(layer) {
+            layer.dataset.speaking='false';
+            layer.style.setProperty('--voice-energy','0.08');
+        }
     }
     async function start() {
         stop();
+        // Avoid competing getUserMedia tracks with Web Speech recognition
+        // on iOS / Android. CSS still animates the voice orb.
+        if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+            || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1))return false;
         const serial=generation;
         if(!navigator.mediaDevices?.getUserMedia)return false;
         let stream;
@@ -48,5 +62,5 @@
             return true;
         }catch {stop();return false;}
     }
-    global.VillaVoiceMeter=Object.freeze({start,stop});
+    global.VillaVoiceMeter=Object.freeze({start,stop,activity});
 })(window);

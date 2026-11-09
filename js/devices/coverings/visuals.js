@@ -103,7 +103,12 @@
             const node=new THREE.Group();
             node.name=spec.id;
             node.position.set(planX(opening.px),top,planZ(opening.py));
-            node.rotation.y=opening.axis==='z' ? -Math.PI/2:0;
+            // W3 sits on the OUTER left wall (x=58): its room lies east (+x).
+            // Rotate both its coverings so fabric (+local z) faces indoors (+x)
+            // and shutter slats (-local z) face outdoors (-x). Other openings
+            // keep their verified facing (W4 fabric faces the living room, -x).
+            node.rotation.y=(opening.axis==='z' ? -Math.PI/2:0)
+                +(spec.windowId==='W3' ? Math.PI:0);
             node.scale.set(opening.width/100,exposed,1);
             const setVisual=spec.kind==='shutter' ? makeShutter(node):makeCurtain(node);
             group.add(node);

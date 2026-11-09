@@ -75,6 +75,13 @@
  #voice-live-bottom {gap:4px;}}
 @media(prefers-reduced-motion:reduce){.voice-orb-bars i,.voice-orb-ring{animation:none!important;}}
 
+/* On phones the bars follow speech events, not a competing microphone stream. */
+#voice-live[data-phase="listening"][data-speaking="false"] .voice-orb-bars i {
+ animation-duration:1.5s;opacity:.58;
+}
+#voice-live[data-phase="listening"][data-speaking="true"] .voice-orb-bars i {
+ animation-duration:.52s;opacity:1;
+}
 /* Keep captions and 3D device pins from competing with live transcription. */
 body.voice-is-live #labels-container .room-label,
 body.voice-is-live #labels-container .dim-badge,

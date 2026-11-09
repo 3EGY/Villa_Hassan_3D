@@ -21,19 +21,21 @@ let passes=0;
 function test(name,cb) {return Promise.resolve().then(cb).then(()=>{passes++;console.log('✔ '+name);});}
 const registry=ctx.VillaDevices, schedules=ctx.VillaCoveringSchedules;
 const specs=vm.runInContext('VILLA_COVERING_CONFIG',ctx);
-await test('five shutters exclude bathroom, five curtains map to four location groups',()=>{
+await test('five shutters exclude bathroom, six curtains map to five location groups',()=>{
     assert.equal(specs.filter(s=>s.kind==='shutter').length,5);
-    assert.equal(specs.filter(s=>s.kind==='curtain').length,5);
-    assert.equal(new Set(specs.filter(s=>s.kind==='curtain').map(s=>s.groupId)).size,4);
+    assert.equal(specs.filter(s=>s.kind==='curtain').length,6);
+    assert.equal(new Set(specs.filter(s=>s.kind==='curtain').map(s=>s.groupId)).size,5);
     assert(!specs.some(s=>s.windowId==='W5'));
     assert.deepEqual([...specs.filter(s=>s.kind==='shutter').map(s=>s.windowId)].sort(),['W1-W2','W3','W4','W6','W7'].sort());
     assert.equal(specs.find(s=>s.id==='curtain_terrace').openingId,'terraceEntry');
+    assert.equal(specs.find(s=>s.id==='curtain_living').windowId,'W4');
+    assert.equal(specs.find(s=>s.id==='curtain_living').zoneId,'livingRoom');
 });
 await test('coverings register with valid zones and unique IDs',()=>{
     ctx.VillaCoverings.registerCoverings();
     assert.equal(registry.list({kind:'shutter'}).length,5);
-    assert.equal(registry.list({kind:'curtain'}).length,5);
-    assert.equal(new Set(registry.list().map(d=>d.id)).size,10);
+    assert.equal(registry.list({kind:'curtain'}).length,6);
+    assert.equal(new Set(registry.list().map(d=>d.id)).size,11);
     assert(registry.list().every(d=>d.floorId==='floor1' && d.state.position===100));
 });
 await test('individual positions validate 0–100 and persist to storage',async()=>{
@@ -106,5 +108,7 @@ await test('spoken commands actually dispatch to the registry adapters',async()=
     assert.equal(registry.get('curtain_right_left').state.position,0);
     assert.equal(registry.get('curtain_right_right').state.position,0);
     assert.equal(registry.get('curtain_left').state.position,55);
+    await ctx.VillaVoiceControl.executeCommand('اقفل ستارة الصالة');
+    assert.equal(registry.get('curtain_living').state.position,0);
 });
 console.log(`\n${passes} covering/voice checks passed.`);

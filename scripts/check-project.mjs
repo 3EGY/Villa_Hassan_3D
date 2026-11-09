@@ -20,12 +20,12 @@ const index = read('index.html');
 const editor = read('windows-review.html');
 function localFiles(html, attribute) {
   const rx = new RegExp(`<${attribute}\\b[^>]*?(?:src|href)=["']\\.?\\/?([^"']+)["'][^>]*>`, 'gi');
-  return [...html.matchAll(rx)].map(m => m[1]).filter(s => !s.includes('://') && !s.startsWith('data:'));
+  return [...html.matchAll(rx)].map(m => m[1]).filter(s => !s.includes('://') && !s.startsWith('data:')).map(s=>s.split(/[?#]/,1)[0]);
 }
 const scripts = localFiles(index, 'script');
-const styles = [...index.matchAll(/<link\s+rel=["']stylesheet["']\s+href=["']\.\/([^"']+)["']/gi)].map(m => m[1]);
+const styles = [...index.matchAll(/<link\s+rel=["']stylesheet["']\s+href=["']\.\/([^"']+)["']/gi)].map(m => m[1].split(/[?#]/,1)[0]);
 const scriptsInEditor = localFiles(editor, 'script');
-const stylesInEditor = [...editor.matchAll(/<link\s+rel=["']stylesheet["']\s+href=["']\.\/([^"']+)["']/gi)].map(m => m[1]);
+const stylesInEditor = [...editor.matchAll(/<link\s+rel=["']stylesheet["']\s+href=["']\.\/([^"']+)["']/gi)].map(m => m[1].split(/[?#]/,1)[0]);
 
 checked('all referenced local JS, CSS and SVG/PNG files exist', () => {
   for (const f of [...scripts, ...styles, ...scriptsInEditor, ...stylesInEditor,'assets/reference-plan.png']) {

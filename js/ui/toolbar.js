@@ -54,6 +54,7 @@
             closeAllPopovers();
             hideContextCard();
             closeRadialLightMenu();
+            VillaCoveringControls.closePanel();
             hideToolbarImmediately();
         }
 

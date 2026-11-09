@@ -10,6 +10,7 @@
             closeLightingModes();
             closeAllPopovers();
             closeRadialLightMenu();
+            VillaCoveringControls.closeRadial();
             hideContextCard();
             hideRoomLabels();
             focusedZoneKey = ZONE_SPECS[zoneKey] ? zoneKey : 'overview';

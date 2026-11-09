@@ -55,6 +55,20 @@ checked('unified device registry and lighting adapter load in correct order', ()
   assert(read('js/devices/lighting/fixtures.js').includes('VillaLightingAdapter.registerLights()'));
   assert(read('js/devices/lighting/fixtures.js').includes('VillaLightingAdapter.publish(lightObj)'));
 });
+checked('curtain, shutter and Arabic voice modules load in dependency order', () => {
+  const at=file=>scripts.indexOf(file);
+  const seq=['js/data/coverings-config.js','js/devices/registry.js',
+    'js/devices/coverings/adapter.js','js/devices/coverings/automation.js',
+    'js/devices/coverings/visuals.js','js/devices/coverings/controls.js',
+    'js/voice/voice-control.js','js/core/bootstrap.js'];
+  for(const file of seq) assert(at(file)>-1,`Missing script: ${file}`);
+  for(let i=1;i<seq.length;i++)assert(at(seq[i-1])<at(seq[i]),`Wrong order: ${seq[i]}`);
+  for(const id of ['covering-button-shutter','covering-button-curtain','covering-markers-layer',
+    'covering-modes-panel','covering-radial','voice-button','voice-panel','voice-form']) {
+    assert(index.includes(`id="${id}"`),`Missing UI: ${id}`);
+  }
+  for(const file of ['styles/coverings.css','styles/voice.css'])assert(styles.includes(file));
+});
 checked('all 3D viewer scripts load after local Three.js', () => {
   const threeIndex = scripts.indexOf('vendor/three.js');
   const orbitIndex = scripts.indexOf('vendor/OrbitControls.js');

@@ -30,6 +30,7 @@
                 const capHeight=cut<=sill?cut:(cut>head?cut:sill);
                 span('cap',capHeight,capHeight+.025);a.parts.cap.visible=capHeight>0;
             }
+            if (window.VillaCoveringVisuals && window.VillaDevices?.list({kind:'shutter'}).length) VillaCoveringVisuals.refreshMounts();
             if(renderer) requestLightingShadowUpdate();
         }
         function addPlanWall(x1,y1,x2,y2,openings=[],thickness=.22) {

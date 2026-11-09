@@ -94,7 +94,8 @@
                     }
                 }
 
-                // Tapped empty space -> dismiss radial light menu & context card
+                // Tapped empty space -> dismiss radial menus & context card
+                VillaCoveringControls.closeRadial();
                 closeRadialLightMenu();
                 hideContextCard();
                 closeAllPopovers();
@@ -106,8 +107,10 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             closeRadialLightMenu();
+            VillaCoveringControls.closeRadial();
             hideContextCard();
             updateFocusedRoomLabel();
+            updateLightingModesLayout();
             if (!cameraWasManuallyMoved) focusZone(focusedZoneKey);
         }
 
@@ -128,5 +131,6 @@
             controls.update();
             camera.updateMatrixWorld();
             updateHTMLOverlaysPosition();
+            VillaCoveringVisuals.frame(timestamp);
             renderer.render(scene, camera);
         }

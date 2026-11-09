@@ -1,10 +1,12 @@
-# Device layer — v2.7
+# Device layer — v2.8
 
-`registry.js` exposes the globally available `window.VillaDevices` catalog and command router. The existing 14 simulated lights are bound in `lighting/adapter.js` while the UI and geometry keep using `lighting/fixtures.js` and `lighting/radial-menu.js`.
+`registry.js` exposes `window.VillaDevices` as the central catalog and command router for 24 simulated devices on floor 1: **14 lights + 5 shutters + 5 curtains**. The registry does not import or depend on Three.js.
 
-- Query: `VillaDevices.list({ zoneId: 'livingRoom' })` or `{ kind: 'light' }`.
-- Command: `await VillaDevices.execute('bulb_living', 'setBrightness', 50)`.
-- Events: `const unsubscribe = VillaDevices.subscribe(({type,device}) => { ... })`.
-- New type: create a folder with definitions and an adapter, then add scene and UI representations independently.
+- Lights: `lighting/fixtures.js` maintains the original Three.js objects and `lighting/adapter.js` bridges them to the registry. The original light radial wheel remains intact.
+- Shutters & curtains: `coverings/adapter.js` registers the 10 motors and executes `open`, `close`, `setPosition(0..100)` commands; `coverings/visuals.js` updates meshes and floating window controls; `coverings/controls.js` implements panels and the independent radial position arc.
+- Local time schedules: `coverings/automation.js`, one schedule for each type.
+- Optional voice commands: `../voice/voice-control.js`, browser SpeechRecognition and a text-input fallback.
 
-No real hardware, curtains, shutters or speakers are connected yet. See `../../docs/DEVICE_SYSTEM.md` for the contract, tests and future integration boundaries.
+`VillaDevices.list({kind:'shutter'})`, `VillaDevices.list({zoneId:'rightBedroom'})` and `await VillaDevices.execute('curtain_master','setPosition',50)` work in developer tools after starting the tour.
+
+No physical devices or speakers are connected. Keep credentials and device addresses off GitHub Pages. For layout and schedule references, see `../../docs/COVERINGS_AND_VOICE.md` and `../../docs/DEVICE_SYSTEM.md`.

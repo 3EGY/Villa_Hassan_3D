@@ -42,6 +42,7 @@
             // Detect orbit/pan/zoom start to immediately clear menus & contextual cards out of the way
             controls.addEventListener('start', () => {
                 closeLightingModes();
+                VillaCoveringControls.closePanel();
                 roomLabelsWereVisibleAtGestureStart = roomLabelsAwake;
                 cameraWasManualAtGestureStart = cameraWasManuallyMoved;
                 hideRoomLabels();
@@ -82,6 +83,9 @@
             setupLighting();
             buildFloorsAndSlabs();
             buildAllWallsAndOpenings();
+            VillaCoverings.registerCoverings();
+            VillaCoveringVisuals.connect();
+            VillaCoveringVisuals.rebuild();
             buildMasterBedroomSuite();
             buildSecondaryBedrooms();
             buildDressingRoom();
@@ -93,12 +97,17 @@
             alignFurnitureToReference();
 
             createHTMLOverlays();
+            VillaCoveringVisuals.createMarkers();
             toggleDimensionBadges(false);
             setLightingMode('night');
             updateFocusedRoomLabel();
             setupRadialArcInteraction();
             setupRaycasterInteraction();
             syncLightingPresetUI();
+            updateLightingModesLayout();
+            VillaCoveringControls.init();
+            VillaCoveringSchedules.init();
+            VillaVoiceControl.init();
             requestLightingShadowUpdate();
 
             // Start initial auto-hide timer for the top pill bar (3.5 seconds)

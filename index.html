@@ -6,7 +6,7 @@
     <title>فيلا حسن | جولة معمارية ثلاثية الأبعاد</title>
     <meta name="description" content="استكشف الدور الأول لفيلا حسن في جولة تفاعلية ثلاثية الأبعاد، مع التنقل بين الغرف والتحكم في الإضاءة وزوايا العرض.">
     <meta name="theme-color" content="#080e19">
-    <meta name="application-version" content="2.6-modular-ui">
+    <meta name="application-version" content="2.8-coverings-voice">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:site_name" content="Villa Hassan">
@@ -41,6 +41,8 @@
     <link rel="stylesheet" href="./styles/navigation.css">
     <link rel="stylesheet" href="./styles/welcome.css">
     <link rel="stylesheet" href="./styles/lighting-presets.css">
+    <link rel="stylesheet" href="./styles/coverings.css">
+    <link rel="stylesheet" href="./styles/voice.css">
     <link rel="stylesheet" href="./styles/window-review-dialog.css">
     <link rel="stylesheet" href="./styles/window-review.css">
 </head>
@@ -56,6 +58,7 @@
                 <p><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i><span>اسحب لتدوير المشهد، واستخدم إصبعين أو عجلة الماوس للتقريب.</span></p>
                 <p><i class="fa-solid fa-house" aria-hidden="true"></i><span>المس المخطط لإظهار أسماء الأماكن، ثم اختر الغرفة أو استخدم الشريط السفلي.</span></p>
                 <p><i class="fa-solid fa-lightbulb" aria-hidden="true"></i><span>اضغط على اللمبة لتغيير الإضاءة واللون والشدة.</span></p>
+                <p><i class="fa-solid fa-window-maximize" aria-hidden="true"></i><span>اضغط على رموز الشبابيك للشتر والستائر، أو استخدم الأزرار يمين الشاشة.</span></p>
             </div>
             <button id="client-start" type="button" disabled onclick="startClientTour()">جاري تجهيز الجولة…</button>
             <p id="client-status" role="status" aria-live="polite">يتم تجهيز النموذج ثلاثي الأبعاد</p>
@@ -467,6 +470,78 @@
         <p id="lighting-presets-note">الأوضاع تستخدم العرض الليلي، مع الاحتفاظ بألوان اللمبات.</p>
     </section>
 
+
+    <!-- Pin icons follow the approved architectural openings in the 3D scene. -->
+    <div id="covering-markers-layer" aria-label="شتر وستائر الغرف"></div>
+
+    <!-- Shutter, curtain, microphone: stacked directly above the existing light button. -->
+    <div id="covering-button-stack" aria-label="التحكم في المنزل الذكي">
+        <button id="voice-button" class="covering-stack-button" type="button" title="الأوامر الصوتية" aria-label="الأوامر الصوتية" aria-controls="voice-panel" aria-expanded="false"><i class="fa-solid fa-microphone" aria-hidden="true"></i></button>
+        <button id="covering-button-shutter" class="covering-stack-button" type="button" title="الشتر" aria-label="أوضاع الشتر" aria-controls="covering-modes-panel" aria-expanded="false"><i class="fa-solid fa-window-maximize" aria-hidden="true"></i></button>
+        <button id="covering-button-curtain" class="covering-stack-button" type="button" title="الستائر" aria-label="أوضاع الستائر" aria-controls="covering-modes-panel" aria-expanded="false"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i></button>
+    </div>
+
+    <button id="covering-modes-backdrop" type="button" hidden aria-label="إغلاق قائمة الشتر والستائر"></button>
+    <section id="covering-modes-panel" hidden aria-labelledby="covering-modes-title">
+        <div class="covering-panel-heading">
+            <div><h2 id="covering-modes-title">التحكم بالشتر</h2><p id="covering-modes-sub">الأجهزة</p></div>
+            <button class="covering-close" id="covering-close-panel" aria-label="إغلاق القائمة">✕</button>
+        </div>
+        <div class="covering-quick-actions">
+            <button data-covering-mode="open" type="button"><i class="fa-solid fa-arrow-up"></i> فتح الكل</button>
+            <button data-covering-mode="close" type="button"><i class="fa-solid fa-arrow-down"></i> إغلاق الكل</button>
+            <button data-covering-mode="day" type="button"><i class="fa-solid fa-sun"></i> وضع النهار</button>
+            <button data-covering-mode="night" type="button"><i class="fa-solid fa-moon"></i> وضع الليل</button>
+            <button data-covering-mode="auto" id="covering-auto-trigger" type="button" aria-pressed="false"><i class="fa-solid fa-clock"></i> وضع التلقائي · تحديد الوقت</button>
+        </div>
+        <div id="covering-schedule-status" role="status">جدولة غير مفعلة</div>
+        <form id="covering-auto-form" hidden>
+            <div class="covering-time-grid">
+                <label>وقت الفتح<input id="covering-open-time" type="time" value="07:00" required></label>
+                <label>وقت الإغلاق<input id="covering-close-time" type="time" value="20:00" required></label>
+            </div>
+            <p>يُستخدم توقيت الجهاز الذي فتحت منه الموقع. المحاكاة المجدولة تعمل والصفحة مفتوحة فقط.</p>
+            <div class="covering-form-buttons"><button type="submit">حفظ وتفعيل تلقائي</button><button id="covering-disable-auto" type="button">إيقاف التلقائي</button></div>
+            <p id="covering-auto-form-note" role="alert"></p>
+        </form>
+        <h3 class="covering-list-title">التحكم في كل فتحة على حدة</h3>
+        <div id="covering-device-list"></div>
+        <p class="covering-footer-note">0% مغلق تمامًا · 100% مفتوح تمامًا. اضغط «مستوى» لفتح قوس التحكم ثم اسحب لتغيير النسبة ومشاهدة الحركة داخل المخطط.</p>
+    </section>
+
+    <button id="covering-radial-scrim" type="button" hidden aria-label="إغلاق دائرة التحكم"></button>
+    <div id="covering-radial" hidden role="dialog" aria-label="التحكم الفردي بالشتر أو الستارة">
+        <div class="covering-wheel-back"></div>
+        <svg id="covering-arc-svg" viewBox="0 0 260 260" aria-label="قوس نسبة الفتح">
+            <g id="covering-arc-group" hidden>
+                <path id="covering-arc-track" fill="none" stroke="#65798c" stroke-width="12" stroke-linecap="round"></path>
+                <path id="covering-arc-active" fill="none" stroke="#65d9e6" stroke-width="12" stroke-linecap="round"></path>
+                <path id="covering-arc-hit" d="M 51 196" fill="none" stroke="transparent" stroke-width="42" stroke-linecap="round"></path>
+                <circle id="covering-arc-thumb" r="8" cx="0" cy="0" fill="#b9effa" stroke="#162e41" stroke-width="3"></circle>
+            </g>
+        </svg>
+        <div id="covering-radial-badge">مستوى الفتح 100%</div>
+        <button id="covering-radial-open" class="covering-wheel-button" type="button">فتح</button>
+        <button id="covering-radial-shut" class="covering-wheel-button" type="button">إغلاق</button>
+        <button id="covering-radial-level" class="covering-wheel-button" type="button">تحديد المستوى</button>
+        <button id="covering-radial-close" type="button" title="إغلاق دائرة التحكم"><i id="covering-radial-icon" class="fa-solid fa-window-maximize" aria-hidden="true"></i><span id="covering-radial-title">شتر</span><b id="covering-radial-number">100%</b></button>
+    </div>
+
+    <button id="voice-backdrop" type="button" hidden aria-label="إغلاق الأوامر الصوتية"></button>
+    <section id="voice-panel" hidden role="dialog" aria-labelledby="voice-title" aria-modal="true">
+        <header><h2 id="voice-title"><i class="fa-solid fa-microphone" aria-hidden="true"></i> الأوامر الصوتية</h2><button id="voice-close" class="covering-close" type="button">✕</button></header>
+        <p>اضغط «بدء الاستماع» وقل أمرًا بالعربية. أو اكتب الأمر لتجربته مباشرة.</p>
+        <button id="voice-start" type="button">بدء الاستماع</button>
+        <form id="voice-form"><input id="voice-input" type="text" dir="rtl" autocomplete="off" placeholder="مثال: خلي شدة إضاءة غرفة النوم 40%" aria-label="نص الأمر"><button type="submit">تنفيذ</button></form>
+        <div id="voice-status" aria-live="polite">جاهز لتجربة الأوامر</div>
+        <p>أمثلة:</p>
+        <span class="voice-example">«اغلق إضاءة غرفة النوم»</span>
+        <span class="voice-example">«خلي شدة إضاءة غرفة النوم 40%»</span>
+        <span class="voice-example">«افتح شتر الغرفة اليمنى»</span>
+        <span class="voice-example">«خلي مستوى الستائر 65%»</span>
+        <p class="voice-disclosure">يعمل التعرف على الصوت في المتصفحات الداعمة بعد السماح باستخدام الميكروفون فقط؛ وقد يعالج مزوّد المتصفح الصوت عبر خوادمه. لا يوجد استماع مستمر أو ربط بأجهزة حقيقية.</p>
+    </section>
+
     <!-- RESTORED INTERACTIVE BOTTOM DOCK FOR ROOM / PLACE SELECTION -->
     <nav id="bottom-places-dock" class="fixed bottom-2.5 inset-x-0 z-30 flex justify-center px-2 pointer-events-none">
         <div class="glass-panel rounded-2xl p-1.5 px-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full pointer-events-auto shadow-2xl border border-slate-700/80">
@@ -530,11 +605,14 @@
     </div>
 
     <script src="./js/data/window-config.js"></script>
+    <script src="./js/data/coverings-config.js"></script>
     <script src="./js/model/plan.js"></script>
     <script src="./js/model/architecture.js"></script>
     <script src="./js/data/rooms-and-items.js"></script>
     <script src="./js/core/state.js"></script>
     <script src="./js/devices/registry.js"></script>
+    <script src="./js/devices/coverings/adapter.js"></script>
+    <script src="./js/devices/coverings/automation.js"></script>
     <script src="./js/scene/textures.js"></script>
     <script src="./js/scene/init.js"></script>
     <script src="./js/devices/lighting/fixtures.js"></script>
@@ -544,6 +622,9 @@
     <script src="./js/scene/rooms-and-furniture.js"></script>
     <script src="./js/ui/overlays.js"></script>
     <script src="./js/devices/lighting/radial-menu.js"></script>
+    <script src="./js/devices/coverings/visuals.js"></script>
+    <script src="./js/devices/coverings/controls.js"></script>
+    <script src="./js/voice/voice-control.js"></script>
     <script src="./js/ui/toolbar.js"></script>
     <script src="./js/ui/room-navigation.js"></script>
     <script src="./js/scene/camera-and-view.js"></script>

@@ -378,4 +378,6 @@
             } else {
                 updateSmartBulbPinUI(lightObj);
             }
+            // Timer may have been cleared without changing bulb power.
+            if (window.VillaLightingAdapter) window.VillaLightingAdapter.publish(lightObj);
         }

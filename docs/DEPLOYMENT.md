@@ -2,9 +2,22 @@
 
 [العودة إلى التعريف بالمشروع](../README.md)
 
+## تحديث v2.7 — نظام الأجهزة الموحد
+
+هذه النسخة مبنية على v2.6؛ تظل الإضاءة والشبابيك والواجهة كما هي، وتضيف `js/devices/registry.js` و`js/devices/lighting/adapter.js` و`docs/DEVICE_SYSTEM.md` و`scripts/test-devices.mjs`. **لا يوجد ربط بأجهزة الفيلا الحقيقية**.
+
+انشر ملفات النسخة الجديدة بالكامل فوق النسخة السابقة في المستودع، مع الحفاظ على المجلدات. استخدم أوامر Git نفسها أدناه أو ارفع الملفات من واجهة GitHub. بعد النشر، جرّب التحكم المعتاد ثم افتح Developer Tools وتحقق من `VillaDevices.list().length` بعد بدء الجولة (ينبغي أن يظهر 14). لا ترفع ملفات اختبار خاصة أو مفاتيح وصول.
+
+قبل النشر يمكنك تشغيل:
+
+```powershell
+node scripts/check-project.mjs
+node scripts/test-devices.mjs
+```
+
 ## التحديث المنظّم — الإصدار 2.6 (مع الحفاظ على مقاسات v2.5)
 
-1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_6_Modular.zip`.
+1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_7_Device_System.zip`.
 2. افتح [المستودع](https://github.com/3EGY/Villa_Hassan_3D) ثم **Add file → Upload files**.
 3. ارفع **جميع ملفات الحزمة مع الحفاظ على أسماء المجلدات**: `index.html` و`windows-review.html` ومجلدات `js/` و`styles/` و`vendor/` و`assets/`. لا ترفع HTML وحده؛ سيحتاج إلى ملفات JS وCSS المنفصلة.
 4. ارفع `README.md` ومجلدي `docs/` و`scripts/` أيضًا لتحديث الشرح والصور والتحقق من المشروع. حافظ على المسارات كما هي.
@@ -88,12 +101,12 @@ git push origin main
 
 ## أول رفع من Windows PowerShell
 
-يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_6_Modular.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
+يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_7_Device_System.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
 
 ```powershell
 git clone https://github.com/3EGY/Villa_Hassan_3D.git
 Set-Location .\Villa_Hassan_3D
-Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_6_Modular.zip -DestinationPath . -Force
+Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_7_Device_System.zip -DestinationPath . -Force
 git add index.html windows-review.html assets docs js styles vendor scripts 404.html .nojekyll .gitignore README.md THIRD_PARTY_NOTICES.md
 git commit -m "Publish Villa Hassan interactive 3D presentation"
 git branch -M main

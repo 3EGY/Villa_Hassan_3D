@@ -46,6 +46,15 @@ checked('main page and review page use the shared window editor', () => {
   assert(scripts.indexOf('js/data/window-config.js') < scripts.indexOf('js/windows/editor.js'));
   assert(scriptsInEditor.indexOf('js/data/window-config.js') < scriptsInEditor.indexOf('js/windows/editor.js'));
 });
+checked('unified device registry and lighting adapter load in correct order', () => {
+  const pos = file => scripts.indexOf(file);
+  assert(pos('js/core/state.js') < pos('js/devices/registry.js'));
+  assert(pos('js/devices/registry.js') < pos('js/devices/lighting/fixtures.js'));
+  assert(pos('js/devices/lighting/fixtures.js') < pos('js/devices/lighting/adapter.js'));
+  assert(pos('js/devices/lighting/adapter.js') < pos('js/core/bootstrap.js'));
+  assert(read('js/devices/lighting/fixtures.js').includes('VillaLightingAdapter.registerLights()'));
+  assert(read('js/devices/lighting/fixtures.js').includes('VillaLightingAdapter.publish(lightObj)'));
+});
 checked('all 3D viewer scripts load after local Three.js', () => {
   const threeIndex = scripts.indexOf('vendor/three.js');
   const orbitIndex = scripts.indexOf('vendor/OrbitControls.js');

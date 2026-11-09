@@ -161,6 +161,9 @@
                 applySmartLightState(smartLightObj);
             });
 
+            // Register existing lights for future device tabs and integrations.
+            window.VillaLightingAdapter.registerLights();
+
             // Set default dark mode scene lighting
             setLightingMode('night');
         }
@@ -190,6 +193,7 @@
             }
 
             updateSmartBulbPinUI(lightObj);
+            if (window.VillaLightingAdapter) window.VillaLightingAdapter.publish(lightObj);
             if (!isApplyingLightingPreset) {
                 syncLightingDecor();
                 syncLightingPresetUI();

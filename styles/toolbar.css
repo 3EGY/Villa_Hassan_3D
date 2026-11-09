@@ -1,0 +1,34 @@
+        /* Auto-Hide Transitions for Toolbar & Popovers */
+        .ui-auto-bar {
+            transition: opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1), transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ui-bar-hidden {
+            opacity: 0 !important;
+            transform: translateY(-18px) scale(0.96) !important;
+            pointer-events: none !important;
+        }
+        .popover-menu {
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            transform-origin: top center;
+        }
+        .popover-hidden {
+            opacity: 0 !important;
+            transform: translateY(-10px) scale(0.95) !important;
+            pointer-events: none !important;
+        }
+        .context-card-anim {
+            transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .context-card-hidden {
+            opacity: 0 !important;
+            transform: translate(-50%, 24px) scale(0.95) !important;
+            pointer-events: none !important;
+        }
+        /* Hide Scrollbar for Bottom Room Bar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }

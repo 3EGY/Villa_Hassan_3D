@@ -1,0 +1,5 @@
+
+      #window-review-dialog{padding:0;border:0;border-radius:18px;width:min(1060px,96vw);max-width:96vw;max-height:94dvh;background:#f4f1ea;z-index:10000;overflow:auto}
+      #window-review-dialog::backdrop{background:#071016b8;backdrop-filter:blur(5px)}
+      #close-window-review{position:absolute;z-index:10;top:14px;left:18px;min-height:44px;padding:8px 14px;border-radius:10px;background:#263742;color:#fff;border:0;font:16px system-ui}
+    

@@ -1,0 +1,37 @@
+        #lighting-modes-button { position: fixed; right: max(14px, env(safe-area-inset-right));
+            bottom: var(--lighting-button-bottom, 76px); width: 50px; height: 50px;
+            z-index: 43; border: 1px solid #c9a35e88; border-radius: 16px;
+            background: #101827ee; color: #f9cd75; box-shadow: 0 5px 20px #0007;
+            cursor: pointer; font-size: 20px; display: grid; place-items: center; }
+        #lighting-modes-button[aria-expanded="true"] { background: #b8892e; color: #101827; }
+        #lighting-modes-backdrop { position: fixed; inset: 0; z-index: 42; background: transparent; border: 0; }
+        #lighting-modes-panel { position: fixed; right: max(14px, env(safe-area-inset-right));
+            bottom: var(--lighting-panel-bottom, 140px); z-index: 44; width: min(324px, calc(100vw - 28px));
+            max-height: calc(100dvh - var(--lighting-panel-bottom, 140px) - 16px);
+            overflow-y: auto; touch-action: pan-y; padding: 13px; border-radius: 18px; }
+        .lighting-modes-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+        .lighting-modes-heading h2 { margin: 0; font-size: 13px; color: #fde3a7; font-weight: 800; }
+        #lighting-mode-current { display: block; margin-top: 3px; font-size: 10px; color: #94a3b8; }
+        .lighting-preset { width: 100%; display: flex; gap: 11px; align-items: center; text-align: right;
+            padding: 10px; margin-top: 6px; border: 1px solid #334155; border-radius: 12px;
+            background: #121e31; color: #e2e8f0; cursor: pointer; }
+        .lighting-preset:hover { background: #20304a; }
+        .lighting-preset[aria-pressed="true"] { border-color: #e9bc64; background: #3a2e19; }
+        .lighting-preset > i { color: #edc778; width: 20px; text-align: center; }
+        .lighting-preset strong { display: block; font-size: 12px; }
+        .lighting-preset small { display: block; font-size: 10px; color: #a8b6c8; line-height: 1.6; margin-top: 2px; }
+        #lighting-presets-note { font-size: 9px; color: #8496ae; margin: 10px 2px 0; }
+        .bulb-pin { gap: 5px !important; min-height: 29px; direction: ltr; }
+        .bulb-pin .bulb-percent { font: 700 10px Tahoma, sans-serif; color: #e2e8f0; }
+        .bulb-color-swatch { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #ffffff88;
+            flex-shrink: 0; box-shadow: 0 0 5px currentColor; }
+        .bulb-timer { font: 9px Tahoma, sans-serif; color: #7dd3fc; }
+        @media (max-height: 520px) {
+            #lighting-modes-panel { padding: 9px; }
+            .lighting-preset { padding: 7px 9px; margin-top: 4px; }
+            .lighting-preset strong { font-size: 11px; }
+            .lighting-preset small { font-size: 9px; }
+            #lighting-presets-note { margin-top: 5px; font-size: 8px; }
+            .lighting-modes-heading { margin-bottom: 5px; }
+        }
+    

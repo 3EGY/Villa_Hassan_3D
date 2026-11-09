@@ -1,0 +1,72 @@
+        /* Floating 3D Labels */
+        #labels-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+            transition: opacity 0.25s ease;
+        }
+        .room-label {
+            position: absolute;
+            z-index: 14;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            cursor: pointer;
+            max-width: 132px;
+            min-height: 22px;
+            padding: 3px 6px;
+            border-radius: 8px;
+            white-space: normal;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+        .room-label .lbl-title { font-size: 10px; font-weight: 700; line-height: 1.25; }
+        .room-label .lbl-sub { font-size: 8px; line-height: 1.2; }
+        #labels-container.labels-awake .room-label {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .room-label:hover, .room-label:active {
+            transform: translate(-50%, -55%) scale(1.07);
+            z-index: 20;
+        }
+        .dim-badge {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            font-family: 'Tajawal', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1.5px 5px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.82);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+        }
+        @media (max-width: 640px) {
+            .room-label {
+                padding: 2px 5px;
+                max-width: 62px;
+                min-height: 20px;
+            }
+            .room-label .lbl-title {
+                font-size: 9px !important;
+            }
+            .room-label .lbl-sub {
+                font-size: 8px !important;
+            }
+            .dim-badge {
+                font-size: 8.5px;
+                padding: 1px 4px;
+            }
+        }
+        @media (max-height: 520px) {
+            .room-label { max-width: 40px; min-height: 18px; padding: 2px 4px; }
+            .room-label .lbl-title { font-size: 8px !important; }
+            .room-label .lbl-sub { font-size: 7px !important; }
+        }

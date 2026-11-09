@@ -1,0 +1,28 @@
+        /* Hidden controls must never intercept taps on the model. */
+        .ui-bar-hidden, .popover-hidden, .context-card-hidden, .radial-hidden,
+        #radial-arc-svg.opacity-0 { visibility: hidden; }
+        [hidden] { display: none !important; }
+        :root { --dock-top-space: 68px; }
+        #bottom-places-dock { bottom: max(10px, env(safe-area-inset-bottom)); }
+        #bottom-places-dock > div { touch-action: pan-x; overscroll-behavior-x: contain; }
+        #focused-room-label {
+            position: fixed; left: 50%; bottom: var(--dock-top-space);
+            transform: translateX(-50%); z-index: 32;
+            display: flex; align-items: center; gap: 8px;
+            max-width: calc(100vw - 24px); padding: 7px 9px; border-radius: 14px;
+            border-color: rgba(251,191,36,.48);
+        }
+        #focused-room-name { min-width: 0; font: inherit; font-size: 12px;
+            font-weight: 800; color: #fcd34d; text-align: right; cursor: pointer;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            background: none; border: 0; padding: 4px 3px; }
+        .focus-action { flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px;
+            border: 1px solid #475569; background: #1e293b; color: #e2e8f0; cursor: pointer; }
+        #focused-light-btn { color: #fcd34d; border-color: #a16207; }
+        #popover-rooms, #popover-layers { max-height: calc(100dvh - 145px); overflow-y: auto; touch-action: pan-y; }
+        #context-card { max-height: calc(100dvh - 210px); overflow-y: auto; touch-action: pan-y; }
+        .room-label:focus-visible, button:focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
+        #radial-light-menu { width: 268px !important; height: 268px !important;
+            transform: translate(-50%, -50%) scale(var(--radial-scale, 1)); }
+        #scene-error { position: fixed; inset: 25% 10%; z-index: 90; padding: 24px; text-align: center; }
+

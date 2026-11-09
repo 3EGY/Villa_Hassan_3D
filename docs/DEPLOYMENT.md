@@ -2,17 +2,23 @@
 
 [العودة إلى التعريف بالمشروع](../README.md)
 
-## تحديث المخطط والشبابيك — الإصدار 2.5
+## التحديث المنظّم — الإصدار 2.6 (مع الحفاظ على مقاسات v2.5)
 
-1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_5.zip`.
+1. فك ضغط حزمة `Villa_Hassan_Smart_Home_v2_6_Modular.zip`.
 2. افتح [المستودع](https://github.com/3EGY/Villa_Hassan_3D) ثم **Add file → Upload files**.
-3. ارفع `index.html` مكان النسخة الحالية، وأضف `windows-review.html` لتطبيق المخطط المرجعي وفتحات الشبابيك ومحرر الارتفاعات.
-4. ارفع `README.md` ومجلدي `docs` و`assets` أيضًا لتحديث الشرح والصور ومعاينة الرابط. حافظ على المسارات كما هي.
+3. ارفع **جميع ملفات الحزمة مع الحفاظ على أسماء المجلدات**: `index.html` و`windows-review.html` ومجلدات `js/` و`styles/` و`vendor/` و`assets/`. لا ترفع HTML وحده؛ سيحتاج إلى ملفات JS وCSS المنفصلة.
+4. ارفع `README.md` ومجلدي `docs/` و`scripts/` أيضًا لتحديث الشرح والصور والتحقق من المشروع. حافظ على المسارات كما هي.
 5. احفظ بـ **Commit changes**، وانتظر نجاح نشر الموقع من **Actions**.
 
 لا تحتاج إلى إعادة إعداد GitHub Pages. بعد اكتمال النشر، حدّث الصفحة بـ `Ctrl + F5` على الكمبيوتر، أو افتح الرابط في تبويب خاص على الهاتف للتأكد من ظهور النسخة الجديدة.
 
-التغييرات في هذه النسخة:
+**ما الذي تغير في v2.6؟**
+
+- تقسيم أكواد التطبيق والمكتبات والأنماط إلى ملفات ومجلدات وظيفية، دون تغيير أسلوب التحكم الحالي.
+- توحيد بيانات الشبابيك في `js/data/window-config.js`، واستخدام `assets/reference-plan.png` بدل تكرار الصورة.
+- توثيق الهيكل وكيفية إضافة الأجهزة الجديدة في [`docs/ARCHITECTURE.md`](ARCHITECTURE.md).
+
+**التغييرات الوظيفية المحتفظ بها من v2.5:**
 
 - دمج W1 وW2 في شباك واحد بعرض 200 سم، وتثبيت مناسيب الجلسات وارتفاعات الفتحات المعتمدة لجميع الشبابيك.
 
@@ -33,11 +39,11 @@
 - عرض أقرب للفيلا كاملة من أعلى، محسوب على المساحة المتاحة فوق الشريط السفلي.
 - كل وضع إضاءة، بما فيه إغلاق وتشغيل الكل، يعيد العرض إلى كامل الفيلا ويخفي أيقونات لمبات الغرف.
 
-إذا كان لديك checkout محلي، بعد نسخ الملفات إلى مكانها:
+إذا كان لديك checkout محلي، بعد نسخ **المجلدات كاملة** إلى مكانها:
 
 ```powershell
-git add index.html windows-review.html README.md docs assets
-git commit -m "Apply approved window dimensions and merge master window"
+git add index.html windows-review.html README.md docs assets js styles vendor scripts 404.html .nojekyll .gitignore THIRD_PARTY_NOTICES.md
+git commit -m "Organize Villa Hassan first-floor viewer into functional files"
 git push origin main
 ```
 
@@ -57,7 +63,19 @@ git push origin main
 
 | الملف | وظيفته |
 | --- | --- |
-| `index.html` | الصفحة الرئيسية والمجسم والمكتبات والأيقونات المضمنة |
+| `index.html` | الهيكل الأساسي للواجهة وربط ملفات CSS وJavaScript |
+| `windows-review.html` | صفحة مراجعة الشبابيك منفصلة وتشارك مكوّن المحرر مع صفحة الفيلا |
+| `js/data/` | بيانات الغرف والشبابيك |
+| `js/model/` | إحداثيات المخطط والجدران والفتحات |
+| `js/scene/` | المشهد ثلاثي الأبعاد والغرف والأثاث والكاميرا |
+| `js/devices/lighting/` | المصابيح والتحكم الدائري وأوضاع الإضاءة |
+| `js/ui/` | الواجهة والقوائم والملصقات والتنقل |
+| `js/windows/` | محرر الشبابيك والربط مع المشهد |
+| `js/core/` | حالات التطبيق والتفاعل وبدء التشغيل |
+| `styles/` | CSS مقسم حسب واجهات ووظائف الصفحة |
+| `vendor/` | المكتبات المثبّتة محليًا (Three.js وTailwind وFont Awesome) |
+| `scripts/check-project.mjs` | فحص تلقائي للملفات ومساراتها والبيانات دون تثبيت حزم |
+| `docs/ARCHITECTURE.md` | دليل الأجزاء والتوسّع لأجهزة المنزل الذكي |
 | `assets/favicon.svg` | أيقونة الصفحة وهوية شاشة الترحيب |
 | `assets/apple-touch-icon.png` | أيقونة الاختصار على أجهزة Apple |
 | `assets/social-card.png` | صورة معاينة الرابط، بمقاس 1200×630 |
@@ -66,17 +84,17 @@ git push origin main
 | `.gitignore` | استبعاد الملفات المحلية المؤقتة |
 | `THIRD_PARTY_NOTICES.md` | إشعارات وتراخيص المكتبات المضمنة |
 
-لا تحتاج الحزمة إلى npm أو build أو مفاتيح API. يمكن فتح `index.html` محليًا بعد فك الضغط؛ أبقِ مجلد `assets` بجواره. ملفات التشغيل كلها محلية، وبيانات المشاركة تشير إلى رابط النشر النهائي.
+لا تحتاج الحزمة إلى npm أو build أو مفاتيح API. لا تنقل ملف `index.html` منفردًا لأن الصفحة تعتمد الآن على ملفات محلية منفصلة. يمكن فتح `index.html` محليًا بعد فك الضغط؛ أبقِ جميع مجلدات `assets/` و`js/` و`styles/` و`vendor/` بجواره. ملفات التشغيل كلها محلية، وبيانات المشاركة تشير إلى رابط النشر النهائي.
 
 ## أول رفع من Windows PowerShell
 
-يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_3.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
+يُفترض أن Git مثبت، وأن ملف `Villa_Hassan_Smart_Home_v2_6_Modular.zip` موجود في المجلد الحالي، وأن مجلدًا باسم `Villa_Hassan_3D` غير موجود فيه.
 
 ```powershell
 git clone https://github.com/3EGY/Villa_Hassan_3D.git
 Set-Location .\Villa_Hassan_3D
-Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_3.zip -DestinationPath . -Force
-git add index.html assets docs 404.html .nojekyll .gitignore README.md THIRD_PARTY_NOTICES.md
+Expand-Archive -LiteralPath ..\Villa_Hassan_Smart_Home_v2_6_Modular.zip -DestinationPath . -Force
+git add index.html windows-review.html assets docs js styles vendor scripts 404.html .nojekyll .gitignore README.md THIRD_PARTY_NOTICES.md
 git commit -m "Publish Villa Hassan interactive 3D presentation"
 git branch -M main
 git push -u origin main
@@ -125,7 +143,7 @@ git pull --ff-only origin main
 بعد تعديل الملفات وحفظها:
 
 ```powershell
-git add index.html assets docs 404.html README.md THIRD_PARTY_NOTICES.md .nojekyll .gitignore
+git add index.html windows-review.html assets docs js styles vendor scripts 404.html README.md THIRD_PARTY_NOTICES.md .nojekyll .gitignore
 git commit -m "Update Villa Hassan presentation"
 git push origin main
 ```
@@ -154,6 +172,6 @@ git push origin main
 - [مدة ظهور التحديثات](https://docs.github.com/en/pages/quickstart)
 
 
-## تحديث v2.5
+## سجل التحديث السابق v2.5
 
 ارفع محتويات الحزمة إلى جذر المستودع، بما فيها `windows-review.html` و`assets/reference-plan.png` و`docs/PLAN_REVIEW.md`. من إعدادات العرض يمكن فتح مراجعة الشبابيك. المقاسات المعتمدة مثبتة في هذه الحزمة. ملف `docs/WINDOW_SCHEDULE.json` يوثقها؛ أي تعديلات لاحقة من المحرر تحفظ في المتصفح الحالي فقط.

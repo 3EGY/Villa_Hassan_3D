@@ -96,7 +96,14 @@
             buildMainStaircaseAndPowderRoom();
             alignFurnitureToReference();
 
+            // The existing first floor is built as-is, then the separate ground
+            // module is created in a hidden group. The floor switcher never rebuilds
+            // light/covering registries and therefore preserves all current states.
+            VillaGroundFloorScene.build(scene);
             createHTMLOverlays();
+            VillaFloors.initialize();
+            VillaFloorSwitcher.init();
+            document.body.dataset.activeFloor='floor1';
             VillaCoveringVisuals.createMarkers();
             toggleDimensionBadges(false);
             setLightingMode('night');

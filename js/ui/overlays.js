@@ -27,7 +27,13 @@
             };
 
             // 1. Room Labels
-            floatingRoomLabels.forEach(lbl => {
+            const allFloorLabels = floatingRoomLabels.map(item=>({...item,floorId:'floor1'}))
+                .concat((window.VillaGroundFloorData?.rooms||[]).map(room=>{
+                    const coord=window.VillaGroundFloorData.coord(...room.center);
+                    return {id:room.id,name:room.title,sub:'الدور الأرضي · مبدئي',
+                        x:coord.x,y:.9,z:coord.z,color:'sky',floorId:'ground'};
+                }));
+            allFloorLabels.forEach(lbl => {
                 const el = document.createElement('button');
                 el.type = 'button';
                 el.className = `room-label border backdrop-blur-md shadow-lg ${colorClasses[lbl.color] || colorClasses.amber}`;
@@ -54,7 +60,8 @@
                     selectZoneFromDock(lbl.id, false, lbl.name, new THREE.Vector3(lbl.x, lbl.y, lbl.z));
                 };
                 container.appendChild(el);
-                labelDOMElements.push({ el, zone: lbl.id, pos: new THREE.Vector3(lbl.x, lbl.y, lbl.z) });
+                labelDOMElements.push({ el, zone: lbl.id, floorId:lbl.floorId,
+                    pos: new THREE.Vector3(lbl.x, lbl.y, lbl.z) });
             });
 
             // 2. Dimension Badges
@@ -110,7 +117,8 @@
 
             // Room labels
             labelDOMElements.forEach(item => {
-                if (!showRoomLabelsFlag || focusedZoneKey !== 'overview' || cameraAnim) {
+                if (!showRoomLabelsFlag || focusedZoneKey !== 'overview' || cameraAnim ||
+                    item.floorId !== (window.VillaFloors?.activeId || 'floor1')) {
                     item.el.style.display = 'none';
                     return;
                 }
@@ -126,7 +134,7 @@
 
             // Dimension badges
             dimDOMElements.forEach(item => {
-                if (!showDimBadgesFlag) {
+                if (!showDimBadgesFlag || window.VillaFloors?.activeId !== 'floor1') {
                     item.el.style.display = 'none';
                     return;
                 }
@@ -142,7 +150,7 @@
 
             bulbPinElements.forEach(lightObj => {
                 if (!lightObj.pinEl) return;
-                const show = showSmartBulbPinsFlag && focusedZoneKey !== 'overview'
+                const show = (window.VillaFloors?.activeId || 'floor1') === 'floor1' && showSmartBulbPinsFlag && focusedZoneKey !== 'overview'
                     && lightObj.zone === focusedZoneKey && !cameraAnim;
                 lightObj.fixtureGroup.visible = show;
                 if (!show) {

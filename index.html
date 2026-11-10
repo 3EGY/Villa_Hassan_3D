@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فيلا حسن | جولة معمارية ثلاثية الأبعاد</title>
-    <meta name="description" content="استكشف الدور الأول لفيلا حسن في جولة تفاعلية ثلاثية الأبعاد، مع التنقل بين الغرف والتحكم في الإضاءة وزوايا العرض.">
+    <title>فيلا حسن | نظام الفيلا الذكية متعدد الأدوار</title>
+    <meta name="description" content="استكشف فيلا حسن عبر الأدوار: الأرضي والأول، مع بنية جاهزة للملحق والسطح والتحكم المنزلي الموحد.">
     <meta name="theme-color" content="#080e19">
-    <meta name="application-version" content="3.0-coverings-mobile-voice">
+    <meta name="application-version" content="4.0-multifloor-core-ground-base">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:site_name" content="Villa Hassan">
@@ -19,7 +19,7 @@
     <meta property="og:image:alt" content="Villa Hassan — interactive architectural tour">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Villa Hassan | Interactive 3D Tour">
-    <meta name="twitter:description" content="استكشف الدور الأول وتفاعل مع الغرف والإضاءة.">
+    <meta name="twitter:description" content="تنقل بين الدور الأرضي والأول، مع تحكم ذكي وأساس قابل للتوسع.">
     <meta name="twitter:image" content="https://3egy.github.io/Villa_Hassan_3D/assets/social-card.png">
     <link rel="canonical" href="https://3egy.github.io/Villa_Hassan_3D/">
     <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
@@ -34,18 +34,19 @@
     <!-- Three.js OrbitControls -->
     <script src="./vendor/OrbitControls.js"></script>
 
-    <link rel="stylesheet" href="./styles/base.css">
-    <link rel="stylesheet" href="./styles/room-labels.css">
-    <link rel="stylesheet" href="./styles/toolbar.css">
-    <link rel="stylesheet" href="./styles/radial-light.css">
-    <link rel="stylesheet" href="./styles/navigation.css">
-    <link rel="stylesheet" href="./styles/welcome.css">
-    <link rel="stylesheet" href="./styles/lighting-presets.css">
-    <link rel="stylesheet" href="./styles/coverings.css">
-    <link rel="stylesheet" href="./styles/voice.css?v=3.0.0">
-    <link rel="stylesheet" href="./styles/window-review-dialog.css">
-    <link rel="stylesheet" href="./styles/window-review.css">
-    <link rel="stylesheet" href="./styles/transparency.css">
+    <link rel="stylesheet" href="./styles/base.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/room-labels.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/toolbar.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/radial-light.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/navigation.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/welcome.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/lighting-presets.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/coverings.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/voice.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/window-review-dialog.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/window-review.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/transparency.css?v=4.0.0">
+    <link rel="stylesheet" href="./styles/floors.css?v=4.0.0">
 </head>
 <body>
 
@@ -54,8 +55,9 @@
             <img class="welcome-mark" src="./assets/favicon.svg" alt="" width="58" height="58">
             <div class="welcome-eyebrow">VILLA HASSAN</div>
             <h1 id="client-title">فيلا حسن</h1>
-            <p class="welcome-subtitle" id="client-intro">الدور الأول · تجربة معمارية تفاعلية</p>
+            <p class="welcome-subtitle" id="client-intro">الفيلا الذكية · الدور الأول والأرضي</p>
             <div class="welcome-instructions">
+                <p><i class="fa-solid fa-building" aria-hidden="true"></i><span>اختر الدور الأرضي أو الأول من لوحة أدوار الفيلا أسفل اليسار.</span></p>
                 <p><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i><span>اسحب لتدوير المشهد، واستخدم إصبعين أو عجلة الماوس للتقريب.</span></p>
                 <p><i class="fa-solid fa-house" aria-hidden="true"></i><span>المس المخطط لإظهار أسماء الأماكن، ثم اختر الغرفة أو استخدم الشريط السفلي.</span></p>
                 <p><i class="fa-solid fa-lightbulb" aria-hidden="true"></i><span>اضغط على اللمبة لتغيير الإضاءة واللون والشدة.</span></p>
@@ -74,6 +76,17 @@
     <!-- 3D Floating Room & Dimension Labels Overlay -->
     <div id="labels-container"></div>
 
+    <!-- Floor navigation is shared across all floor modules. Exterior scene comes later. -->
+    <nav id="floor-switcher" aria-label="التنقل بين أدوار الفيلا" hidden>
+        <div class="floor-switcher-label"><i class="fa-solid fa-building"></i><span>أدوار الفيلا</span></div>
+        <div class="floor-switcher-buttons" id="floor-switcher-buttons"></div>
+        <p id="floor-switcher-status" aria-live="polite">الدور الأول</p>
+    </nav>
+    <div id="floor-preview-note" role="status" hidden>
+       <i class="fa-solid fa-ruler-combined" aria-hidden="true"></i>
+       <span>الدور الأرضي · مجسم تأسيسي للمراجعة وفق مخطط الأثاث · لم تُعتمد الفتحات والأجهزة بعد</span>
+    </div>
+
     <!-- Unobtrusive Mini Summon Button (Visible when main toolbar auto-hides) -->
     <button id="summon-ui-btn" onclick="summonMainToolbar(event)" class="fixed top-3 right-3 z-30 glass-pill rounded-full px-3 py-2 text-xs font-bold text-amber-300 flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg">
         <i class="fa-solid fa-sliders text-amber-400"></i>
@@ -81,7 +94,7 @@
     </button>
 
     <!-- Quick Reset/Home Mini Button (Top Left, subtle & semi-transparent) -->
-    <button id="quick-home-btn" onclick="selectZoneAndClose('overview')" class="fixed top-3 left-3 z-30 glass-pill rounded-full w-9 h-9 flex items-center justify-center text-slate-200 hover:text-amber-300 opacity-65 hover:opacity-100 transition-all duration-200 shadow-md" title="منظور شامل للفيلا">
+    <button id="quick-home-btn" onclick="selectZoneAndClose('overview')" class="fixed top-3 left-3 z-30 glass-pill rounded-full w-9 h-9 flex items-center justify-center text-slate-200 hover:text-amber-300 opacity-65 hover:opacity-100 transition-all duration-200 shadow-md" title="منظور شامل للدور الحالي">
         <i class="fa-solid fa-expand text-xs"></i>
     </button>
 
@@ -159,7 +172,7 @@
 
         <!-- Room Teleport Grid -->
         <div class="text-[10px] text-slate-400 mb-1.5 font-semibold">اختر الفراغ للتركيز عليه (تُغلق القائمة تلقائياً):</div>
-        <div class="grid grid-cols-2 gap-1.5">
+        <div id="room-teleport-grid" class="grid grid-cols-2 gap-1.5">
             <button onclick="selectZoneAndClose('overview')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
                 <i class="fa-solid fa-house text-amber-400 w-4 text-center"></i>
                 <div class="truncate">
@@ -577,7 +590,7 @@
         <div class="glass-panel rounded-2xl p-1.5 px-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full pointer-events-auto shadow-2xl border border-slate-700/80">
             <button id="dock-overview" onclick="selectZoneFromDock('overview')" class="dock-btn btn-active px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <i class="fa-solid fa-house text-amber-400"></i>
-                <span>كامل الفيلا</span>
+                <span>كامل الدور الأول</span>
             </button>
             <button id="dock-masterBedroom" onclick="selectZoneFromDock('masterBedroom')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <i class="fa-solid fa-bed text-amber-400"></i>
@@ -634,41 +647,50 @@
         <span id="toast-text">انقر على أي لمبة إضاءة أو قطعة أثاث للتفاعل معها</span>
     </div>
 
-    <script src="./js/data/window-config.js"></script>
-    <script src="./js/data/coverings-config.js?v=3.0.0"></script>
-    <script src="./js/model/plan.js"></script>
-    <script src="./js/model/architecture.js"></script>
-    <script src="./js/data/rooms-and-items.js"></script>
-    <script src="./js/core/state.js"></script>
-    <script src="./js/devices/registry.js"></script>
-    <script src="./js/devices/coverings/adapter.js"></script>
-    <script src="./js/devices/coverings/automation.js"></script>
-    <script src="./js/scene/textures.js"></script>
-    <script src="./js/scene/init.js"></script>
-    <script src="./js/devices/lighting/fixtures.js"></script>
-    <script src="./js/devices/lighting/adapter.js"></script>
-    <script src="./js/scene/materials.js"></script>
-    <script src="./js/scene/walls-and-doors.js"></script>
-    <script src="./js/scene/rooms-and-furniture.js"></script>
-    <script src="./js/ui/overlays.js"></script>
-    <script src="./js/devices/lighting/radial-menu.js"></script>
-    <script src="./js/devices/coverings/visuals.js?v=3.0.0"></script>
-    <script src="./js/devices/coverings/controls.js"></script>
-    <script src="./js/voice/voice-control.js"></script>
-    <script src="./js/voice/voice-meter.js?v=3.0.0"></script>
-    <script src="./js/voice/voice-ui.js?v=3.0.0"></script>
-    <script src="./js/ui/toolbar.js"></script>
-    <script src="./js/ui/room-navigation.js"></script>
-    <script src="./js/scene/camera-and-view.js"></script>
-    <script src="./js/devices/lighting/presets.js"></script>
-    <script src="./js/ui/view-options.js"></script>
-    <script src="./js/scene/export-obj.js"></script>
-    <script src="./js/ui/toast.js"></script>
-    <script src="./js/core/interactions-and-animation.js"></script>
-    <script src="./js/core/bootstrap.js"></script>
+    <script src="./js/floors/first/window-config.js?v=4.0.0"></script>
+    <script src="./js/floors/first/coverings-config.js?v=4.0.0"></script>
+    <script src="./js/floors/first/plan.js?v=4.0.0"></script>
+    <script src="./js/floors/first/architecture.js?v=4.0.0"></script>
+    <script src="./js/floors/first/rooms-and-items.js?v=4.0.0"></script>
+    <script src="./js/core/state.js?v=4.0.0"></script>
+    <script src="./js/floors/first/lights.js?v=4.0.0"></script>
+    <script src="./js/floors/ground/data.js?v=4.0.0"></script>
+    <script src="./js/core/floor-manager.js?v=4.0.0"></script>
+    <script src="./js/floors/first/module.js?v=4.0.0"></script>
+    <script src="./js/floors/ground/module.js?v=4.0.0"></script>
+    <script src="./js/floors/planned.js?v=4.0.0"></script>
+    <script src="./js/devices/registry.js?v=4.0.0"></script>
+    <script src="./js/devices/coverings/adapter.js?v=4.0.0"></script>
+    <script src="./js/devices/coverings/automation.js?v=4.0.0"></script>
+    <script src="./js/core/home-system.js?v=4.0.0"></script>
+    <script src="./js/scene/textures.js?v=4.0.0"></script>
+    <script src="./js/scene/init.js?v=4.0.0"></script>
+    <script src="./js/devices/lighting/fixtures.js?v=4.0.0"></script>
+    <script src="./js/devices/lighting/adapter.js?v=4.0.0"></script>
+    <script src="./js/scene/materials.js?v=4.0.0"></script>
+    <script src="./js/floors/first/walls-and-doors.js?v=4.0.0"></script>
+    <script src="./js/floors/first/rooms-and-furniture.js?v=4.0.0"></script>
+    <script src="./js/ui/overlays.js?v=4.0.0"></script>
+    <script src="./js/devices/lighting/radial-menu.js?v=4.0.0"></script>
+    <script src="./js/devices/coverings/visuals.js?v=4.0.0"></script>
+    <script src="./js/devices/coverings/controls.js?v=4.0.0"></script>
+    <script src="./js/voice/voice-control.js?v=4.0.0"></script>
+    <script src="./js/voice/voice-meter.js?v=4.0.0"></script>
+    <script src="./js/voice/voice-ui.js?v=4.0.0"></script>
+    <script src="./js/ui/toolbar.js?v=4.0.0"></script>
+    <script src="./js/ui/room-navigation.js?v=4.0.0"></script>
+    <script src="./js/scene/camera-and-view.js?v=4.0.0"></script>
+    <script src="./js/devices/lighting/presets.js?v=4.0.0"></script>
+    <script src="./js/ui/view-options.js?v=4.0.0"></script>
+    <script src="./js/scene/export-obj.js?v=4.0.0"></script>
+    <script src="./js/ui/toast.js?v=4.0.0"></script>
+    <script src="./js/core/interactions-and-animation.js?v=4.0.0"></script>
+    <script src="./js/floors/ground/scene.js?v=4.0.0"></script>
+    <script src="./js/ui/floor-switcher.js?v=4.0.0"></script>
+    <script src="./js/core/bootstrap.js?v=4.0.0"></script>
 
     
-    <script src="./js/windows/viewer-bridge.js"></script>
+    <script src="./js/windows/viewer-bridge.js?v=4.0.0"></script>
     <dialog id="window-review-dialog" aria-label="مراجعة ارتفاعات الشبابيك"><button type="button" id="close-window-review" onclick="document.getElementById('window-review-dialog').close()">إغلاق</button>
 <div id="villa-window-review" dir="rtl">
   
@@ -706,7 +728,7 @@
       </div></details>
     </section>
   </div>
-  <script src="./js/windows/editor.js"></script>
+  <script src="./js/windows/editor.js?v=4.0.0"></script>
 </div>
 
 </dialog>

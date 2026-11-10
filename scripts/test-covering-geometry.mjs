@@ -11,7 +11,7 @@ const ctx=vm.createContext({console,Math,Map,Set,Array,Object,Number,Boolean,
     innerWidth:1280,innerHeight:800,
 });
 ctx.window=ctx;
-for(const file of ['vendor/three.js','js/data/window-config.js','js/data/coverings-config.js']) vm.runInContext(script(file),ctx);
+for(const file of ['vendor/three.js','js/floors/first/window-config.js','js/floors/first/coverings-config.js']) vm.runInContext(script(file),ctx);
 ctx.PLAN_WINDOWS=vm.runInContext('VILLA_WINDOW_CONFIG.specs',ctx);
 ctx.windowSize=spec=>({sill:vm.runInContext('VILLA_WINDOW_CONFIG.approved',ctx)[spec.id].sillCm/100,
     height:vm.runInContext('VILLA_WINDOW_CONFIG.approved',ctx)[spec.id].heightCm/100});

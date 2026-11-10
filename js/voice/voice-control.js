@@ -49,7 +49,12 @@
         else if(/شتر|شطر/.test(normalized))kind='shutter';
         else if(/اضا|لمب|نور|انوار|ضو/.test(normalized))kind='light';
         else return {error:'اذكر نوع الجهاز: إضاءة أو شتر أو ستائر'};
-        const zone=roomAliases.find(item=>item.words.some(word=>normalized.includes(word)))?.zone||null;
+        const floorId=/الدور الاول|الطابق الاول/.test(normalized)?'floor1'
+            :/الدور الارضي|الطابق الارضي/.test(normalized)?'ground'
+            :(global.VillaFloors?.activeId||'floor1');
+        const zone=global.VillaFloors?.roomFromSpeech(normalized,floorId)
+            || (floorId==='floor1' ? roomAliases.find(item=>item.words.some(word=>normalized.includes(word)))?.zone : null)
+            || null;
         const number=voiceNumber(normalized);
         let action, value;
         if(/وضع النهار|الصباح|نهاري/.test(normalized)&&kind!=='light')action='day';
@@ -66,18 +71,21 @@
         }
         else return {error:'لم أتعرف على الإجراء. جرّب افتح أو اقفل أو حدد نسبة'};
         // A command without a room deliberately targets all devices of that type.
-        return {kind,zoneId:zone,action,value,normalized};
+        return {kind,zoneId:zone,floorId,action,value,normalized};
     }
     async function executeCommand(phrase) {
         const parsed=parseCommand(phrase);
         if(parsed.error)throw new Error(parsed.error);
-        const {kind,zoneId,action,value}=parsed;
+        const {kind,zoneId,floorId,action,value}=parsed;
         if(action==='day'||action==='night') {
+            // v3 schedules belong to the first floor. Never trigger that floor
+            // from a new floor before its own covering scheduler is registered.
+            if(floorId!=='floor1')throw new Error('لا توجد أوضاع شتر أو ستائر معتمدة لهذا الدور بعد');
             if(zoneId)throw new Error('وضع النهار والليل للجميع؛ للتحكم في غرفة قل افتح أو اقفل');
             await global.VillaCoveringSchedules.mode(kind,action);
             return `تم تطبيق وضع ${action==='day'?'النهار':'الليل'} على ${kind==='curtain'?'الستائر':'الشتر'}`;
         }
-        const devices=registry.list(zoneId?{kind,zoneId}:{kind});
+        const devices=registry.list(zoneId?{kind,zoneId,floorId}:{kind,floorId});
         if(!devices.length)throw new Error('لا توجد أجهزة مطابقة للغرفة ونوع الجهاز');
         const results=await Promise.allSettled(devices.map(d=>registry.execute(d.id,action,value)));
         const failures=results.filter(r=>r.status==='rejected');

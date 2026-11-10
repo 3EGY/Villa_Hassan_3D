@@ -52,8 +52,10 @@
         if (typeof definition.name !== 'string' || !definition.name.trim()) {
             throw new TypeError(`Missing device name: ${definition.id}`);
         }
+        const floorId = definition.floorId || 'floor1';
         if (typeof definition.zoneId !== 'string' || definition.zoneId === 'overview'
-            || (typeof ZONE_SPECS !== 'undefined' && !Object.hasOwn(ZONE_SPECS, definition.zoneId))) {
+            || (global.VillaFloors && !global.VillaFloors.hasRoom(floorId, definition.zoneId))
+            || (!global.VillaFloors && typeof ZONE_SPECS !== 'undefined' && !Object.hasOwn(ZONE_SPECS, definition.zoneId))) {
             throw new TypeError(`Unknown zoneId for ${definition.id}: ${definition.zoneId}`);
         }
         if (!Array.isArray(definition.capabilities) || !definition.capabilities.length
@@ -69,7 +71,7 @@
             id: definition.id,
             kind: definition.kind,
             zoneId: definition.zoneId,
-            floorId: definition.floorId || 'floor1',
+            floorId,
             name: definition.name.trim(),
             capabilities: [...definition.capabilities],
             state: copy(initialState),

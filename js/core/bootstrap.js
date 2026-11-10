@@ -11,7 +11,7 @@
             for (const id of ['canvas-container', 'labels-container', 'main-toolbar', 'popover-rooms',
                 'popover-layers', 'radial-light-menu', 'context-card', 'focused-room-label',
                 'bottom-places-dock', 'summon-ui-btn', 'quick-home-btn', 'help-tour-btn',
-                'lighting-modes-button', 'lighting-modes-panel', 'lighting-modes-backdrop',
+                'lighting-modes-button', 'lighting-modes-panel', 'lighting-modes-backdrop', 'floor-switcher',
                 'covering-button-stack', 'covering-markers-layer', 'covering-modes-panel', 'covering-modes-backdrop',
                 'covering-radial', 'covering-radial-scrim', 'voice-panel', 'voice-backdrop', 'voice-live']) {
                 const element = document.getElementById(id);
@@ -47,6 +47,9 @@
         function bootClientViewer() {
             try {
                 initScene();
+                // Shareable floor link: ?floor=ground or ?floor=floor1.
+                const requestedFloor=new URLSearchParams(window.location.search).get('floor');
+                if(requestedFloor && ['ground','floor1'].includes(requestedFloor)) VillaFloors.select(requestedFloor);
                 focusZone('overview');
                 clientViewerReady = true;
                 const start = document.getElementById('client-start');

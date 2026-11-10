@@ -105,8 +105,8 @@ context.startBulbTimer = (light, minutes) => {
 };
 vm.runInContext(read('js/devices/lighting/adapter.js'), context);
 await check('14 existing unique light IDs and valid zones in source specs', async () => {
-    const fixtureCode = read('js/devices/lighting/fixtures.js');
-    const specs = fixtureCode.match(/const roomLightSpecs\s*=\s*(\[[\s\S]*?\n\s*\]);/);
+    const fixtureCode = read('js/floors/first/lights.js');
+    const specs = fixtureCode.match(/const FIRST_FLOOR_LIGHT_SPECS\s*=\s*(\[[\s\S]*?\n\s*\]);/);
     assert(specs, 'Light fixture source is missing its metadata array');
     const metadata = vm.runInNewContext(specs[1]);
     assert.equal(metadata.length, 14);

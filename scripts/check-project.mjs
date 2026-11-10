@@ -42,9 +42,9 @@ checked('main page and review page use the shared window editor', () => {
   assert(scriptsInEditor.includes('js/windows/editor.js'));
   assert(scripts.includes('js/windows/viewer-bridge.js'));
   assert(!scriptsInEditor.includes('js/windows/viewer-bridge.js'));
-  assert(scripts.indexOf('js/data/window-config.js') < scripts.indexOf('js/model/plan.js'));
-  assert(scripts.indexOf('js/data/window-config.js') < scripts.indexOf('js/windows/editor.js'));
-  assert(scriptsInEditor.indexOf('js/data/window-config.js') < scriptsInEditor.indexOf('js/windows/editor.js'));
+  assert(scripts.indexOf('js/floors/first/window-config.js') < scripts.indexOf('js/floors/first/plan.js'));
+  assert(scripts.indexOf('js/floors/first/window-config.js') < scripts.indexOf('js/windows/editor.js'));
+  assert(scriptsInEditor.indexOf('js/floors/first/window-config.js') < scriptsInEditor.indexOf('js/windows/editor.js'));
 });
 checked('unified device registry and lighting adapter load in correct order', () => {
   const pos = file => scripts.indexOf(file);
@@ -57,7 +57,7 @@ checked('unified device registry and lighting adapter load in correct order', ()
 });
 checked('curtain, shutter and Arabic voice modules load in dependency order', () => {
   const at=file=>scripts.indexOf(file);
-  const seq=['js/data/coverings-config.js','js/devices/registry.js',
+  const seq=['js/floors/first/coverings-config.js','js/devices/registry.js',
     'js/devices/coverings/adapter.js','js/devices/coverings/automation.js',
     'js/devices/coverings/visuals.js','js/devices/coverings/controls.js',
     'js/voice/voice-control.js','js/core/bootstrap.js'];
@@ -102,8 +102,8 @@ checked('HTML pages no longer embed large inline scripts, CSS or base64 plans', 
     assert(!html.includes('data:image/png;base64,'));
     assert(html.includes('href="./assets/reference-plan.png"'));
   }
-  assert(read('js/model/architecture.js').includes("new THREE.TextureLoader().load('./assets/reference-plan.png')"));
-  assert(!read('js/model/architecture.js').includes('data:image/png;base64,'));
+  assert(read('js/floors/first/architecture.js').includes("new THREE.TextureLoader().load('./assets/reference-plan.png')"));
+  assert(!read('js/floors/first/architecture.js').includes('data:image/png;base64,'));
   // Keep the image as a single asset rather than embedding another duplicate.
 });
 checked('every inline UI function has a matching function declaration', () => {
@@ -117,7 +117,7 @@ checked('every inline UI function has a matching function declaration', () => {
 });
 checked('approved windows match the exported architectural schedule', () => {
   const ctx=vm.createContext({});
-  vm.runInContext(read('js/data/window-config.js'),ctx);
+  vm.runInContext(read('js/floors/first/window-config.js'),ctx);
   const config=vm.runInContext('VILLA_WINDOW_CONFIG',ctx);
   const schedule=JSON.parse(read('docs/WINDOW_SCHEDULE.json'));
   assert.equal(config.reference,schedule.reference);

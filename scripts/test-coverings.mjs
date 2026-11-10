@@ -12,7 +12,7 @@ const ctx=vm.createContext({console,Date,Promise,Math,Number,Map,Set,JSON,Object
     document:{addEventListener(){}},
 });
 ctx.window=ctx;
-for(const f of ['js/data/window-config.js','js/data/coverings-config.js',
+for(const f of ['js/floors/first/window-config.js','js/floors/first/coverings-config.js',
     'js/devices/registry.js','js/devices/coverings/adapter.js',
     'js/devices/coverings/automation.js','js/voice/voice-control.js']) {
     vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),ctx,{filename:f});

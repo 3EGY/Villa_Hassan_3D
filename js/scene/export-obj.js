@@ -7,11 +7,12 @@
 
         function exportSceneToOBJ() {
             scene.updateMatrixWorld(true);
-            let objContent = "# Villa Hassan First Floor 3D Model - Exported from Three.js\n";
+            const activeFloor=window.VillaFloors?.activeId||'floor1';
+            let objContent = `# Villa Hassan ${activeFloor} 3D Model - Exported from Three.js\n`;
             let vertexOffset = 1;
 
             scene.traverse(node => {
-                if (node.isMesh && isEffectivelyVisible(node) && node !== cadOverlayMesh) {
+                if (node.isMesh && isEffectivelyVisible(node) && node !== cadOverlayMesh && !node.userData.isReferencePlan) {
                     const geo = node.geometry;
                     if (!geo || !geo.attributes || !geo.attributes.position) return;
 
@@ -49,10 +50,10 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'Villa_Hassan_First_Floor_3D.obj';
+            a.download = `Villa_Hassan_${activeFloor}_3D.obj`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast("تم تصدير وتحميل ملف المجسم Villa_Hassan_First_Floor_3D.obj بنجاح");
+            showToast(`تم تصدير مجسم ${activeFloor} بنجاح`);
         }

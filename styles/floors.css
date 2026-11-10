@@ -1,0 +1,36 @@
+/* Independent floor navigation, never covering the right-side device controls. */
+#floor-switcher { position:fixed; z-index:31; left:12px; bottom:calc(var(--dock-top-space, 72px) + 12px);
+    width:min(210px,44vw); border:1px solid rgba(132,160,180,.36); border-radius:17px;
+    padding:9px; color:#e9f3fa; background:rgba(12,22,36,.77); backdrop-filter:blur(18px);
+    box-shadow:0 15px 35px #0007; direction:rtl; }
+#floor-switcher[hidden], #floor-preview-note[hidden] {display:none!important}
+.floor-switcher-label{font-size:11px;font-weight:800;margin:0 2px 7px;color:#a8dce5;display:flex;align-items:center;gap:7px}
+.floor-switcher-buttons{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.floor-choice {min-height:34px;display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap;
+    padding:7px 5px;border-radius:11px;border:1px solid #8299a33d;background:#233349a1;
+    font-size:11px;font-weight:750;color:#e5edf3;cursor:pointer;transition:background .2s,border-color .2s}
+.floor-choice:hover:not(:disabled),.floor-choice[aria-pressed="true"]{border-color:#eccb7199;background:#62503388;color:#ffe7ab}
+.floor-choice:disabled{color:#9cabb98e;cursor:not-allowed;opacity:.55}
+.floor-choice small{font-size:9px;opacity:.6}
+#floor-switcher-status{margin:7px 3px 0;font-size:10px;color:#91bac8;line-height:1.3}
+.floor-header-label{font-size:10px;white-space:nowrap;color:#eabf73}
+#floor-preview-note{position:fixed;top:65px;left:50%;transform:translateX(-50%);z-index:19;
+    width:max-content;max-width:min(90vw,550px);padding:8px 13px;border-radius:13px;
+    background:rgba(10,25,39,.74);border:1px solid rgba(120,180,186,.32);color:#c2e7e9;
+    font-size:11px;line-height:1.5;text-align:center;display:flex;align-items:center;gap:8px;pointer-events:none;backdrop-filter:blur(12px)}
+.floor-room-option{width:100%;padding:9px;border:1px solid #66809854;border-radius:12px;background:#142235ae;
+    color:#dfe9ef;text-align:right;font-size:11px;display:flex;gap:9px;align-items:center;cursor:pointer}
+.floor-room-option:hover{background:#354658a8}
+/* Devices on the first floor remain registered but are never shown on the ground floor. */
+body[data-active-floor="ground"] #covering-button-stack,
+body[data-active-floor="ground"] #lighting-modes-button,
+body[data-active-floor="ground"] #quick-light-btn,
+body[data-active-floor="ground"] #focused-light-btn {display:none!important}
+@media(max-width:640px){
+    #floor-switcher{left:7px;width:min(160px,40vw);bottom:calc(var(--dock-top-space,72px) + 10px);padding:7px;border-radius:13px}
+    .floor-choice{padding:5px 2px;font-size:10px;min-height:31px}
+    .floor-choice i {font-size:10px}
+    .floor-switcher-label {font-size:10px;margin-bottom:5px}
+    #floor-switcher-status {font-size:9px}
+    #floor-preview-note{top:58px;font-size:10px;padding:6px 9px}
+}

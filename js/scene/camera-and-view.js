@@ -8,9 +8,13 @@
         function getOverviewFramePoints() {
             const points = [];
             scene.updateMatrixWorld(true);
-            for (const group of [structureGroup, furnitureGroup, plantsGroup]) {
+            const activeFloor = window.VillaFloors?.activeId || 'floor1';
+            const visibleGroups = activeFloor === 'floor1'
+                ? [structureGroup, furnitureGroup, plantsGroup]
+                : [window.VillaFloors?.getGroup()].filter(Boolean);
+            for (const group of visibleGroups) {
                 group.traverse(mesh => {
-                    if (!mesh.isMesh || mesh === cadOverlayMesh || mesh.userData.isPresentationBase
+                    if (!mesh.isMesh || mesh === cadOverlayMesh || mesh.userData.isReferencePlan || mesh.userData.isPresentationBase
                         || !isEffectivelyVisible(mesh)) return;
                     if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
                     const box = mesh.geometry.boundingBox;
@@ -75,13 +79,16 @@
         }
 
         function focusZone(zoneKey, showCard = false) {
-            const spec = ZONE_SPECS[zoneKey] || ZONE_SPECS.overview;
-            const isOverview = zoneKey === 'overview' || !ROOM_VIEW_BOUNDS[zoneKey];
+            const spec = zoneKey === 'overview' ?
+                (window.VillaFloors?.getOverviewSpec() || ZONE_SPECS.overview)
+                : (ZONE_SPECS[zoneKey] || ZONE_SPECS.overview);
+            const isOverview = zoneKey === 'overview' || !window.VillaFloors?.getBounds(zoneKey);
             selectedZoneKey = zoneKey;
             selectedTargetGroup = null;
             cameraWasManuallyMoved = false;
             if (selectionBoxHelper) selectionBoxHelper.visible = false;
-            const bounds = isOverview ? VILLA_VIEW_BOUNDS : ROOM_VIEW_BOUNDS[zoneKey];
+            const bounds = window.VillaFloors?.getBounds(isOverview ? 'overview' : zoneKey)
+                || (isOverview ? VILLA_VIEW_BOUNDS : ROOM_VIEW_BOUNDS[zoneKey]);
             let direction;
             if (isOverview) {
                 direction = overviewViewMode === 'iso' ? new THREE.Vector3(1, 1.35, 1)
@@ -134,6 +141,7 @@
                 dw.mesh.scale.y = Math.max(0.08, currentWallHeight - dw.sill);
             });
             updateReviewedWindows();
+            window.VillaGroundFloorScene?.setWallHeight(currentWallHeight);
             requestLightingShadowUpdate();
             if (!cameraWasManuallyMoved) focusZone(focusedZoneKey);
         }
@@ -151,4 +159,5 @@
                 cadOverlayMesh.material.opacity = pct / 100;
                 cadOverlayMesh.visible = pct > 0;
             }
+            if(window.VillaFloors?.activeId === 'ground') window.VillaGroundFloorScene?.setPlanOpacity(pct);
         }

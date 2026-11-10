@@ -41,7 +41,10 @@
         function updateFocusedRoomLabel() {
             const label = document.getElementById('focused-room-label');
             label.hidden = focusedZoneKey === 'overview' || !showRoomLabelsFlag;
-            const name = focusedLabelName || (ZONE_SPECS[focusedZoneKey] || ZONE_SPECS.overview).title;
+            const currentSpec = focusedZoneKey === 'overview'
+                ? (window.VillaFloors?.getOverviewSpec() || ZONE_SPECS.overview)
+                : (ZONE_SPECS[focusedZoneKey] || ZONE_SPECS.overview);
+            const name = focusedLabelName || currentSpec.title;
             document.getElementById('focused-room-name').textContent = name;
             document.getElementById('focused-light-btn').hidden = !getFocusedLight();
             const dock = document.getElementById('bottom-places-dock').getBoundingClientRect();
@@ -59,7 +62,7 @@
         function showFocusedRoomInfo() {
             selectedTargetGroup = null;
             selectedZoneKey = focusedZoneKey;
-            showContextCardForSpec(ZONE_SPECS[focusedZoneKey], false);
+            showContextCardForSpec(focusedZoneKey === 'overview' ? (window.VillaFloors?.getOverviewSpec() || ZONE_SPECS.overview) : ZONE_SPECS[focusedZoneKey], false);
         }
 
         function openFocusedRoomLight(event) {

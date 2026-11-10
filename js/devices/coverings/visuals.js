@@ -93,6 +93,7 @@
         if (typeof scene === 'undefined' || !scene) return;
         clear();
         group=new THREE.Group(); group.name='Villa_Coverings_3D';
+        group.visible = !global.VillaFloors || global.VillaFloors.activeId === 'floor1';
         scene.add(group);
         for (const spec of VILLA_COVERING_CONFIG) {
             const opening=mountFor(spec);
@@ -164,7 +165,7 @@
         for(const [id,item] of nodes) {
             const marker=markers.get(id);
             if(!marker)continue;
-            const visible=!isWelcomeOpen && !cameraAnim && showCoveringPins
+            const visible=(!global.VillaFloors || global.VillaFloors.activeId === 'floor1') && !isWelcomeOpen && !cameraAnim && showCoveringPins
                 && focusedZoneKey!=='overview' && focusedZoneKey===item.spec.zoneId;
             if(!visible){marker.style.display='none';continue;}
             // Offset paired markers left/right along the opening, not at random screen positions.
@@ -193,5 +194,9 @@
         showCoveringPins = Boolean(value);
         updateMarkers();
     }
-    global.VillaCoveringVisuals=Object.freeze({rebuild,connect,createMarkers,frame,refreshMounts:rebuild,setPinsVisible});
+    function setSceneVisible(value){
+        if(group)group.visible=Boolean(value);
+        updateMarkers();
+    }
+    global.VillaCoveringVisuals=Object.freeze({rebuild,connect,createMarkers,frame,refreshMounts:rebuild,setPinsVisible,setSceneVisible});
 })(window);

@@ -94,3 +94,25 @@ node scripts/test-mobile-voice.mjs
 ## الخطوة التالية
 
 اعتماد مسميات فراغات الدور الأرضي وفتحات الأبواب والنوافذ ومقاسات الجدران، ثم إكمال المجسم تفصيليًا. بعدها تُضاف بيانات إضاءة الأرضي عبر `js/floors/ground/` وتستخدم نفس adapters الموجودة بدون تعديل واجهة الدور الأول.
+
+
+## Ground Floor Review (v4.1)
+
+A new standalone review page was added for the ground floor:
+
+- `ground-review.html`
+
+This page lets you review and edit:
+
+- doors and windows
+- sill and height values
+- keep / remove / add / verify status
+- curtain and shutter flags
+- proposed lighting points
+- exportable JSON for the reviewed result
+
+Supporting files:
+
+- `js/floors/ground/review-data.js`
+- `js/review/ground-plan-review.js`
+- `styles/ground-plan-review.css`

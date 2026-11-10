@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>فيلا حسن — مراجعة فتحات وإضاءة الدور الأرضي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles/ground-plan-review.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="left panel">
+      <div class="header">
+        <div>
+          <h1>مراجعة الدور الأرضي — الأبواب والشبابيك والإضاءة</h1>
+          <div class="sub">
+            المخطط التالي مخصص للمراجعة قبل الدمج النهائي: تحديد المقاسات الرأسية، منسوب الفتحات عن الأرض،
+            وتعيين ما إذا كان العنصر قائمًا أو سيُلغى أو سيُضاف، مع تحديد الستارة والشتر ونقاط الإضاءة.
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn active" data-filter="all" id="filterAll">الكل</button>
+          <button class="btn" data-filter="openings">الفتحات</button>
+          <button class="btn" data-filter="lights">الإضاءة</button>
+          <button class="btn" data-filter="needs">يحتاج مراجعة</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n" id="statAll">0</div><div class="l">إجمالي العناصر</div></div>
+        <div class="stat"><div class="n" id="statOpenings">0</div><div class="l">أبواب وشبابيك</div></div>
+        <div class="stat"><div class="n" id="statLights">0</div><div class="l">نقاط إضاءة</div></div>
+        <div class="stat"><div class="n" id="statNeeds">0</div><div class="l">تحتاج تأكيد</div></div>
+      </div>
+
+      <div class="plan-wrap">
+        <div class="plan-controls">
+          <button class="btn" id="zoomIn">تكبير +</button>
+          <button class="btn" id="zoomOut">تصغير −</button>
+          <button class="btn" id="zoomReset">ملاءمة</button>
+          <button class="btn" data-add="window">إضافة شباك</button>
+          <button class="btn" data-add="door">إضافة باب</button>
+          <button class="btn" data-add="slidingGlass">إضافة باب زجاجي</button>
+          <button class="btn" data-add="light">إضافة إضاءة</button>
+          <button class="btn btn-danger" id="cancelAdd">إلغاء وضع الإضافة</button>
+        </div>
+
+        <svg id="planSvg" viewBox="0 0 100 100" aria-label="مخطط مراجعة الدور الأرضي">
+          <g id="planLayers"></g>
+        </svg>
+
+        <div class="plan-status" id="planStatus">
+          اضغط على أي باب أو شباك أو نقطة إضاءة لمراجعة بياناته، أو استخدم أزرار الإضافة لإضافة عنصر جديد.
+        </div>
+      </div>
+
+      <div class="footer-tools card">
+        <label class="chip"><input type="checkbox" id="toggleLabels" checked> إظهار المعرفات</label>
+        <label class="chip"><input type="checkbox" id="toggleOpenings" checked> إظهار الأبواب والشبابيك</label>
+        <label class="chip"><input type="checkbox" id="toggleLights" checked> إظهار الإضاءة</label>
+        <label class="chip"><input type="checkbox" id="reviewImage"> إظهار صورة المخطط المرجعية في الخلفية</label>
+      </div>
+    </section>
+
+    <aside class="right panel">
+      <div class="header">
+        <div>
+          <h1>قائمة العناصر</h1>
+          <div class="sub">اختر عنصرًا من القائمة أو من المخطط مباشرة.</div>
+        </div>
+        <div class="editor-tools">
+          <button class="btn" id="copyJson">نسخ JSON</button>
+          <button class="btn" id="toggleExport">عرض JSON</button>
+        </div>
+      </div>
+
+      <div class="card help">
+        <strong>طريقة العمل</strong><br>
+        1) اختر الشباك أو الباب أو الإضاءة. 2) عدّل المقاسات والارتفاعات والحالة. 3) حدّد إن كان عليه <strong>ستارة</strong> أو <strong>شتر</strong>. 4) استخدم "نسخ JSON" لإرسال النتيجة أو حفظها.
+        <div class="muted" id="saveStatus" style="margin-top:8px">سيتم الحفظ محليًا تلقائيًا أثناء التعديل.</div>
+      </div>
+
+      <div class="list" id="itemsList"></div>
+
+      <div class="card" id="emptyEditor">
+        <strong>لم يتم اختيار عنصر بعد</strong>
+        <div class="help" style="margin-top:8px">اختر عنصرًا من المخطط أو من القائمة لعرض بياناته وتعديلها.</div>
+      </div>
+
+      <div class="card" id="editorCard">
+        <h3 id="selectedTitle" style="margin:0 0 6px"></h3>
+        <div class="muted" id="selectedMeta" style="margin-bottom:10px"></div>
+        <div class="help" id="fieldCustom" style="margin-bottom:10px"></div>
+
+        <form id="itemForm">
+          <div class="field"><label for="fieldId">المعرف</label><input id="fieldId" readonly></div>
+          <div class="field"><label for="fieldKind">النوع</label><input id="fieldKind" readonly></div>
+          <div class="field full"><label for="fieldLabel">الاسم/الوصف</label><input id="fieldLabel"></div>
+          <div class="field"><label for="fieldRoom">الفراغ</label><select id="fieldRoom"></select></div>
+          <div class="field"><label for="fieldStatus">الحالة</label><select id="fieldStatus">
+            <option value="existing">قائم</option>
+            <option value="proposed">مقترح</option>
+            <option value="add">إضافة</option>
+            <option value="remove">إلغاء</option>
+            <option value="verify">يحتاج مراجعة</option>
+          </select></div>
+
+          <div id="openingFields" class="field full">
+            <div class="field"><label for="fieldWidth">العرض (سم)</label><input id="fieldWidth" type="number" min="0"></div>
+            <div class="field"><label for="fieldSill">ارتفاع جلسة الشباك / منسوب البداية (سم)</label><input id="fieldSill" type="number" min="0"></div>
+            <div class="field"><label for="fieldHeight">الارتفاع الصافي للفتحة (سم)</label><input id="fieldHeight" type="number" min="0"></div>
+            <div class="field"><label for="fieldHead">منسوب أعلى الفتحة (سم)</label><input id="fieldHead" type="number" min="0"></div>
+            <div class="field"><label for="fieldX1">X1</label><input id="fieldX1" type="number" step="0.01"></div>
+            <div class="field"><label for="fieldZ1">Z1</label><input id="fieldZ1" type="number" step="0.01"></div>
+            <div class="field"><label for="fieldX2">X2</label><input id="fieldX2" type="number" step="0.01"></div>
+            <div class="field"><label for="fieldZ2">Z2</label><input id="fieldZ2" type="number" step="0.01"></div>
+            <div class="field full">
+              <label>ملحقات الشباك/الباب</label>
+              <div class="checkbox-row">
+                <label><input type="checkbox" id="fieldCurtain"> عليه ستارة</label>
+                <label><input type="checkbox" id="fieldShutter"> عليه شتر</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="lightFields" class="field full hidden">
+            <div class="field"><label for="fieldX">الموضع X</label><input id="fieldX" type="number" step="0.01"></div>
+            <div class="field"><label for="fieldZ">الموضع Z</label><input id="fieldZ" type="number" step="0.01"></div>
+            <div class="field"><label for="fieldCount">عدد الوحدات</label><input id="fieldCount" type="number" min="1" step="1"></div>
+            <div class="field full"><label><input type="checkbox" id="fieldDimmable"> قابلة للتعتيم (Dimmer)</label></div>
+          </div>
+
+          <div class="field full"><label for="fieldComment">ملاحظات</label><textarea id="fieldComment" placeholder="مثلاً: يلغى، يضاف، يحتاج تأكيد، ستارة فقط، شتر فقط..."></textarea></div>
+        </form>
+
+        <div class="editor-tools" style="margin-top:10px">
+          <button class="btn btn-danger" id="deleteBtn" type="button">حذف العنصر اليدوي</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="exportWrap">
+        <div class="help" style="margin-bottom:8px">هذا JSON الناتج الحالي للمراجعة. يمكنك نسخه والاحتفاظ به أو إرساله لي لاحقًا.</div>
+        <textarea class="export-area" id="exportText" readonly></textarea>
+      </div>
+    </aside>
+  </main>
+
+  <script src="./js/floors/ground/data.js"></script>
+  <script src="./js/floors/ground/review-data.js"></script>
+  <script src="./js/review/ground-plan-review.js"></script>
+</body>
+</html>

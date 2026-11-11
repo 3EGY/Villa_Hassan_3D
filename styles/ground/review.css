@@ -1,0 +1,62 @@
+/* Overlay editor for the user's original 3D model: no separate 2D reconstruction. */
+#ground-review-toggle{position:fixed;top:58px;right:12px;z-index:61;background:rgba(10,27,41,.84);color:#b8eefa;border:1px solid rgba(93,214,234,.45);border-radius:14px;padding:9px 13px;font:700 12px Cairo,system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(10px);box-shadow:0 8px 24px #0006;transition:transform .18s}
+#ground-review-toggle:hover{transform:translateY(-1px)}
+#ground-review-toggle[aria-pressed=true]{background:#0a4960;border-color:#60dded;color:#fff}
+#ground-review-layer{position:fixed;inset:0;pointer-events:none;z-index:39}
+.gr-pin{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:34px;min-height:31px;border-radius:13px;border:1px solid #67d6dc;color:#d9fdff;background:rgba(4,37,45,.83);box-shadow:0 4px 16px #0007;padding:4px 7px;font:800 11px Cairo,system-ui,sans-serif;white-space:nowrap;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
+.gr-pin[data-kind=door]{border-color:#f5bd79;background:rgba(76,39,12,.85);color:#ffe8c9}
+.gr-pin[data-kind=slidingGlass]{border-color:#cbb0ff;background:rgba(48,30,79,.85);color:#f0e4ff}
+.gr-pin[data-kind=light]{border-color:#fada72;background:rgba(63,46,9,.82);color:#fff3c1}
+.gr-pin[data-status=remove]{border-color:#fa7373;background:rgba(94,20,23,.84);color:#ffd2d2;text-decoration:line-through}
+.gr-pin[data-status=approved]{box-shadow:0 0 0 2px rgba(34,197,94,.28),0 4px 13px #0007}
+.gr-pin[aria-pressed=true]{border-width:2px;transform:translate(-50%,-50%) scale(1.17);z-index:2}
+#ground-review-panel{position:fixed;z-index:60;top:108px;right:12px;width:min(370px,calc(100vw - 24px));max-height:calc(100dvh - 177px);overflow-y:auto;overscroll-behavior:contain;padding:13px 14px 15px;background:rgba(9,23,35,.76);border:1px solid rgba(128,210,229,.32);border-radius:19px;color:#e8f5ff;backdrop-filter:blur(13px);box-shadow:0 12px 38px #0008;text-align:right;scrollbar-width:thin;scrollbar-color:#497382 transparent;font:400 12px Cairo,system-ui,sans-serif}
+#ground-review-panel[hidden],#ground-review-layer[hidden]{display:none!important}
+#ground-review-panel h2{font-size:15px;line-height:1.35;font-weight:800;margin:0 0 4px}
+#ground-review-panel p{font-size:11px;color:#a9c1d1;line-height:1.6;margin:0 0 9px}
+.gr-actions{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;margin:7px 0}
+.gr-actions button,.gr-actions select,.gr-actions label,.gr-field select,.gr-field input,.gr-field textarea{border-radius:10px;background:rgba(10,27,40,.73);border:1px solid rgba(144,190,215,.29);color:#edf8ff;font:inherit;min-height:32px}
+.gr-actions button{padding:5px 9px;cursor:pointer}
+.gr-actions button:hover{border-color:#71d4e0}
+.gr-actions button:disabled{opacity:.45;cursor:default}
+.gr-actions select{padding:4px;flex:1;min-width:150px}
+.gr-stats{display:flex;gap:7px;margin:9px 0;flex-wrap:wrap}
+.gr-stat{font-size:10px;color:#c4dbe7;background:rgba(24,55,73,.8);border-radius:9px;padding:4px 8px;border:1px solid #38546a}
+.gr-section-title{font-size:11px;color:#a2dcec;font-weight:800;margin:13px 0 7px;border-top:1px solid rgba(177,218,233,.17);padding-top:9px}
+.gr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.gr-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gr-field label{font-size:10px;color:#bed2de}
+.gr-field input,.gr-field select,.gr-field textarea{width:100%;padding:5px 8px;outline:none;min-width:0}
+.gr-field textarea{height:56px;resize:vertical}
+.gr-field input:focus,.gr-field select:focus,.gr-field textarea:focus{border-color:#56d4db}
+.gr-field input[readonly]{color:#a9c5d1;opacity:.86}
+.gr-field.gr-full{grid-column:1/-1}
+.gr-switches{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.gr-switches label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.gr-switches input{accent-color:#39c8dc;min-width:16px;min-height:16px}
+.gr-note{font-size:10px;line-height:1.6;color:#b8cddd;margin:7px 0}
+.gr-warning{font-size:10px;line-height:1.6;color:#fbd591;border-radius:9px;border:1px solid rgba(246,190,92,.3);background:rgba(106,57,9,.29);padding:6px 8px}
+.gr-secondary{color:#90adbc;font-size:10px}
+.gr-pill{font-size:10px;padding:2px 7px;background:#164e63;color:#bcf3ff;border-radius:999px}
+#gr-approval{color:#a8e9ce}
+#gr-info-tip{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:57;border-radius:999px;padding:7px 14px;background:rgba(8,28,43,.85);color:#e8f7fa;border:1px solid rgba(119,197,217,.3);pointer-events:none;font:600 11px Cairo,system-ui,sans-serif;max-width:92vw;text-align:center}
+#gr-review-empty{margin:12px 0;padding:9px;background:rgba(15,46,63,.55);border-radius:12px;color:#d6e8f1;font-size:12px}
+#gr-review-form[hidden],#gr-opening-fields[hidden],#gr-light-fields[hidden],#gr-review-empty[hidden],#gr-only-covering[hidden]{display:none!important}
+#gr-open-slider{accent-color:#4dcbdf;height:20px!important;padding:0!important}
+#gr-add-buttons{justify-content:flex-start;gap:5px}
+#gr-add-buttons .gr-add-active{background:#155f79;color:#fff;border-color:#4fd5e5}
+#gr-export-data{position:fixed;z-index:68;inset:12% 14%;min-width:320px;background:#091925;border:1px solid #579db6;border-radius:16px;padding:15px;box-shadow:0 30px 90px #000d;color:#e4f3fd}
+#gr-export-data textarea{width:100%;height:67%;background:#07111b;color:#d7f8ff;border:1px solid #2a5265;padding:8px;border-radius:8px;font:11px monospace;direction:ltr}
+#gr-export-data[hidden]{display:none!important}
+#gr-review-panel button{touch-action:manipulation}
+@media(max-width:680px){
+#ground-review-toggle{top:50px;right:9px;z-index:62;font-size:11px;padding:8px 10px}
+#ground-review-panel{top:auto;right:7px;left:7px;bottom:59px;width:auto;max-height:min(58dvh,540px);padding:11px 11px 13px;border-radius:17px}
+#gr-info-tip{bottom:calc(min(58dvh,540px) + 67px);font-size:9px}
+.gr-pin{font-size:10px;min-height:29px;min-width:30px}
+#gr-export-data{inset:7% 5%;min-width:0}
+}
+body.gr-review-active #context-card{pointer-events:none}
+body.gr-review-active #labels-container .bulb-pin{display:none!important}
+
+@media(max-width:680px){#ground-back-to-villa{top:53px!important;left:8px!important}}

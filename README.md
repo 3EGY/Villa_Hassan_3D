@@ -95,24 +95,8 @@ node scripts/test-mobile-voice.mjs
 
 اعتماد مسميات فراغات الدور الأرضي وفتحات الأبواب والنوافذ ومقاسات الجدران، ثم إكمال المجسم تفصيليًا. بعدها تُضاف بيانات إضاءة الأرضي عبر `js/floors/ground/` وتستخدم نفس adapters الموجودة بدون تعديل واجهة الدور الأول.
 
+## v4.2 · Original Ground-Floor 3D Review
 
-## Ground Floor Review (v4.1)
+The supplied furnished ground-floor `ground.html` is now included **without simplifying its scene**. Open `ground.html?review=1` for direct edits on the original Three.js model (doors, windows, sliding glass, light points, curtain/shutter previews, add/remove decisions, JSON export). Source JS/CSS was split into `js/floors/ground/source`, `js/floors/ground/review`, `styles/ground`. The source file is retained unchanged at `docs/ground-source-original.html`.
 
-A new standalone review page was added for the ground floor:
-
-- `ground-review.html`
-
-This page lets you review and edit:
-
-- doors and windows
-- sill and height values
-- keep / remove / add / verify status
-- curtain and shutter flags
-- proposed lighting points
-- exportable JSON for the reviewed result
-
-Supporting files:
-
-- `js/floors/ground/review-data.js`
-- `js/review/ground-plan-review.js`
-- `styles/ground-plan-review.css`
+See `docs/GROUND_3D_REVIEW_V4_2.md` for exact source dimensions and approval workflow. The first-floor controls remain unchanged. Ground-floor review uses a separate viewer pending approval and consolidation into the common device registry.

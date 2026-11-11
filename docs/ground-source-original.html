@@ -1,0 +1,3162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فيلا حسن بالأثاث - الدور الأرضي | النموذج المعماري ثلاثي الأبعاد 3D</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three.js OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #050811;
+            color: #f8fafc;
+        }
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 1;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            outline: none;
+            touch-action: none;
+        }
+        /* Sleek Glassmorphism UI */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.86);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 14px 34px -6px rgba(0, 0, 0, 0.65);
+        }
+        .glass-pill {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 191, 36, 0.28);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+        }
+        /* Floating 3D Labels */
+        #labels-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+            transition: opacity 0.25s ease;
+        }
+        .room-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+            white-space: nowrap;
+        }
+        .room-label:hover, .room-label:active {
+            transform: translate(-50%, -55%) scale(1.07);
+            z-index: 20;
+        }
+        .dim-badge {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            font-family: 'Tajawal', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1.5px 5px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.82);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+        }
+        @media (max-width: 640px) {
+            .room-label {
+                padding: 2px 7px !important;
+                border-radius: 8px !important;
+            }
+            .room-label .lbl-title {
+                font-size: 10px !important;
+            }
+            .room-label .lbl-sub {
+                font-size: 8px !important;
+            }
+            .dim-badge {
+                font-size: 8.5px;
+                padding: 1px 4px;
+            }
+        }
+        /* Auto-Hide Transitions for Toolbar & Popovers */
+        .ui-auto-bar {
+            transition: opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1), transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ui-bar-hidden {
+            opacity: 0 !important;
+            transform: translateY(-18px) scale(0.96) !important;
+            pointer-events: none !important;
+        }
+        .popover-menu {
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            transform-origin: top center;
+        }
+        .popover-hidden {
+            opacity: 0 !important;
+            transform: translateY(-10px) scale(0.95) !important;
+            pointer-events: none !important;
+        }
+        .context-card-anim {
+            transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .context-card-hidden {
+            opacity: 0 !important;
+            transform: translate(-50%, 24px) scale(0.95) !important;
+            pointer-events: none !important;
+        }
+        /* Hide Scrollbar for Bottom Room Bar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* 3D Projected Smart Bulb Pin */
+        .bulb-pin {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease;
+            z-index: 12;
+        }
+        .bulb-pin:hover, .bulb-pin:active {
+            transform: translate(-50%, -50%) scale(1.18);
+            z-index: 25;
+        }
+        /* Radial Light Menu Around Finger */
+        #radial-light-menu {
+            position: fixed;
+            width: 268px;
+            height: 268px;
+            transform: translate(-50%, -50%) scale(1);
+            z-index: 50;
+            pointer-events: none;
+            transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .radial-hidden {
+            opacity: 0 !important;
+            transform: translate(-50%, -50%) scale(0.55) !important;
+            pointer-events: none !important;
+        }
+        .radial-node {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            border-radius: 9999px;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+            transition: all 0.2s ease;
+        }
+        .radial-node:hover, .radial-node:active {
+            transform: translate(-50%, -50%) scale(1.1);
+            border-color: #fbbf24;
+        }
+        .radial-node-active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: #0f172a !important;
+            border-color: #fde68a !important;
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.65);
+        }
+        .radial-node-active i, .radial-node-active span {
+            color: #0f172a !important;
+            font-weight: 800 !important;
+        }
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.15);
+            height: 6px;
+            border-radius: 999px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #f59e0b;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        .btn-active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
+            border-color: #fbbf24 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D WebGL Canvas Container (100% Unobstructed Viewport) -->
+    <div id="canvas-container"></div>
+
+    <!-- 3D Floating Room, Dimension & Smart Bulb Labels Overlay -->
+    <div id="labels-container"></div>
+
+    <!-- Unobtrusive Mini Summon Button (Visible when main toolbar auto-hides) -->
+    <button id="summon-ui-btn" onclick="summonMainToolbar(event)" class="fixed top-3 right-3 z-30 glass-pill rounded-full px-3 py-2 text-xs font-bold text-amber-300 flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg">
+        <i class="fa-solid fa-sliders text-amber-400"></i>
+        <span class="hidden xs:inline">القائمة</span>
+    </button>
+
+    <!-- Quick Reset/Home Mini Button (Top Left) -->
+    <button id="quick-home-btn" onclick="selectZoneAndClose('overview')" class="fixed top-3 left-3 z-30 glass-pill rounded-full w-9 h-9 flex items-center justify-center text-slate-200 hover:text-amber-300 opacity-65 hover:opacity-100 transition-all duration-200 shadow-md" title="منظور شامل للدور الأرضي">
+        <i class="fa-solid fa-expand text-xs"></i>
+    </button>
+
+    <!-- Compact Auto-Hiding Top Floating Pill Bar -->
+    <header id="main-toolbar" class="ui-auto-bar fixed top-3 inset-x-0 z-30 flex justify-center px-3 pointer-events-none" onpointerenter="pauseToolbarAutoHide()" onpointerleave="scheduleToolbarAutoHide()" onpointerdown="resetToolbarAutoHide()">
+        <div class="glass-panel rounded-full p-1.5 px-2.5 flex items-center gap-1 sm:gap-2 pointer-events-auto max-w-full overflow-x-auto shadow-2xl">
+            <!-- Compact Brand Badge -->
+            <div class="flex items-center gap-1.5 pr-1 pl-2 border-l border-slate-700/80">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 text-xs shadow">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+                <span class="text-[11px] sm:text-xs font-extrabold text-white whitespace-nowrap hidden sm:inline">فيلا حسن - الدور الأرضي</span>
+            </div>
+
+            <!-- Menu 1: Camera & Rooms Popover Trigger -->
+            <button id="btn-menu-rooms" onclick="togglePopoverMenu('rooms', event)" class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-location-crosshairs text-amber-400"></i>
+                <span>الغرف والكاميرا</span>
+                <i class="fa-solid fa-chevron-down text-[9px] opacity-70"></i>
+            </button>
+
+            <!-- Menu 2: Layers, Wall Height & Lighting Popover Trigger -->
+            <button id="btn-menu-layers" onclick="togglePopoverMenu('layers', event)" class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-layer-group text-sky-400"></i>
+                <span>الطبقات والإضاءة</span>
+                <i class="fa-solid fa-chevron-down text-[9px] opacity-70"></i>
+            </button>
+
+            <!-- Quick Day/Night Toggle Button -->
+            <button id="quick-light-btn" onclick="toggleDayNightQuick(event)" class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-slate-800/90 text-sky-300 border border-amber-500/30 hover:bg-slate-700 transition flex items-center gap-1 whitespace-nowrap" title="تبديل الإضاءة النهارية / الليلية 3000K">
+                <i id="quick-light-icon" class="fa-solid fa-moon text-sky-300"></i>
+                <span id="quick-light-text" class="hidden md:inline">ليلي 3000K</span>
+            </button>
+
+            <!-- Export OBJ Button -->
+            <button onclick="exportSceneToOBJ(); hideAllUIImmediately();" class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition flex items-center gap-1 whitespace-nowrap" title="تصدير ملف ثلاثي الأبعاد OBJ">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden sm:inline">OBJ</span>
+            </button>
+
+            <!-- Hide Toolbar Now Button -->
+            <button onclick="hideToolbarImmediately(event)" class="w-7 h-7 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center text-xs transition" title="إخفاء الشريط">
+                <i class="fa-solid fa-eye-slash text-[11px]"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- POPOVER 1: Camera Presets & Room Teleport -->
+    <div id="popover-rooms" class="popover-menu popover-hidden fixed top-16 left-1/2 -translate-x-1/2 z-30 w-[92vw] max-w-md glass-panel rounded-2xl p-3 pointer-events-auto" onpointerdown="resetToolbarAutoHide()" onpointerenter="pauseToolbarAutoHide()" onpointerleave="scheduleToolbarAutoHide()">
+        <div class="flex items-center justify-between border-b border-slate-700/70 pb-2 mb-2.5">
+            <span class="text-xs font-extrabold text-amber-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-video"></i>
+                <span>زاوية الكاميرا والانتقال لفراغات الدور الأرضي</span>
+            </span>
+            <button onclick="closeAllPopovers()" class="w-6 h-6 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Camera Mode Row -->
+        <div class="grid grid-cols-3 gap-1.5 mb-2.5">
+            <button id="cam-orbit" onclick="setCameraView('orbit')" class="btn-active py-1.5 px-2 rounded-xl text-[11px] font-bold bg-slate-800/90 text-slate-200 flex items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-cube"></i>
+                <span>منظور 3D</span>
+            </button>
+            <button id="cam-top" onclick="setCameraView('top')" class="py-1.5 px-2 rounded-xl text-[11px] font-bold bg-slate-800/90 text-slate-200 flex items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-map"></i>
+                <span>مسقط 2D/3D</span>
+            </button>
+            <button id="cam-iso" onclick="setCameraView('iso')" class="py-1.5 px-2 rounded-xl text-[11px] font-bold bg-slate-800/90 text-slate-200 flex items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-vector-square"></i>
+                <span>أيزومتري</span>
+            </button>
+        </div>
+
+        <!-- Room Teleport Grid -->
+        <div class="text-[10px] text-slate-400 mb-1.5 font-semibold">اختر الفراغ للتركيز عليه وتوسيط لمبة الإضاءة:</div>
+        <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="selectZoneAndClose('overview')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-house text-amber-400 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">كامل الدور الأرضي</div>
+                    <div class="text-[9px] text-slate-400">13.8 × 15.6 م</div>
+                </div>
+            </button>
+            <button onclick="selectZoneAndClose('grandMajlis')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-couch text-amber-400 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">المجلس الكبير</div>
+                    <div class="text-[9px] text-slate-400">بطول 1010 سم وكنبة 590</div>
+                </div>
+            </button>
+            <button onclick="selectZoneAndClose('receptionLounge')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-chair text-amber-400 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">بهو الاستقبال</div>
+                    <div class="text-[9px] text-slate-400">قوس 231 وشيزلونج 173</div>
+                </div>
+            </button>
+            <button onclick="selectZoneAndClose('diningRoom')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-utensils text-amber-400 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">غرفة الطعام</div>
+                    <div class="text-[9px] text-slate-400">صالة 452 وطاولة 250×90</div>
+                </div>
+            </button>
+            <button onclick="selectZoneAndClose('kitchen')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-fire-burner text-sky-400 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">المطبخ والجزيرة</div>
+                    <div class="text-[9px] text-slate-400">عرض 450 وجزيرة 182×92</div>
+                </div>
+            </button>
+            <button onclick="selectZoneAndClose('familyLiving')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-tv text-amber-400 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">المعيشة العائلية</div>
+                    <div class="text-[9px] text-slate-400">كنبة 349×92 وطاولة 160</div>
+                </div>
+            </button>
+            <button onclick="selectZoneAndClose('lobbyPartition')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-seedling text-emerald-400 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">الموزع وحائط التلفزيون</div>
+                    <div class="text-[9px] text-slate-400">فاصل 200×91 وحوض 70</div>
+                </div>
+            </button>
+            <button onclick="selectZoneAndClose('stairsWash')" class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-stairs text-slate-300 w-4 text-center"></i>
+                <div class="truncate">
+                    <div class="font-bold">الدرج والمغاسل</div>
+                    <div class="text-[9px] text-slate-400">مغاسل 210×150 وحمام</div>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- POPOVER 2: Display Layers, Wall Height & Lighting Controls -->
+    <div id="popover-layers" class="popover-menu popover-hidden fixed top-16 left-1/2 -translate-x-1/2 z-30 w-[92vw] max-w-sm glass-panel rounded-2xl p-3.5 pointer-events-auto" onpointerdown="resetToolbarAutoHide()" onpointerenter="pauseToolbarAutoHide()" onpointerleave="scheduleToolbarAutoHide()">
+        <div class="flex items-center justify-between border-b border-slate-700/70 pb-2 mb-2.5">
+            <span class="text-xs font-extrabold text-sky-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-sliders"></i>
+                <span>التحكم بالجدران والطبقات والإضاءة</span>
+            </span>
+            <button onclick="closeAllPopovers()" class="w-6 h-6 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Wall Height Control -->
+        <div class="bg-slate-900/70 rounded-xl p-2.5 border border-slate-800 mb-2">
+            <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="font-semibold text-slate-200">ارتفاع الجدران المقطعية</span>
+                <span id="wall-height-val" class="text-amber-400 font-bold font-mono">1.35 م</span>
+            </div>
+            <input id="wall-height-slider" type="range" min="0.15" max="3.20" step="0.05" value="1.35" class="w-full" oninput="updateWallHeight(this.value)">
+            <div class="grid grid-cols-3 gap-1 mt-1.5">
+                <button onclick="setWallHeightPreset(0.2); closeAllPopovers();" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300">مخطط 0.2م</button>
+                <button onclick="setWallHeightPreset(1.35); closeAllPopovers();" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-amber-300 font-semibold">مقطعي 1.35م</button>
+                <button onclick="setWallHeightPreset(3.1); closeAllPopovers();" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300">كامل 3.1م</button>
+            </div>
+        </div>
+
+        <!-- CAD Blueprint Underlay Opacity -->
+        <div class="bg-slate-900/70 rounded-xl p-2.5 border border-slate-800 mb-2">
+            <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="font-semibold text-slate-200">تطابق خطوط المخطط (CAD)</span>
+                <span id="cad-opacity-val" class="text-sky-400 font-bold font-mono">45%</span>
+            </div>
+            <input id="cad-opacity-slider" type="range" min="0" max="100" step="5" value="45" class="w-full" oninput="updateCadOverlay(this.value)">
+        </div>
+
+        <!-- Lighting Atmosphere -->
+        <div class="grid grid-cols-2 gap-1.5 mb-2.5">
+            <button id="light-day" onclick="setLightingMode('day'); closeAllPopovers();" class="py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-sun"></i>
+                <span>إضاءة نهارية</span>
+            </button>
+            <button id="light-night" onclick="setLightingMode('night'); closeAllPopovers();" class="btn-active py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-moon"></i>
+                <span>ليلي دافئ 3000K</span>
+            </button>
+        </div>
+
+        <!-- Layer Checkboxes -->
+        <div class="bg-slate-900/70 rounded-xl p-2.5 border border-slate-800 grid grid-cols-2 gap-2 text-[11px]">
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" checked onchange="toggleGroupVisibility('furniture', this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
+                <span>الأثاث والفرش</span>
+            </label>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" checked onchange="toggleGroupVisibility('plants', this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
+                <span>الأحواض والنباتات</span>
+            </label>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" checked onchange="toggleRoomLabels(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
+                <span>أسماء الغرف</span>
+            </label>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" onchange="toggleDimensionBadges(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
+                <span>المقاسات (سم)</span>
+            </label>
+            <label class="flex items-center gap-2 text-amber-300 cursor-pointer col-span-2 pt-1 border-t border-slate-800">
+                <input type="checkbox" checked onchange="toggleSmartBulbPins(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
+                <span>إظهار لمبات الإضاءة التفاعلية في الغرف</span>
+            </label>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer col-span-2 pt-1 border-t border-slate-800">
+                <input type="checkbox" onchange="toggleWallXRay(this.checked)" class="accent-amber-500 w-3.5 h-3.5 rounded">
+                <span>شفافية الجدران (رؤية X-Ray كاملة للفرش)</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- RADIAL SMART LIGHT CONTROLLER AROUND FINGER -->
+    <div id="radial-light-menu" class="radial-hidden">
+        <!-- Interactive Arc Slider SVG -->
+        <svg id="radial-arc-svg" viewBox="0 0 268 268" class="w-full h-full overflow-visible opacity-0 pointer-events-none transition-opacity duration-200">
+            <defs>
+                <linearGradient id="grad-brightness" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#334155" />
+                    <stop offset="40%" stop-color="#f59e0b" />
+                    <stop offset="100%" stop-color="#fef08a" />
+                </linearGradient>
+                <linearGradient id="grad-timer" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#0284c7" />
+                    <stop offset="50%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#34d399" />
+                </linearGradient>
+                <linearGradient id="grad-color" x1="0%" y1="50%" x2="100%" y2="50%">
+                    <stop offset="0%" stop-color="#ff8c1a" />
+                    <stop offset="20%" stop-color="#fff4e6" />
+                    <stop offset="40%" stop-color="#38bdf8" />
+                    <stop offset="60%" stop-color="#818cf8" />
+                    <stop offset="80%" stop-color="#f43f5e" />
+                    <stop offset="100%" stop-color="#10b981" />
+                </linearGradient>
+            </defs>
+
+            <circle cx="134" cy="134" r="66" fill="rgba(15, 23, 42, 0.45)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" stroke-dasharray="4 4" />
+            <path id="radial-arc-bg" d="" fill="none" stroke="rgba(15, 23, 42, 0.9)" stroke-width="20" stroke-linecap="round" />
+            <path id="radial-arc-track" d="" fill="none" stroke="rgba(255, 255, 255, 0.18)" stroke-width="14" stroke-linecap="round" class="cursor-pointer" style="pointer-events: stroke;" />
+            <path id="radial-arc-active" d="" fill="none" stroke="url(#grad-brightness)" stroke-width="14" stroke-linecap="round" class="cursor-pointer" style="pointer-events: stroke;" />
+            <path id="radial-arc-hit" d="" fill="none" stroke="transparent" stroke-width="38" stroke-linecap="round" class="cursor-pointer" style="pointer-events: stroke;" />
+
+            <g id="radial-arc-thumb" transform="translate(134, 22)" class="cursor-grab active:cursor-grabbing" style="pointer-events: all;">
+                <circle r="13" fill="#0f172a" stroke="#ffffff" stroke-width="3" />
+                <circle id="radial-thumb-dot" r="6" fill="#fbbf24" />
+            </g>
+        </svg>
+
+        <!-- Floating Live Value Readout Badge at Top of the Arc -->
+        <div id="radial-arc-badge" class="opacity-0 pointer-events-none transition-all duration-150 absolute -top-6 left-1/2 -translate-x-1/2 glass-pill px-3 py-1 rounded-full text-[11px] font-extrabold text-amber-300 whitespace-nowrap shadow-xl flex items-center gap-1.5 border border-amber-400/50">
+            <i id="radial-badge-icon" class="fa-solid fa-sun text-amber-400"></i>
+            <span id="radial-badge-text">شدة الإضاءة: 100%</span>
+        </div>
+
+        <!-- Center Finger Hub -->
+        <div id="radial-center-hub" onclick="closeRadialLightMenu(event)" class="pointer-events-auto cursor-pointer absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full glass-panel border-2 border-amber-400/50 flex flex-col items-center justify-center text-center p-1 shadow-2xl hover:border-amber-300 transition">
+            <i id="radial-center-icon" class="fa-solid fa-lightbulb text-amber-400 text-sm mb-0.5"></i>
+            <span id="radial-center-title" class="text-[8.5px] font-extrabold text-white leading-tight line-clamp-1 max-w-[54px]">المجلس</span>
+            <span id="radial-center-sub" class="text-[8px] text-amber-300 font-mono leading-tight">90%</span>
+        </div>
+
+        <!-- Option 1: Power Toggle -->
+        <button id="radial-btn-power" onclick="handleRadialPowerClick(event)" class="radial-node" style="left: 82px; top: 92px;">
+            <i id="radial-power-icon" class="fa-solid fa-power-off text-rose-400 text-xs"></i>
+            <span id="radial-power-text" class="text-[8.5px] font-bold text-slate-100">إطفاء</span>
+        </button>
+
+        <!-- Option 2: Timer -->
+        <button id="radial-btn-timer" onclick="activateRadialArcMode('timer', event)" class="radial-node" style="left: 186px; top: 92px;">
+            <i class="fa-solid fa-stopwatch text-sky-400 text-xs"></i>
+            <span class="text-[8.5px] font-bold text-slate-100">مؤقت</span>
+        </button>
+
+        <!-- Option 3: Brightness -->
+        <button id="radial-btn-brightness" onclick="activateRadialArcMode('brightness', event)" class="radial-node" style="left: 186px; top: 176px;">
+            <i class="fa-solid fa-sun text-amber-400 text-xs"></i>
+            <span class="text-[8.5px] font-bold text-slate-100">الشدة</span>
+        </button>
+
+        <!-- Option 4: Color -->
+        <button id="radial-btn-color" onclick="activateRadialArcMode('color', event)" class="radial-node" style="left: 82px; top: 176px;">
+            <i class="fa-solid fa-palette text-fuchsia-400 text-xs"></i>
+            <span class="text-[8.5px] font-bold text-slate-100">اللون</span>
+        </button>
+    </div>
+
+    <!-- CONTEXTUAL POPOVER CARD (Positioned cleanly above the bottom dock) -->
+    <div id="context-card" class="context-card-anim context-card-hidden fixed bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92vw] max-w-sm glass-panel rounded-2xl p-3.5 pointer-events-auto overflow-hidden" onpointerenter="pauseContextCardTimer()" onpointerleave="resumeContextCardTimer()" onpointerdown="pauseContextCardTimer()">
+        <div class="absolute top-0 inset-x-0 h-1 bg-slate-800/80">
+            <div id="context-progress" class="h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-100" style="width: 100%;"></div>
+        </div>
+
+        <div class="flex items-start justify-between gap-2 mt-0.5">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                    <i class="fa-solid fa-ruler-combined text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <h2 id="ctx-title" class="text-xs sm:text-sm font-extrabold text-white truncate">المجلس الرئيسي الكبير</h2>
+                        <span id="ctx-tag" class="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold shrink-0">الاستقبال</span>
+                    </div>
+                    <p id="ctx-desc" class="text-[10.5px] text-slate-300 leading-snug line-clamp-2 mt-0.5">
+                        يمتد بطول 1010 سم ويضم كنبة زاوية 590×190 سم وطاولتي قهوة 180×90 سم وكنبة 251×95 سم.
+                    </p>
+                </div>
+            </div>
+            <button onclick="hideContextCard()" class="w-6 h-6 rounded-lg bg-slate-800/90 text-slate-400 hover:text-white flex items-center justify-center text-xs shrink-0">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Dimensions & Quick Interactive Actions Row -->
+        <div class="mt-2.5 pt-2 border-t border-slate-800/90 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 text-[10px]">
+                <span class="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 text-amber-400 font-bold font-mono" id="ctx-dim1">590 × 190 سم</span>
+                <span class="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 text-emerald-400 font-bold font-mono" id="ctx-dim2">طاولات 180×90</span>
+            </div>
+            <div class="flex items-center gap-1">
+                <button id="ctx-focus-btn" onclick="focusCurrentContextObject()" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    <span>تقريب</span>
+                </button>
+                <button id="ctx-toggle-vis-btn" onclick="toggleSelectedObjectVisibility()" class="hidden px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold flex items-center gap-1 transition" title="إخفاء / إظهار العنصر المحدد">
+                    <i class="fa-solid fa-eye-slash"></i>
+                    <span id="ctx-vis-text">إخفاء مؤقت</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTERACTIVE BOTTOM DOCK FOR GROUND FLOOR ROOM SELECTION -->
+    <nav id="bottom-places-dock" class="fixed bottom-2.5 inset-x-0 z-30 flex justify-center px-2 pointer-events-none">
+        <div class="glass-panel rounded-2xl p-1.5 px-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full pointer-events-auto shadow-2xl border border-slate-700/80">
+            <button id="dock-overview" onclick="selectZoneFromDock('overview')" class="dock-btn btn-active px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-house text-amber-400"></i>
+                <span>كامل الدور الأرضي</span>
+            </button>
+            <button id="dock-grandMajlis" onclick="selectZoneFromDock('grandMajlis')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-couch text-amber-400"></i>
+                <span>المجلس الكبير</span>
+            </button>
+            <button id="dock-receptionLounge" onclick="selectZoneFromDock('receptionLounge')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-chair text-amber-400"></i>
+                <span>بهو الاستقبال</span>
+            </button>
+            <button id="dock-diningRoom" onclick="selectZoneFromDock('diningRoom')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-utensils text-amber-400"></i>
+                <span>غرفة الطعام</span>
+            </button>
+            <button id="dock-kitchen" onclick="selectZoneFromDock('kitchen')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-fire-burner text-sky-400"></i>
+                <span>المطبخ والجزيرة</span>
+            </button>
+            <button id="dock-familyLiving" onclick="selectZoneFromDock('familyLiving')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-tv text-amber-400"></i>
+                <span>المعيشة العائلية</span>
+            </button>
+            <button id="dock-lobbyPartition" onclick="selectZoneFromDock('lobbyPartition')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-seedling text-emerald-400"></i>
+                <span>البهو والفاصل</span>
+            </button>
+            <button id="dock-stairsWash" onclick="selectZoneFromDock('stairsWash')" class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-stairs text-slate-300"></i>
+                <span>الدرج والمغاسل</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Subtle Toast Notification -->
+    <div id="toast-msg" class="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 glass-pill px-3.5 py-1.5 rounded-full text-[11px] font-bold text-amber-300 shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-hand-pointer text-amber-400"></i>
+        <span id="toast-text">انقر على أي لمبة إضاءة أو قطعة أثاث للتفاعل معها</span>
+    </div>
+
+    <script>
+        // ============================================================================
+        // 1. GROUND FLOOR ARCHITECTURAL DATA, ROOMS & FURNITURE SPECS (1 unit = 1m = 100cm)
+        // Reconstructed from "فيلا حسن بالاثاث جديد الدور الارضي ملون-Model.pdf"
+        // ============================================================================
+        const ZONE_SPECS = {
+            overview: {
+                title: "فيلا حسن بالأثاث - الدور الأرضي",
+                tag: "مقياس 1:100",
+                desc: "النموذج ثلاثي الأبعاد الكامل للدور الأرضي ويشمل المجلس الرئيسي الكبير (1010 سم)، بهو الاستقبال، صالة الطعام (452 سم)، المطبخ بالجزيرة (450 سم)، والمعيشة العائلية.",
+                dim1: "13.8 × 15.6 م",
+                dim2: "8 أجنحة وفراغات",
+                camPos: { x: 0.4, y: 15.8, z: 13.8 },
+                target: { x: 0.4, y: 0.4, z: -0.2 }
+            },
+            grandMajlis: {
+                title: "المجلس الرئيسي وصالة الاستقبال الكبرى",
+                tag: "أعلى اليمين",
+                desc: "يمتد بعرض كلي 1010 سم، ويضم كنبة زاوية متصلة (590×190 سم) مع طاولتي وسط (180×90 سم) وطاولات مربعة (70×70 سم) وكنبة مقابلة (251×95 سم).",
+                dim1: "كنبة 590 × 190 سم",
+                dim2: "طاولات 180×90 سم",
+                camPos: { x: 2.35, y: 6.2, z: 0.6 },
+                target: { x: 2.35, y: 1.45, z: -4.1 }
+            },
+            receptionLounge: {
+                title: "بهو الاستقبال والمدخل العلوي",
+                tag: "أعلى الوسط",
+                desc: "يضم مدخل الاستقبال (200 سم) مع مسار منحني نصف قطره 231 سم وشيزلونج استرخاء (173 سم) وكرسيين مفردين (90×90 سم) وحمام ومغاسل الضيوف العلوية.",
+                dim1: "قوس 231 | شيزلونج 173",
+                dim2: "كرسيان 90×90 سم",
+                camPos: { x: -1.65, y: 5.8, z: 0.3 },
+                target: { x: -1.65, y: 1.45, z: -4.1 }
+            },
+            diningRoom: {
+                title: "غرفة الطعام الرسمية (8 كراسي)",
+                tag: "وسط الفيلا",
+                desc: "صالة طعام بعرض 452 سم تتوسط المجلس والمعيشة عبر أبواب سحاب بعرض 200 سم، تتوسطها طاولة طعام فاخرة (250×90 سم) لـ 8 أشخاص مع بوفيه جانبي.",
+                dim1: "طاولة 250 × 90 سم",
+                dim2: "صالة عرض 452 سم",
+                camPos: { x: 0.55, y: 5.5, z: 4.1 },
+                target: { x: 0.55, y: 1.40, z: -0.05 }
+            },
+            kitchen: {
+                title: "المطبخ الرئيسي مع جزيرة الوسط",
+                tag: "وسط اليسار",
+                desc: "مطبخ متكامل بعرض 450 سم تتوسطه جزيرة عمل (182×92 سم) بممرات (104 و109 سم)، مع كاونترات محيطية بعمق 65 سم وحوض مزدوج (130 سم) وبوتاجاز (90 سم).",
+                dim1: "جزيرة 182 × 92 سم",
+                dim2: "عرض المطبخ 450 سم",
+                camPos: { x: -4.15, y: 5.6, z: 4.1 },
+                target: { x: -4.15, y: 1.40, z: -0.05 }
+            },
+            familyLiving: {
+                title: "صالة المعيشة العائلية السفلية",
+                tag: "أسفل اليمين",
+                desc: "تضم كنبة سفلية رئيسية (349×92 سم) وكنبة علوية (200×75 سم) وطاولة وسط (160×70 سم) وكرسي زاوية (90×98 سم) ومكتبة حائط يمنى (252×48 سم).",
+                dim1: "كنبة 349 × 92 سم",
+                dim2: "طاولة 160×70 سم",
+                camPos: { x: 3.35, y: 5.8, z: 9.2 },
+                target: { x: 3.35, y: 1.40, z: 4.65 }
+            },
+            lobbyPartition: {
+                title: "بهو الموزع وحائط التلفزيون والحوض",
+                tag: "أسفل الوسط",
+                desc: "يضم وحدة الفاصل المعماري ومكتبة التلفزيون (200×91 سم) المزودة بحوض نباتات خلفي (70×53 سم) وممر للدرج (206 سم) وكرسيي استقبال (90×90 سم).",
+                dim1: "فاصل 200 × 91 سم",
+                dim2: "حوض 70×53 | ممر 206",
+                camPos: { x: 0.25, y: 5.6, z: 8.6 },
+                target: { x: 0.25, y: 1.40, z: 4.25 }
+            },
+            stairsWash: {
+                title: "الدرج الرئيسي ومغاسل وحمام الضيوف",
+                tag: "أسفل اليسار",
+                desc: "يضم السلم الرئيسي بـ 3 قلبات (عرض 140 سم وفراغ أوسط 42 سم)، ويعلوه قسم المغاسل (210×150 سم) مع حوض نباتات (45 سم) ودورة مياه (175×140 سم).",
+                dim1: "مغاسل 210×150 سم",
+                dim2: "درج بعرض 140 سم",
+                camPos: { x: -4.15, y: 6.0, z: 9.3 },
+                target: { x: -4.15, y: 1.40, z: 4.65 }
+            }
+        };
+
+        // Granular Item Metadata for Clicked Furniture & Planters
+        const ITEM_SPECS = {
+            majlisMainLsofa: {
+                title: "الكنبة الزاوية الكبرى بالمجلس (حرف L)",
+                tag: "المجلس الكبير",
+                desc: "كنبة متصلة فاخرة تمتد بطول 590 سم على الجدار العلوي وتنعطف بطول 190 سم يميناً مع خلوص 30 سم وطاولات ركنية Ø58 وØ75 سم.",
+                dim1: "590 × 190 سم",
+                dim2: "عمق 95 | خلوص 30 سم",
+                zone: "grandMajlis"
+            },
+            majlisCenterTables: {
+                title: "طاولتا القهوة الوسطية والطاولات المربعة",
+                tag: "المجلس الكبير",
+                desc: "طاولتان مستطيلتان متداخلتان بأبعاد 180×90 سم لكل منهما، مع طاولتين مربعتين 70×70 سم وممرات حركة 48 و49 و67 سم.",
+                dim1: "طاولتان 180×90 سم",
+                dim2: "مربعتان 70×70 سم",
+                zone: "grandMajlis"
+            },
+            majlisBottomSofa: {
+                title: "الكنبة السفلية بالمجلس + طاولة الزاوية",
+                tag: "المجلس الكبير",
+                desc: "كنبة ثلاثية بطول 251 سم وعمق 95 سم تستند إلى جدار بطول 295 سم وبجانبها طاولة زاوية دائرية بقطر 77 سم.",
+                dim1: "251 × 95 سم",
+                dim2: "طاولة ركن Ø77 سم",
+                zone: "grandMajlis"
+            },
+            receptionDaybed: {
+                title: "شيزلونج الاستقبال والكرسيان المفردان",
+                tag: "بهو الاستقبال",
+                desc: "وحدة جلوس استرخاء (شيزلونج) بطول 173 سم بمحاذاة المسار المنحني (231 سم)، مع كرسيين مفردين (90×90 سم) وطاولات (51 و33 سم).",
+                dim1: "شيزلونج 173 سم",
+                dim2: "كرسيان 90×90 سم",
+                zone: "receptionLounge"
+            },
+            topLeftWashroom: {
+                title: "مغاسل وحمام الضيوف العلوي",
+                tag: "أعلى اليسار",
+                desc: "جناح خدمات ضيوف بعرض 200 سم يضم مغسلة رخامية (50 سم) مع أحواض نباتات داخلية ومنور علوي ودورة مياه (200×130 سم).",
+                dim1: "200 × 350 سم",
+                dim2: "أحواض نباتات داخلية",
+                zone: "receptionLounge"
+            },
+            diningTableSet: {
+                title: "طاولة الطعام الرسمية (8 مقاعد) والبوفيه",
+                tag: "غرفة الطعام",
+                desc: "طاولة طعام رخامية وخشبية بطول 250 سم وعرض 90 سم محاطة بـ 8 كراسي، مع خلوص علوي وسفلي 125 سم وبوفيه جانبي (194 سم).",
+                dim1: "250 × 90 سم (8 كراسي)",
+                dim2: "خلوص 125 سم",
+                zone: "diningRoom"
+            },
+            kitchenIsland: {
+                title: "جزيرة المطبخ الوسطية (Kitchen Island)",
+                tag: "المطبخ الرئيسي",
+                desc: "جزيرة تحضير وسطية بأبعاد 182×92 سم بسطح رخامي، تحيط بها ممرات حركة مريحة بعرض 104 سم يساراً و109 سم يميناً.",
+                dim1: "182 × 92 سم",
+                dim2: "ممرات 104 و109 سم",
+                zone: "kitchen"
+            },
+            kitchenCounters: {
+                title: "خزائن وكاونترات المطبخ المحيطية",
+                tag: "المطبخ الرئيسي",
+                desc: "كاونترات مطبخ على شكل حرف U بعرض كلي 450 سم وعمق 65 سم، تضم حوض غسيل مزدوج (130 سم) وبوتاجاز (90 سم) ووحدة ثلاجة (80 سم).",
+                dim1: "عرض 450 × عمق 65 سم",
+                dim2: "حوض 130 | بوتاجاز 90",
+                zone: "kitchen"
+            },
+            lobbyTvPartition: {
+                title: "وحدة التلفزيون الفاصلة وحوض النباتات",
+                tag: "بهو الموزع",
+                desc: "وحدة معمارية مزدوجة بطول 200 سم وعرض كلي 91 سم، تضم مكتبة تلفزيون (48 سم) جهة المعيشة وحوض نباتات طبيعية (70×53 سم) جهة الدرج.",
+                dim1: "200 × 91 سم",
+                dim2: "حوض نباتات 70×53 سم",
+                zone: "lobbyPartition"
+            },
+            lobbyArmchairs: {
+                title: "كرسيا بهو الموزع تحت صالة الطعام",
+                tag: "بهو الموزع",
+                desc: "كرسيان مفردان بتصميم مائل (90×90 سم) على جانبي باب صالة الطعام السحاب (200 سم) مع طاولتين جانبيتين (47 و50 سم).",
+                dim1: "كرسي 90 × 90 سم",
+                dim2: "طاولات Ø47 وØ50 سم",
+                zone: "lobbyPartition"
+            },
+            familyBottomSofa: {
+                title: "الكنبة الرئيسية بصالة المعيشة العائلية",
+                tag: "المعيشة العائلية",
+                desc: "كنبة عائلية كبيرة بطول 349 سم وعمق 92 سم على الجدار السفلي، مع كرسي استرخاء زاوية (90×98 سم) وطاولة جانبية (Ø52 سم).",
+                dim1: "349 × 92 سم",
+                dim2: "كرسي ركن 90×98 سم",
+                zone: "familyLiving"
+            },
+            familyTopSofaAndTable: {
+                title: "الكنبة العلوية وطاولة الوسط ومكتبة الجدار",
+                tag: "المعيشة العائلية",
+                desc: "كنبة ثنائية/ثلاثية علوية (200×75 سم) مع طاولة قهوة وسطية (160×70 سم) ووحدة ديكور جدارية يمنى (252×48 سم).",
+                dim1: "كنبة 200×75 سم",
+                dim2: "طاولة وسط 160×70 سم",
+                zone: "familyLiving"
+            },
+            groundStaircaseAndWash: {
+                title: "السلم الرئيسي ومغاسل وحمام الضيوف",
+                tag: "أسفل اليسار",
+                desc: "درج رئيسي بـ 3 قلبات (عرض 140 سم)، يعلوه قسم مغاسل الضيوف (210×150 سم) مع حوض نباتات (45 سم) ودورة مياه (175×140 سم).",
+                dim1: "مغاسل 210×150 سم",
+                dim2: "حمام 175×140 سم",
+                zone: "stairsWash"
+            }
+        };
+
+        // ============================================================================
+        // 2. THREE.JS SCENE GLOBALS
+        // ============================================================================
+        let scene, camera, renderer, controls;
+        let wallMeshes = [];
+        let doorWindowMeshes = [];
+        let furnitureGroup, plantsGroup, structureGroup, cadOverlayMesh;
+        let nightLights = [];
+        let smartLights = [];
+        let showSmartBulbPinsFlag = true;
+        let activeSmartLight = null;
+        let activeRadialArcMode = null;
+        let isDraggingRadialArc = false;
+        let emissiveMaterials = [];
+        let ambientLight, hemiLight, dirLight;
+        let currentWallHeight = 1.35;
+        let isWallXRay = false;
+        let showRoomLabelsFlag = true;
+        let showDimBadgesFlag = false; // Hidden by default per user preference
+        let interactiveObjects = [];
+        let cameraAnim = null;
+        let isNightMode = true; // Dark mode by default per user preference
+
+        let toolbarHideTimer = null;
+        let contextCardProgressInterval = null;
+        let contextRemainingMs = 4000;
+        let isContextTimerPaused = false;
+        let activePopover = null;
+        let selectedTargetGroup = null;
+        let selectedZoneKey = 'overview';
+        let selectionBoxHelper = null;
+        let isUserOrbiting = false;
+
+        // Floating HTML Room Labels (Shown in center of rooms during full villa overview)
+        const floatingRoomLabels = [
+            { id: 'grandMajlis', name: 'المجلس الرئيسي الكبير', sub: '1010 × 450 سم | كنبة 590', x: 2.35, y: 1.4, z: -4.1, color: 'amber' },
+            { id: 'receptionLounge', name: 'بهو الاستقبال والمدخل', sub: 'قوس 231 | شيزلونج 173', x: -1.65, y: 1.35, z: -4.1, color: 'amber' },
+            { id: 'receptionLounge', name: 'مغاسل وحمام الضيوف العلوي', sub: '200 × 350 سم', x: -5.4, y: 1.3, z: -3.6, color: 'sky' },
+            { id: 'diningRoom', name: 'غرفة الطعام الرسمية', sub: '452 × 360 سم | طاولة 250', x: 0.55, y: 1.4, z: -0.05, color: 'amber' },
+            { id: 'kitchen', name: 'المطبخ الرئيسي والجزيرة', sub: '450 × 360 سم | جزيرة 182', x: -4.15, y: 1.4, z: -0.05, color: 'sky' },
+            { id: 'familyLiving', name: 'صالة المعيشة العائلية', sub: 'كنبة 349×92 | طاولة 160', x: 3.35, y: 1.4, z: 4.65, color: 'amber' },
+            { id: 'lobbyPartition', name: 'الموزع وحائط التلفزيون', sub: 'فاصل 200×91 | حوض 70', x: 0.25, y: 1.35, z: 4.25, color: 'emerald' },
+            { id: 'stairsWash', name: 'الدرج والمغاسل السفلية', sub: 'مغاسل 210×150 | درج 140', x: -4.15, y: 1.4, z: 4.65, color: 'slate' }
+        ];
+
+        // Exact Dimension Badges from the Ground Floor PDF (Hidden by default, toggleable)
+        const floatingDimBadges = [
+            { text: '← 1010 سم →', x: 1.0, y: 0.2, z: -2.65 },
+            { text: 'كنبة 590 × 190 سم', x: 2.35, y: 0.85, z: -5.65 },
+            { text: '180×90 سم', x: 1.15, y: 0.55, z: -3.95 },
+            { text: '180×90 سم', x: 2.65, y: 0.55, z: -4.35 },
+            { text: '70×70 سم', x: 1.75, y: 0.55, z: -4.75 },
+            { text: '70×70 سم', x: 2.35, y: 0.55, z: -3.45 },
+            { text: 'كنبة 251×95 سم', x: 2.85, y: 0.85, z: -2.40 },
+            { text: 'Ø77 سم', x: 4.55, y: 0.6, z: -2.35 },
+            { text: 'شيزلونج 173 سم', x: -0.95, y: 0.75, z: -4.35 },
+            { text: 'قوس 231 سم', x: -1.65, y: 0.2, z: -4.25 },
+            { text: '90×90 سم', x: -2.45, y: 0.8, z: -2.45 },
+            { text: '90×90 سم', x: -1.10, y: 0.8, z: -2.45 },
+            { text: 'مدخل 200 سم', x: -2.65, y: 0.3, z: -6.20 },
+            { text: 'مغاسل 165×160', x: -5.40, y: 0.8, z: -2.75 },
+            { text: '← 452 سم →', x: 0.55, y: 0.2, z: -1.10 },
+            { text: 'طاولة طعام 250×90', x: 0.55, y: 0.85, z: -0.05 },
+            { text: 'باب سحاب 200 سم', x: 0.55, y: 0.3, z: -1.85 },
+            { text: 'باب سحاب 200 سم', x: 0.55, y: 0.3, z: 1.75 },
+            { text: '← 450 سم →', x: -4.15, y: 0.2, z: 0.95 },
+            { text: 'جزيرة 182×92 سم', x: -4.10, y: 0.95, z: -0.05 },
+            { text: 'حوض 130 سم', x: -6.05, y: 0.95, z: -0.05 },
+            { text: 'بوتاجاز 90 سم', x: -4.25, y: 0.95, z: -1.45 },
+            { text: 'فاصل 200×91 سم', x: 0.55, y: 1.15, z: 4.55 },
+            { text: 'حوض 70×53 سم', x: 0.05, y: 0.75, z: 3.95 },
+            { text: 'ممر 206 سم', x: -0.85, y: 0.2, z: 4.85 },
+            { text: 'كنبة 200×75 سم', x: 3.75, y: 0.8, z: 3.05 },
+            { text: 'طاولة 160×70 سم', x: 3.45, y: 0.55, z: 4.65 },
+            { text: 'كنبة 349×92 سم', x: 2.85, y: 0.85, z: 6.20 },
+            { text: 'كرسي 90×98 سم', x: 5.25, y: 0.8, z: 6.15 },
+            { text: 'مكتبة 252×48 سم', x: 5.85, y: 0.95, z: 4.55 },
+            { text: 'مغاسل 210×150', x: -2.90, y: 0.8, z: 2.55 },
+            { text: 'حمام 175×140', x: -5.45, y: 0.8, z: 2.55 },
+            { text: 'درج 140 سم', x: -4.15, y: 0.9, z: 5.10 }
+        ];
+
+        // ============================================================================
+        // 3. PROCEDURAL TEXTURES & MATERIALS
+        // ============================================================================
+        function createMarbleTexture(baseHex, veinHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = baseHex;
+            ctx.fillRect(0, 0, 512, 512);
+
+            ctx.strokeStyle = veinHex;
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i < 14; i++) {
+                ctx.beginPath();
+                let x = Math.random() * 512;
+                let y = 0;
+                ctx.moveTo(x, y);
+                for (let step = 0; step < 8; step++) {
+                    x += (Math.random() - 0.5) * 90;
+                    y += 64;
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, 256, 256);
+            ctx.strokeRect(256, 0, 256, 256);
+            ctx.strokeRect(0, 256, 256, 256);
+            ctx.strokeRect(256, 256, 256, 256);
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(6, 6);
+            return tex;
+        }
+
+        function createWoodTexture(baseColor = '#8c5832', grainColor = '#6e4221') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.fillStyle = grainColor;
+            for (let i = 0; i < 45; i++) {
+                ctx.fillRect(0, Math.random() * 256, 256, 1 + Math.random() * 2);
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createCADBlueprintTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 2048;
+            const ctx = canvas.getContext('2d');
+
+            const toPxX = (x) => ((x + 9.0) / 18.0) * 2048;
+            const toPxY = (z) => ((z + 9.0) / 18.0) * 2048;
+            const toPxLen = (m) => (m / 18.0) * 2048;
+
+            ctx.clearRect(0, 0, 2048, 2048);
+
+            // Subtle architectural grid
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.14)';
+            ctx.lineWidth = 1;
+            for (let m = -8; m <= 8; m++) {
+                ctx.beginPath();
+                ctx.moveTo(toPxX(m), 0);
+                ctx.lineTo(toPxX(m), 2048);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, toPxY(m));
+                ctx.lineTo(2048, toPxY(m));
+                ctx.stroke();
+            }
+
+            // Draw CAD Orange Furniture Outlines & Dimension Lines matching the Ground Floor PDF
+            ctx.strokeStyle = '#ea580c';
+            ctx.lineWidth = 3;
+
+            // Grand Majlis L-Sofa (590 x 190 cm) & Coffee Tables (180 x 90 cm)
+            ctx.strokeRect(toPxX(-0.55), toPxY(-5.90), toPxLen(5.90), toPxLen(0.95));
+            ctx.strokeRect(toPxX(0.25), toPxY(-4.40), toPxLen(1.80), toPxLen(0.90));
+            ctx.strokeRect(toPxX(1.75), toPxY(-4.80), toPxLen(1.80), toPxLen(0.90));
+            ctx.strokeRect(toPxX(1.60), toPxY(-2.85), toPxLen(2.51), toPxLen(0.95));
+
+            // Reception Curved Partition Line (R = 231 cm)
+            ctx.beginPath();
+            ctx.arc(toPxX(-3.85), toPxY(-4.35), toPxLen(2.31), -0.35, 0.85);
+            ctx.stroke();
+
+            // Dining Table (250 x 90 cm)
+            ctx.strokeRect(toPxX(-0.70), toPxY(-0.50), toPxLen(2.50), toPxLen(0.90));
+
+            // Kitchen Island (182 x 92 cm)
+            ctx.strokeRect(toPxX(-5.01), toPxY(-0.51), toPxLen(1.82), toPxLen(0.92));
+
+            // Family Living Sofas (349 x 92 cm & 200 x 75 cm) & Table (160 x 70 cm)
+            ctx.strokeRect(toPxX(1.10), toPxY(5.72), toPxLen(3.49), toPxLen(0.92));
+            ctx.strokeRect(toPxX(2.75), toPxY(2.68), toPxLen(2.00), toPxLen(0.75));
+            ctx.strokeRect(toPxX(2.65), toPxY(4.30), toPxLen(1.60), toPxLen(0.70));
+
+            const tex = new THREE.CanvasTexture(canvas);
+            return tex;
+        }
+
+        // ============================================================================
+        // 4. INITIALIZE 3D SCENE & BUILD VILLA HASSAN GROUND FLOOR
+        // ============================================================================
+        function initScene() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050811);
+            scene.fog = new THREE.FogExp2(0x050811, 0.015);
+
+            camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 150);
+            camera.position.set(0.4, 15.8, 13.8);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.06;
+            controls.maxPolarAngle = Math.PI / 2 - 0.02;
+            controls.minDistance = 2.0;
+            controls.maxDistance = 35.0;
+            controls.target.set(0.4, 0.4, -0.2);
+
+            controls.addEventListener('start', () => {
+                isUserOrbiting = true;
+                document.getElementById('labels-container').style.opacity = '0.45';
+                closeAllPopovers();
+                hideContextCard();
+                closeRadialLightMenu();
+                hideToolbarImmediately();
+            });
+            controls.addEventListener('end', () => {
+                isUserOrbiting = false;
+                document.getElementById('labels-container').style.opacity = '1';
+            });
+
+            selectionBoxHelper = new THREE.BoxHelper(new THREE.Mesh(), 0xfbbf24);
+            selectionBoxHelper.material.depthTest = false;
+            selectionBoxHelper.material.transparent = true;
+            selectionBoxHelper.material.opacity = 0.85;
+            selectionBoxHelper.visible = false;
+            scene.add(selectionBoxHelper);
+
+            structureGroup = new THREE.Group();
+            structureGroup.name = "Ground_Architecture_Structure";
+            furnitureGroup = new THREE.Group();
+            furnitureGroup.name = "Ground_Villa_Furniture";
+            plantsGroup = new THREE.Group();
+            plantsGroup.name = "Ground_Landscaping_Plants";
+
+            scene.add(structureGroup);
+            scene.add(furnitureGroup);
+            scene.add(plantsGroup);
+
+            setupLighting();
+            buildFloorsAndSlabs();
+            buildAllWallsAndOpenings();
+            buildGrandMajlisAndReception();
+            buildTopLeftGuestWashroom();
+            buildCentralDiningRoom();
+            buildMainKitchenAndIsland();
+            buildFamilyLivingAndLobbyPartition();
+            buildMainStaircaseAndGuestWash();
+
+            createHTMLOverlays();
+            setupRadialArcInteraction();
+            setupRaycasterInteraction();
+
+            scheduleToolbarAutoHide(3800);
+            setTimeout(() => {
+                showToast("الدور الأرضي جاهز! انقر على أي غرفة من الشريط السفلي أو المس أي لمبة 💡 للتحكم بالإضاءة");
+            }, 600);
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function registerInteractiveItem(obj3D, itemKey, zoneKey) {
+            obj3D.userData = { itemKey, zone: zoneKey, targetGroup: obj3D };
+            obj3D.traverse(child => {
+                if (child.isMesh) {
+                    child.userData = { itemKey, zone: zoneKey, targetGroup: obj3D };
+                    interactiveObjects.push(child);
+                }
+            });
+        }
+
+        // ============================================================================
+        // 5. LIGHTING SYSTEM & INTERACTIVE 3D SMART BULBS IN EVERY GROUND FLOOR ROOM
+        // ============================================================================
+        const COLOR_SPECTRUM_STOPS = [
+            { t: 0.00, hex: '#ff8c1a', name: 'دافئ شموع 2700K' },
+            { t: 0.16, hex: '#ffb454', name: 'دافئ 3000K' },
+            { t: 0.32, hex: '#fff4e6', name: 'أبيض ناعم 4000K' },
+            { t: 0.48, hex: '#38bdf8', name: 'سماوي نهاري' },
+            { t: 0.64, hex: '#818cf8', name: 'أزرق ملكي' },
+            { t: 0.80, hex: '#f43f5e', name: 'وردي دافئ' },
+            { t: 1.00, hex: '#10b981', name: 'أخضر زمردي' }
+        ];
+
+        function setupLighting() {
+            ambientLight = new THREE.AmbientLight(0xfffbf0, 0.22);
+            scene.add(ambientLight);
+
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.20);
+            hemiLight.position.set(0, 25, 0);
+            scene.add(hemiLight);
+
+            dirLight = new THREE.DirectionalLight(0xfff7ed, 0.25);
+            dirLight.position.set(12, 22, 14);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.near = 1;
+            dirLight.shadow.camera.far = 50;
+            const d = 12;
+            dirLight.shadow.camera.left = -d;
+            dirLight.shadow.camera.right = d;
+            dirLight.shadow.camera.top = d;
+            dirLight.shadow.camera.bottom = -d;
+            dirLight.shadow.bias = -0.0005;
+            scene.add(dirLight);
+
+            // Smart Bulbs placed at the exact visual center of each Ground Floor room
+            const roomLightSpecs = [
+                { id: 'bulb_grandMajlis', name: 'ثريا المجلس الكبير', zone: 'grandMajlis', x: 2.35, y: 1.85, z: -4.10, maxI: 2.7, dist: 9.5, color: '#ffb454' },
+                { id: 'bulb_reception', name: 'لمبة بهو الاستقبال', zone: 'receptionLounge', x: -1.65, y: 1.80, z: -4.10, maxI: 2.1, dist: 7.5, color: '#ffb454' },
+                { id: 'bulb_topWash', name: 'لمبة المغاسل العلوية', zone: 'receptionLounge', x: -5.40, y: 1.75, z: -3.60, maxI: 1.8, dist: 6.0, color: '#38bdf8' },
+                { id: 'bulb_dining', name: 'ثريا طاولة الطعام', zone: 'diningRoom', x: 0.55, y: 1.80, z: -0.05, maxI: 2.5, dist: 8.0, color: '#ffb454' },
+                { id: 'bulb_kitchen', name: 'إضاءة جزيرة المطبخ', zone: 'kitchen', x: -4.15, y: 1.80, z: -0.05, maxI: 2.3, dist: 7.5, color: '#fff4e6' },
+                { id: 'bulb_familyLiving', name: 'ثريا المعيشة العائلية', zone: 'familyLiving', x: 3.35, y: 1.85, z: 4.65, maxI: 2.5, dist: 8.5, color: '#ffb454' },
+                { id: 'bulb_lobbyPartition', name: 'إضاءة الموزع والحوض', zone: 'lobbyPartition', x: 0.25, y: 1.75, z: 4.25, maxI: 2.1, dist: 7.0, color: '#10b981' },
+                { id: 'bulb_stairsWash', name: 'لمبة الدرج والمغاسل', zone: 'stairsWash', x: -4.15, y: 1.85, z: 4.65, maxI: 2.0, dist: 7.5, color: '#fff4e6' }
+            ];
+
+            smartLights = [];
+            nightLights = [];
+
+            roomLightSpecs.forEach((spec, idx) => {
+                const pl = new THREE.PointLight(spec.color, spec.maxI * 0.9, spec.dist, 1.5);
+                pl.position.set(spec.x, spec.y, spec.z);
+                scene.add(pl);
+                nightLights.push(pl);
+
+                const fixtureGroup = new THREE.Group();
+                fixtureGroup.position.set(spec.x, spec.y, spec.z);
+
+                const mountMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.25, metalness: 0.85 });
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 12), mountMat);
+                stem.position.y = 0.20;
+                const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.05, 20), mountMat);
+                cap.position.y = 0.08;
+                fixtureGroup.add(stem, cap);
+
+                const bulbMat = new THREE.MeshStandardMaterial({
+                    color: spec.color,
+                    emissive: spec.color,
+                    emissiveIntensity: 1.8,
+                    roughness: 0.15
+                });
+                const bulbMesh = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 24), bulbMat);
+                fixtureGroup.add(bulbMesh);
+
+                const haloMat = new THREE.MeshBasicMaterial({
+                    color: spec.color,
+                    transparent: true,
+                    opacity: 0.38,
+                    side: THREE.DoubleSide
+                });
+                const haloMesh = new THREE.Mesh(new THREE.RingGeometry(0.20, 0.34, 32), haloMat);
+                haloMesh.rotation.x = Math.PI / 2;
+                fixtureGroup.add(haloMesh);
+
+                scene.add(fixtureGroup);
+
+                const smartLightObj = {
+                    id: spec.id,
+                    index: idx,
+                    name: spec.name,
+                    zone: spec.zone,
+                    pos: new THREE.Vector3(spec.x, spec.y, spec.z),
+                    pointLight: pl,
+                    fixtureGroup,
+                    bulbMesh,
+                    bulbMat,
+                    haloMesh,
+                    haloMat,
+                    isOn: true,
+                    brightness: 90,
+                    colorHex: spec.color,
+                    colorRatio: idx === 6 ? 0.98 : (idx === 2 ? 0.48 : 0.16),
+                    maxIntensity: spec.maxI,
+                    timerMinutes: 0,
+                    timerRemainingSec: 0,
+                    timerInterval: null,
+                    pinEl: null
+                };
+
+                fixtureGroup.traverse(child => {
+                    if (child.isMesh) {
+                        child.userData = { isSmartBulb: true, smartLight: smartLightObj };
+                        interactiveObjects.push(child);
+                    }
+                });
+
+                smartLights.push(smartLightObj);
+                applySmartLightState(smartLightObj);
+            });
+
+            setLightingMode('night');
+        }
+
+        function applySmartLightState(lightObj) {
+            if (!lightObj) return;
+            const c = new THREE.Color(lightObj.colorHex);
+            lightObj.pointLight.color.copy(c);
+            lightObj.bulbMat.color.copy(c);
+            lightObj.haloMat.color.copy(c);
+
+            if (lightObj.isOn && lightObj.brightness > 0) {
+                const ratio = lightObj.brightness / 100;
+                const envMultiplier = isNightMode ? 1.55 : 0.95;
+                lightObj.pointLight.intensity = lightObj.maxIntensity * ratio * envMultiplier;
+                lightObj.bulbMat.emissive.copy(c);
+                lightObj.bulbMat.emissiveIntensity = 0.6 + ratio * 1.6;
+                lightObj.haloMat.opacity = 0.12 + ratio * 0.38;
+                lightObj.haloMesh.scale.setScalar(0.85 + ratio * 0.45);
+            } else {
+                lightObj.pointLight.intensity = 0;
+                lightObj.bulbMat.emissive.setHex(0x000000);
+                lightObj.bulbMat.emissiveIntensity = 0;
+                lightObj.haloMat.opacity = 0.04;
+            }
+
+            updateSmartBulbPinUI(lightObj);
+        }
+
+        function createWarmLEDStrip(w, h, d, x, y, z) {
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xffedd5,
+                emissive: 0xff9d2e,
+                emissiveIntensity: 0.85,
+                roughness: 0.2
+            });
+            emissiveMaterials.push(mat);
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+            mesh.position.set(x, y, z);
+            furnitureGroup.add(mesh);
+            return mesh;
+        }
+
+        // ============================================================================
+        // 6. GROUND FLOOR SLABS & CAD BLUEPRINT UNDERLAY
+        // ============================================================================
+        function buildFloorsAndSlabs() {
+            const creamMarbleTex = createMarbleTexture('#f5f2eb', '#dfd8c8');
+            const kitchenTileTex = createMarbleTexture('#e2e8f0', '#cbd5e1');
+            const receptionMarbleTex = createMarbleTexture('#faf7f2', '#e5dec9');
+            const courtStoneTex = createMarbleTexture('#d6d3d1', '#a8a29e');
+
+            const mainFloorMat = new THREE.MeshStandardMaterial({ map: creamMarbleTex, roughness: 0.24, metalness: 0.06 });
+            const majlisFloorMat = new THREE.MeshStandardMaterial({ map: receptionMarbleTex, roughness: 0.20, metalness: 0.08 });
+            const kitchenFloorMat = new THREE.MeshStandardMaterial({ map: kitchenTileTex, roughness: 0.25, metalness: 0.08 });
+            const courtMat = new THREE.MeshStandardMaterial({ map: courtStoneTex, roughness: 0.65 });
+
+            // Base Podium under the Ground Floor
+            const podiumGeo = new THREE.BoxGeometry(16.8, 0.35, 17.2);
+            const podiumMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+            const podium = new THREE.Mesh(podiumGeo, podiumMat);
+            podium.position.set(-0.1, -0.20, -0.4);
+            podium.receiveShadow = true;
+            structureGroup.add(podium);
+
+            function addFloorSlab(w, d, x, z, mat, zoneKey) {
+                const geo = new THREE.BoxGeometry(w, 0.06, d);
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(x, 0, z);
+                mesh.receiveShadow = true;
+                mesh.userData = { zone: zoneKey };
+                structureGroup.add(mesh);
+                interactiveObjects.push(mesh);
+            }
+
+            // 1. Top-Left Service Court & Upper Guest Washroom (200 × 700 cm)
+            addFloorSlab(2.35, 3.00, -5.42, -7.20, courtMat, 'receptionLounge');
+            addFloorSlab(2.35, 4.00, -5.42, -3.70, kitchenFloorMat, 'receptionLounge');
+
+            // 2. Reception Lounge (Left side of 1010 cm hall)
+            addFloorSlab(3.90, 4.45, -1.95, -4.02, majlisFloorMat, 'receptionLounge');
+
+            // 3. Grand Majlis (Right side of 1010 cm hall: 620 × 445 cm)
+            addFloorSlab(6.35, 4.45, 3.12, -4.02, majlisFloorMat, 'grandMajlis');
+
+            // 4. Middle-Left Main Kitchen (450 × 360 cm)
+            addFloorSlab(4.65, 3.65, -4.15, -0.02, kitchenFloorMat, 'kitchen');
+
+            // 5. Middle-Center Formal Dining Room (452 × 360 cm)
+            addFloorSlab(4.75, 3.65, 0.55, -0.02, mainFloorMat, 'diningRoom');
+
+            // 6. Bottom-Left Guest Washbasins, WC & Main Staircase (465 × 510 cm)
+            addFloorSlab(4.65, 5.15, -4.15, 4.35, mainFloorMat, 'stairsWash');
+
+            // 7. Bottom-Center Entrance/Stair Lobby & Partition Zone
+            addFloorSlab(3.10, 5.15, -0.28, 4.35, mainFloorMat, 'lobbyPartition');
+
+            // 8. Bottom-Right Family Living Room
+            addFloorSlab(5.05, 4.45, 3.75, 4.70, mainFloorMat, 'familyLiving');
+
+            // CAD Blueprint Overlay Plane
+            const cadTex = createCADBlueprintTexture();
+            const cadGeo = new THREE.PlaneGeometry(18.0, 18.0);
+            const cadMat = new THREE.MeshBasicMaterial({
+                map: cadTex,
+                transparent: true,
+                opacity: 0.45,
+                depthWrite: false
+            });
+            cadOverlayMesh = new THREE.Mesh(cadGeo, cadMat);
+            cadOverlayMesh.rotation.x = -Math.PI / 2;
+            cadOverlayMesh.position.set(0.0, 0.036, 0.0);
+            structureGroup.add(cadOverlayMesh);
+        }
+
+        // ============================================================================
+        // 7. ARCHITECTURAL WALLS, WINDOWS & SLIDING DOORS (Exact Ground Floor Plan)
+        // ============================================================================
+        const wallMat = new THREE.MeshStandardMaterial({
+            color: 0xfafaf9,
+            roughness: 0.55,
+            metalness: 0.05
+        });
+        const wallCapMat = new THREE.MeshStandardMaterial({
+            color: 0xd97706,
+            roughness: 0.4
+        });
+        const glassMat = new THREE.MeshPhysicalMaterial({
+            color: 0xbae6fd,
+            transparent: true,
+            opacity: 0.38,
+            roughness: 0.05,
+            metalness: 0.1,
+            transmission: 0.6
+        });
+        const woodDoorMat = new THREE.MeshStandardMaterial({
+            color: 0x9a5b32,
+            roughness: 0.45
+        });
+
+        function addWallSegment(x1, z1, x2, z2, thickness = 0.20, isPartition = false) {
+            const dx = x2 - x1;
+            const dz = z2 - z1;
+            const length = Math.hypot(dx, dz);
+            if (length < 0.02) return;
+            const angle = Math.atan2(dz, dx);
+            const cx = (x1 + x2) / 2;
+            const cz = (z1 + z2) / 2;
+
+            const geo = new THREE.BoxGeometry(length, 1.0, thickness);
+            geo.translate(0, 0.5, 0);
+            const mesh = new THREE.Mesh(geo, wallMat);
+            mesh.position.set(cx, 0, cz);
+            mesh.rotation.y = -angle;
+            mesh.scale.y = currentWallHeight;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            structureGroup.add(mesh);
+
+            const capGeo = new THREE.BoxGeometry(length + 0.01, 0.03, thickness + 0.01);
+            const capMesh = new THREE.Mesh(capGeo, wallCapMat);
+            capMesh.position.set(cx, currentWallHeight + 0.015, cz);
+            capMesh.rotation.y = -angle;
+            structureGroup.add(capMesh);
+
+            wallMeshes.push({ body: mesh, cap: capMesh, isPartition });
+        }
+
+        function addWindowOrDoor(x1, z1, x2, z2, type = 'window') {
+            const dx = x2 - x1;
+            const dz = z2 - z1;
+            const length = Math.hypot(dx, dz);
+            const angle = Math.atan2(dz, dx);
+            const cx = (x1 + x2) / 2;
+            const cz = (z1 + z2) / 2;
+
+            if (type === 'window' || type === 'slidingGlass') {
+                const sill = type === 'window' ? 0.45 : 0.05;
+                const geo = new THREE.BoxGeometry(length, 1.0, 0.06);
+                geo.translate(0, 0.5, 0);
+                const glass = new THREE.Mesh(geo, glassMat);
+                glass.position.set(cx, sill, cz);
+                glass.rotation.y = -angle;
+                glass.scale.y = Math.max(0.1, currentWallHeight - sill);
+                structureGroup.add(glass);
+                doorWindowMeshes.push({ mesh: glass, sill });
+            } else if (type === 'door') {
+                const leafGeo = new THREE.BoxGeometry(length * 0.9, 1.0, 0.04);
+                leafGeo.translate(0, 0.5, 0);
+                const leaf = new THREE.Mesh(leafGeo, woodDoorMat);
+                leaf.position.set(cx, 0, cz);
+                leaf.rotation.y = -angle + 0.50;
+                leaf.scale.y = currentWallHeight * 0.95;
+                structureGroup.add(leaf);
+                doorWindowMeshes.push({ mesh: leaf, sill: 0 });
+            }
+        }
+
+        function buildAllWallsAndOpenings() {
+            // 1. Top-Left Service Courtyard & Upper Washroom Walls
+            addWallSegment(-6.50, -8.65, -4.30, -8.65, 0.22);
+            addWallSegment(-6.50, -8.65, -6.50, -1.80, 0.22);
+            addWallSegment(-4.30, -8.65, -4.30, -6.20, 0.22);
+            addWallSegment(-6.50, -7.25, -4.30, -7.25, 0.18);
+            addWallSegment(-6.50, -5.65, -4.30, -5.65, 0.18);
+            addWallSegment(-6.50, -3.65, -4.75, -3.65, 0.16);
+
+            //Wall between Top-Left Washroom & Reception Lounge (X = -3.90)
+            addWallSegment(-3.90, -6.20, -3.90, -2.75, 0.20);
+            addWindowOrDoor(-3.90, -2.75, -3.90, -1.95, 'door');
+
+            // 2. Grand Majlis & Reception Top Wall (Z = -6.20, total span from X = -3.90 to +6.25 -> 1010 cm interior)
+            addWallSegment(-3.90, -6.20, -3.45, -6.20, 0.22);
+            addWindowOrDoor(-3.45, -6.20, -1.45, -6.20, 'slidingGlass'); // 200 cm entrance/patio door
+            addWallSegment(-1.45, -6.20, 0.90, -6.20, 0.22);
+            addWindowOrDoor(0.90, -6.20, 2.75, -6.20, 'window');
+            addWallSegment(2.75, -6.20, 4.10, -6.20, 0.22);
+            addWindowOrDoor(4.10, -6.20, 5.45, -6.20, 'window');
+            addWallSegment(5.45, -6.20, 6.25, -6.20, 0.22);
+
+            // 3. Grand Majlis Right Outer Wall (X = 6.25, from Z = -6.20 to -1.80)
+            addWallSegment(6.25, -6.20, 6.25, -4.40, 0.22);
+            addWindowOrDoor(6.25, -4.40, 6.25, -2.65, 'window');
+            addWallSegment(6.25, -2.65, 6.25, -1.80, 0.22);
+
+            // 4. Wall between Majlis/Reception & Kitchen/Dining (Z = -1.80)
+            // Left section above Kitchen + Reception bottom wall + 200 cm sliding door to Dining + 295 cm wall behind 251 cm sofa
+            addWallSegment(-6.50, -1.80, -0.45, -1.80, 0.20);
+            addWindowOrDoor(-0.45, -1.80, 1.55, -1.80, 'slidingGlass'); // 200 cm sliding door into Dining Room
+            addWallSegment(1.55, -1.80, 6.25, -1.80, 0.22);
+
+            // 5. Middle Section: Kitchen (Left, width 450 cm) & Dining Room (Center, width 452 cm)
+            // Left outer wall of Kitchen (X = -6.50, from Z = -1.80 to +1.80)
+            addWallSegment(-6.50, -1.80, -6.50, -0.65, 0.22);
+            addWindowOrDoor(-6.50, -0.65, -6.50, 0.65, 'window'); // 130 cm window over kitchen sink
+            addWallSegment(-6.50, 0.65, -6.50, 1.80, 0.22);
+
+            // Partition Wall between Kitchen and Dining Room (X = -1.80, with decorative niches 45×61 cm)
+            addWallSegment(-1.80, -1.80, -1.80, 1.80, 0.22);
+
+            // Right Outer Wall of Dining Room (X = 2.90, from Z = -1.80 to +2.45, with big window)
+            addWallSegment(2.90, -1.80, 2.90, -0.95, 0.22);
+            addWindowOrDoor(2.90, -0.95, 2.90, 1.15, 'window');
+            addWallSegment(2.90, 1.15, 2.90, 2.45, 0.22);
+
+            // 6. Wall between Kitchen/Dining & Bottom Section (Z = 1.80)
+            // Kitchen bottom wall with 115 cm door opening
+            addWallSegment(-6.50, 1.80, -3.15, 1.80, 0.20);
+            addWindowOrDoor(-3.15, 1.80, -2.00, 1.80, 'door'); // 115 cm kitchen door
+            addWallSegment(-2.00, 1.80, -0.45, 1.80, 0.20);
+            // Dining Room bottom wall: 147 cm left + 200 cm sliding glass door + 151 cm right
+            addWindowOrDoor(-0.45, 1.80, 1.55, 1.80, 'slidingGlass');
+            addWallSegment(1.55, 1.80, 2.90, 1.80, 0.20);
+
+            // 7. Bottom-Right Family Living Room Outer Walls
+            // Top stepped wall (Z = 2.45, from X = 2.90 to 6.25, with 328 cm window)
+            addWallSegment(2.90, 2.45, 3.25, 2.45, 0.22);
+            addWindowOrDoor(3.25, 2.45, 5.85, 2.45, 'window');
+            addWallSegment(5.85, 2.45, 6.25, 2.45, 0.22);
+
+            // Right outer wall of Family Living Room (X = 6.25, from Z = 2.45 to 6.85)
+            addWallSegment(6.25, 2.45, 6.25, 6.85, 0.22);
+
+            // Bottom outer wall of entire Villa (Z = 6.85, from X = -6.50 to +6.25)
+            addWallSegment(-6.50, 6.85, 1.15, 6.85, 0.24);
+            addWindowOrDoor(1.15, 6.85, 4.55, 6.85, 'window'); // Window behind 349 cm sofa
+            addWallSegment(4.55, 6.85, 6.25, 6.85, 0.24);
+
+            // 8. Bottom-Left Guest Washbasins (210×150), WC (175×140) & Main Staircase Walls
+            addWallSegment(-6.50, 1.80, -6.50, 6.85, 0.22);
+            addWallSegment(-1.80, 1.80, -1.80, 3.40, 0.18);
+            addWallSegment(-6.50, 3.35, -1.80, 3.35, 0.18);
+            addWallSegment(-4.55, 1.80, -4.55, 3.35, 0.16);
+            addWindowOrDoor(-5.35, 3.35, -4.65, 3.35, 'door');
+        }
+
+        // ============================================================================
+        // 8. GRAND MAJLIS (1010 cm) & RECEPTION LOUNGE (590×190 L-Sofa, 180×90 Tables, 231 Arc)
+        // ============================================================================
+        function buildGrandMajlisAndReception() {
+            const velvetCream = new THREE.MeshStandardMaterial({ color: 0xf5ebe0, roughness: 0.55 });
+            const velvetGold = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.50 });
+            const walnutMat = new THREE.MeshStandardMaterial({ map: createWoodTexture('#6b3e26', '#472818'), roughness: 0.35 });
+            const marbleTopMat = new THREE.MeshStandardMaterial({ map: createMarbleTexture('#fffbeb', '#d6d3d1'), roughness: 0.15 });
+            const brassMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.25, metalness: 0.85 });
+
+            // 1. Grand L-Shaped Continuous Majlis Sofa (590 cm top run × 190 cm right turn, 95 cm depth, 30 cm wall clearance)
+            const lSofaGroup = new THREE.Group();
+
+            // Top horizontal run (5.90m long × 0.95m deep) from X = -0.55 to +5.35, centered at Z = -5.42
+            const topBase = new THREE.Mesh(new THREE.BoxGeometry(5.90, 0.14, 0.95), walnutMat);
+            topBase.position.set(2.40, 0.07, -5.42);
+            lSofaGroup.add(topBase);
+
+            const topSeat = new THREE.Mesh(new THREE.BoxGeometry(5.86, 0.30, 0.90), velvetCream);
+            topSeat.position.set(2.40, 0.28, -5.40);
+            topSeat.castShadow = true;
+            topSeat.receiveShadow = true;
+            lSofaGroup.add(topSeat);
+
+            const topBack = new THREE.Mesh(new THREE.BoxGeometry(5.90, 0.48, 0.22), velvetGold);
+            topBack.position.set(2.40, 0.58, -5.78);
+            topBack.castShadow = true;
+            lSofaGroup.add(topBack);
+
+            // Right vertical turn of L-Sofa (190 cm total -> 0.95m extension below corner)
+            const rightBase = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.14, 1.05), walnutMat);
+            rightBase.position.set(4.88, 0.07, -4.42);
+            lSofaGroup.add(rightBase);
+
+            const rightSeat = new THREE.Mesh(new THREE.BoxGeometry(0.90, 0.30, 1.02), velvetCream);
+            rightSeat.position.set(4.86, 0.28, -4.42);
+            rightSeat.castShadow = true;
+            lSofaGroup.add(rightSeat);
+
+            const rightBack = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.48, 1.95), velvetGold);
+            rightBack.position.set(5.24, 0.58, -4.90);
+            rightBack.castShadow = true;
+            lSofaGroup.add(rightBack);
+
+            // Decorative throw cushions along the 590 cm sofa
+            for (let i = 0; i < 7; i++) {
+                const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.28, 0.14), i % 2 === 0 ? velvetGold : velvetCream);
+                pillow.position.set(-0.15 + i * 0.80, 0.52, -5.56);
+                pillow.rotation.x = 0.20;
+                lSofaGroup.add(pillow);
+            }
+
+            // Corner round tables flanking the L-Sofa (Left: Ø58 & Ø39 cm, Right: Ø75 & Ø39 cm)
+            [
+                { r: 0.29, x: -0.95, z: -5.55, h: 0.50 },
+                { r: 0.20, x: -0.75, z: -5.15, h: 0.44 },
+                { r: 0.375, x: 5.72, z: -5.55, h: 0.50 },
+                { r: 0.20, x: 5.55, z: -5.05, h: 0.44 }
+            ].forEach(tbl => {
+                const top = new THREE.Mesh(new THREE.CylinderGeometry(tbl.r, tbl.r, 0.04, 24), marbleTopMat);
+                top.position.set(tbl.x, tbl.h, tbl.z);
+                top.castShadow = true;
+                lSofaGroup.add(top);
+
+                const leg = new THREE.Mesh(new THREE.CylinderGeometry(tbl.r * 0.4, tbl.r * 0.6, tbl.h - 0.02, 16), brassMat);
+                leg.position.set(tbl.x, (tbl.h - 0.02) / 2, tbl.z);
+                lSofaGroup.add(leg);
+            });
+
+            furnitureGroup.add(lSofaGroup);
+            registerInteractiveItem(lSofaGroup, 'majlisMainLsofa', 'grandMajlis');
+
+            // 2. Center Staggered Rectangular Coffee Tables (Two 180 × 90 cm tables + Two 70 × 70 cm square tables)
+            const centerTablesGroup = new THREE.Group();
+
+            // Left rectangular table (180 × 90 cm)
+            const rectTop1 = new THREE.Mesh(new THREE.BoxGeometry(1.80, 0.05, 0.90), marbleTopMat);
+            rectTop1.position.set(1.15, 0.42, -3.95);
+            rectTop1.castShadow = true;
+            centerTablesGroup.add(rectTop1);
+            const rectBase1 = new THREE.Mesh(new THREE.BoxGeometry(1.50, 0.38, 0.65), walnutMat);
+            rectBase1.position.set(1.15, 0.19, -3.95);
+            centerTablesGroup.add(rectBase1);
+
+            // Right rectangular table (180 × 90 cm)
+            const rectTop2 = new THREE.Mesh(new THREE.BoxGeometry(1.80, 0.05, 0.90), marbleTopMat);
+            rectTop2.position.set(2.65, 0.45, -4.35);
+            rectTop2.castShadow = true;
+            centerTablesGroup.add(rectTop2);
+            const rectBase2 = new THREE.Mesh(new THREE.BoxGeometry(1.50, 0.41, 0.65), walnutMat);
+            rectBase2.position.set(2.65, 0.205, -4.35);
+            centerTablesGroup.add(rectBase2);
+
+            // Two Square Accent Tables (70 × 70 cm)
+            [
+                { x: 1.70, z: -4.72 },
+                { x: 2.38, z: -3.50 }
+            ].forEach(sq => {
+                const sqTop = new THREE.Mesh(new THREE.BoxGeometry(0.70, 0.05, 0.70), velvetGold);
+                sqTop.position.set(sq.x, 0.48, sq.z);
+                sqTop.castShadow = true;
+                centerTablesGroup.add(sqTop);
+
+                const sqBase = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.44, 0.58), brassMat);
+                sqBase.position.set(sq.x, 0.22, sq.z);
+                centerTablesGroup.add(sqBase);
+            });
+
+            furnitureGroup.add(centerTablesGroup);
+            registerInteractiveItem(centerTablesGroup, 'majlisCenterTables', 'grandMajlis');
+
+            // 3. Bottom-Right Sofa (251 × 95 cm) + Round Corner Table (Ø77 cm)
+            const bottomSofaGroup = new THREE.Group();
+            const bSofaBase = new THREE.Mesh(new THREE.BoxGeometry(2.51, 0.14, 0.95), walnutMat);
+            bSofaBase.position.set(2.85, 0.07, -2.38);
+            bottomSofaGroup.add(bSofaBase);
+
+            const bSofaSeat = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.30, 0.88), velvetCream);
+            bSofaSeat.position.set(2.85, 0.28, -2.40);
+            bSofaSeat.castShadow = true;
+            bottomSofaGroup.add(bSofaSeat);
+
+            const bSofaBack = new THREE.Mesh(new THREE.BoxGeometry(2.51, 0.48, 0.20), velvetGold);
+            bSofaBack.position.set(2.85, 0.58, -2.00);
+            bSofaBack.castShadow = true;
+            bottomSofaGroup.add(bSofaBack);
+
+            // Side armrests
+            [-1.18, 1.18].forEach(xOff => {
+                const arm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.95), velvetGold);
+                arm.position.set(2.85 + xOff, 0.35, -2.38);
+                bottomSofaGroup.add(arm);
+            });
+
+            // Ø77 cm round side table on the right of the 251 cm sofa
+            const r77Top = new THREE.Mesh(new THREE.CylinderGeometry(0.385, 0.385, 0.04, 28), marbleTopMat);
+            r77Top.position.set(4.58, 0.50, -2.38);
+            r77Top.castShadow = true;
+            bottomSofaGroup.add(r77Top);
+
+            const r77Base = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.28, 0.48, 20), brassMat);
+            r77Base.position.set(4.58, 0.24, -2.38);
+            bottomSofaGroup.add(r77Base);
+
+            furnitureGroup.add(bottomSofaGroup);
+            registerInteractiveItem(bottomSofaGroup, 'majlisBottomSofa', 'grandMajlis');
+
+            // 4. Reception Lounge (Left side of 1010 cm hall):
+            // Upholstered Daybed/Chaise (173 × 75 cm) + Curved Floor Inlay (R = 231 cm) + Two Angled Armchairs (90 × 90 cm)
+            const receptionGroup = new THREE.Group();
+
+            // Daybed / Bench (173 cm long)
+            const daybedBase = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.16, 1.73), walnutMat);
+            daybedBase.position.set(-0.95, 0.08, -4.30);
+            receptionGroup.add(daybedBase);
+
+            const daybedCushion = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.26, 1.68), velvetCream);
+            daybedCushion.position.set(-0.95, 0.28, -4.30);
+            daybedCushion.castShadow = true;
+            receptionGroup.add(daybedCushion);
+
+            const daybedBolster = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.68, 16), velvetGold);
+            daybedBolster.rotation.z = Math.PI / 2;
+            daybedBolster.position.set(-0.95, 0.45, -5.00);
+            receptionGroup.add(daybedBolster);
+
+            // Subtle architectural curved floor trim representing the 231 cm radius arc on the PDF
+            const curveRing = new THREE.Mesh(
+                new THREE.RingGeometry(2.26, 2.33, 36, 1, -0.45, 1.35),
+                brassMat
+            );
+            curveRing.rotation.x = -Math.PI / 2;
+            curveRing.position.set(-3.85, 0.038, -4.35);
+            receptionGroup.add(curveRing);
+
+            // Two Angled Armchairs (90 × 90 cm) at bottom-left of reception hall + small tables (Ø51 & Ø33 cm)
+            [
+                { x: -2.45, z: -2.48, rot: 0.48 },
+                { x: -1.12, z: -2.48, rot: -0.48 }
+            ].forEach(ch => {
+                const chair = new THREE.Group();
+                chair.position.set(ch.x, 0, ch.z);
+                chair.rotation.y = ch.rot;
+
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.90, 0.38, 0.90), velvetCream);
+                seat.position.y = 0.19;
+                seat.castShadow = true;
+                chair.add(seat);
+
+                const back = new THREE.Mesh(new THREE.BoxGeometry(0.90, 0.46, 0.20), velvetGold);
+                back.position.set(0, 0.56, 0.35);
+                back.castShadow = true;
+                chair.add(back);
+
+                [-0.36, 0.36].forEach(ax => {
+                    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.36, 0.86), velvetGold);
+                    arm.position.set(ax, 0.42, 0);
+                    chair.add(arm);
+                });
+
+                receptionGroup.add(chair);
+            });
+
+            // Small accent tables between the two reception armchairs (Ø51 cm & Ø33 cm)
+            const smTbl1 = new THREE.Mesh(new THREE.CylinderGeometry(0.255, 0.255, 0.46, 20), brassMat);
+            smTbl1.position.set(-1.78, 0.23, -2.55);
+            receptionGroup.add(smTbl1);
+
+            const smTbl2 = new THREE.Mesh(new THREE.CylinderGeometry(0.165, 0.165, 0.52, 20), marbleTopMat);
+            smTbl2.position.set(-1.78, 0.26, -2.22);
+            receptionGroup.add(smTbl2);
+
+            furnitureGroup.add(receptionGroup);
+            registerInteractiveItem(receptionGroup, 'receptionDaybed', 'receptionLounge');
+        }
+
+        // ============================================================================
+        // 9. TOP-LEFT GUEST WASHROOM, VANITY & INDOOR PLANTERS (200 × 350 cm)
+        // ============================================================================
+        function buildTopLeftGuestWashroom() {
+            const ceramicWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.12 });
+            const stoneVanity = new THREE.MeshStandardMaterial({ map: createMarbleTexture('#f8fafc', '#94a3b8'), roughness: 0.2 });
+
+            const washGroup = new THREE.Group();
+
+            // Lower Vanity Counter (50 × 165 cm) with round sink bowl
+            const vanity = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.78, 0.50), stoneVanity);
+            vanity.position.set(-5.75, 0.39, -2.10);
+            vanity.castShadow = true;
+            washGroup.add(vanity);
+
+            const sink = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.16, 0.14, 24), ceramicWhite);
+            sink.position.set(-5.85, 0.85, -2.10);
+            washGroup.add(sink);
+
+            // Upper WC compartment (200 × 130 cm)
+            const wc = new THREE.Mesh(new THREE.BoxGeometry(0.40, 0.42, 0.55), ceramicWhite);
+            wc.position.set(-5.85, 0.21, -4.25);
+            washGroup.add(wc);
+
+            // Indoor greenery planters shown in green in the top-left washroom
+            const p1 = createPlanterBox(-4.85, -2.12, 0.55, 0.42, 0.42, 2);
+            const p2 = createPlanterBox(-6.05, -3.25, 0.55, 0.50, 0.42, 2);
+            const p3 = createPlanterBox(-5.85, -5.25, 0.85, 0.45, 0.45, 3);
+            washGroup.add(p1, p2, p3);
+
+            furnitureGroup.add(washGroup);
+            registerInteractiveItem(washGroup, 'topLeftWashroom', 'receptionLounge');
+        }
+
+        // ============================================================================
+        // 10. FORMAL DINING ROOM (452 cm wide, 250 × 90 cm Table with 8 Chairs)
+        // ============================================================================
+        function buildCentralDiningRoom() {
+            const marbleTop = new THREE.MeshStandardMaterial({ map: createMarbleTexture('#fffbeb', '#cbd5e1'), roughness: 0.15 });
+            const walnutWood = new THREE.MeshStandardMaterial({ map: createWoodTexture('#5c371c', '#3d2410'), roughness: 0.35 });
+            const chairFabric = new THREE.MeshStandardMaterial({ color: 0xf5ebe0, roughness: 0.55 });
+            const chairBackMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.5 });
+
+            const diningGroup = new THREE.Group();
+            diningGroup.position.set(0.55, 0, -0.05);
+
+            // 1. Dining Table Top (250 × 90 cm)
+            const tableTop = new THREE.Mesh(new THREE.BoxGeometry(2.50, 0.06, 0.90), marbleTop);
+            tableTop.position.y = 0.76;
+            tableTop.castShadow = true;
+            tableTop.receiveShadow = true;
+            diningGroup.add(tableTop);
+
+            // Twin Sculptural Pedestal Bases
+            [-0.75, 0.75].forEach(xOff => {
+                const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.26, 0.73, 20), walnutWood);
+                ped.position.set(xOff, 0.365, 0);
+                ped.castShadow = true;
+                diningGroup.add(ped);
+            });
+
+            // 2. Eight Dining Chairs (3 North, 3 South, 1 West head, 1 East head)
+            const chairPositions = [
+                { x: -0.78, z: -0.68, rot: 0 },
+                { x: 0.00,  z: -0.68, rot: 0 },
+                { x: 0.78,  z: -0.68, rot: 0 },
+                { x: -0.78, z: 0.68,  rot: Math.PI },
+                { x: 0.00,  z: 0.68,  rot: Math.PI },
+                { x: 0.78,  z: 0.68,  rot: Math.PI },
+                { x: -1.52, z: 0.00,  rot: Math.PI / 2 },
+                { x: 1.52,  z: 0.00,  rot: -Math.PI / 2 }
+            ];
+
+            chairPositions.forEach(cp => {
+                const ch = new THREE.Group();
+                ch.position.set(cp.x, 0, cp.z);
+                ch.rotation.y = cp.rot;
+
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.50, 0.08, 0.48), chairFabric);
+                seat.position.y = 0.46;
+                seat.castShadow = true;
+                ch.add(seat);
+
+                const back = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.44, 0.08), chairBackMat);
+                back.position.set(0, 0.70, -0.21);
+                back.castShadow = true;
+                ch.add(back);
+
+                const legGeo = new THREE.CylinderGeometry(0.02, 0.015, 0.44, 8);
+                [
+                    [-0.20, -0.19], [0.20, -0.19],
+                    [-0.20, 0.19],  [0.20, 0.19]
+                ].forEach(([lx, lz]) => {
+                    const leg = new THREE.Mesh(legGeo, walnutWood);
+                    leg.position.set(lx, 0.22, lz);
+                    ch.add(leg);
+                });
+
+                diningGroup.add(ch);
+            });
+
+            // 3. Left Decorative Wall Niche Console / Sideboard (194 × 45 cm)
+            const buffet = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.86, 1.94), walnutWood);
+            buffet.position.set(-2.08, 0.43, 0);
+            buffet.castShadow = true;
+            diningGroup.add(buffet);
+
+            furnitureGroup.add(diningGroup);
+            registerInteractiveItem(diningGroup, 'diningTableSet', 'diningRoom');
+        }
+
+        // ============================================================================
+        // 11. MAIN KITCHEN WITH CENTRAL ISLAND (450 cm wide, Island 182 × 92 cm)
+        // ============================================================================
+        function buildMainKitchenAndIsland() {
+            const cabinetMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.35, metalness: 0.1 });
+            const woodCabinetMat = new THREE.MeshStandardMaterial({ map: createWoodTexture('#78472a', '#54301a'), roughness: 0.4 });
+            const quartzTopMat = new THREE.MeshStandardMaterial({ map: createMarbleTexture('#ffffff', '#cbd5e1'), roughness: 0.12 });
+            const steelMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.2, metalness: 0.85 });
+            const burnerMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.15, metalness: 0.5 });
+
+            // 1. Central Kitchen Island (182 × 92 cm) at (-4.10, -0.05)
+            // Clearances: 104 cm to left sink counter, 109 cm to right wall
+            const islandGroup = new THREE.Group();
+            islandGroup.position.set(-4.10, 0, -0.05);
+
+            const islandBase = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.86, 0.88), woodCabinetMat);
+            islandBase.position.y = 0.43;
+            islandBase.castShadow = true;
+            islandBase.receiveShadow = true;
+            islandGroup.add(islandBase);
+
+            const islandTop = new THREE.Mesh(new THREE.BoxGeometry(1.82, 0.05, 0.92), quartzTopMat);
+            islandTop.position.y = 0.885;
+            islandTop.castShadow = true;
+            islandGroup.add(islandTop);
+
+            furnitureGroup.add(islandGroup);
+            registerInteractiveItem(islandGroup, 'kitchenIsland', 'kitchen');
+            createWarmLEDStrip(1.72, 0.03, 0.84, -4.10, 0.04, -0.05);
+
+            // 2. Perimeter U-Shaped Kitchen Counters (65 cm depth along top & left, 80 cm fridge unit at bottom)
+            const countersGroup = new THREE.Group();
+
+            // Top Counter Run (450 cm wide × 65 cm deep)
+            const topCounter = new THREE.Mesh(new THREE.BoxGeometry(4.45, 0.86, 0.65), cabinetMat);
+            topCounter.position.set(-4.12, 0.43, -1.36);
+            topCounter.castShadow = true;
+            countersGroup.add(topCounter);
+
+            const topQuartz = new THREE.Mesh(new THREE.BoxGeometry(4.47, 0.04, 0.67), quartzTopMat);
+            topQuartz.position.set(-4.12, 0.88, -1.36);
+            countersGroup.add(topQuartz);
+
+            // Built-in 90 cm Cooktop / Stove on Top Counter
+            const cooktop = new THREE.Mesh(new THREE.BoxGeometry(0.90, 0.02, 0.52), burnerMat);
+            cooktop.position.set(-4.25, 0.91, -1.36);
+            countersGroup.add(cooktop);
+
+            // Left Counter Run (65 cm wide × 340 cm long) with 130 cm Double Sink
+            const leftCounter = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.86, 2.80), cabinetMat);
+            leftCounter.position.set(-6.05, 0.43, 0.05);
+            leftCounter.castShadow = true;
+            countersGroup.add(leftCounter);
+
+            const leftQuartz = new THREE.Mesh(new THREE.BoxGeometry(0.67, 0.04, 2.82), quartzTopMat);
+            leftQuartz.position.set(-6.05, 0.88, 0.05);
+            countersGroup.add(leftQuartz);
+
+            // Double Sink (130 cm) on Left Counter
+            const sinkBasin = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.03, 1.30), steelMat);
+            sinkBasin.position.set(-6.05, 0.905, -0.05);
+            countersGroup.add(sinkBasin);
+
+            // Bottom Counter & Tall Refrigerator/Oven Tower (80 cm deep)
+            const bottomCounter = new THREE.Mesh(new THREE.BoxGeometry(2.40, 0.86, 0.65), cabinetMat);
+            bottomCounter.position.set(-5.15, 0.43, 1.36);
+            countersGroup.add(bottomCounter);
+
+            const fridgeTower = new THREE.Mesh(new THREE.BoxGeometry(0.92, 1.32, 0.80), steelMat);
+            fridgeTower.position.set(-4.15, 0.66, 1.28);
+            fridgeTower.castShadow = true;
+            countersGroup.add(fridgeTower);
+
+            furnitureGroup.add(countersGroup);
+            registerInteractiveItem(countersGroup, 'kitchenCounters', 'kitchen');
+        }
+
+        // ============================================================================
+        // 12. FAMILY LIVING ROOM & LOBBY PARTITION / PLANTER (349×92 Sofa, 200×91 Partition)
+        // ============================================================================
+        function buildFamilyLivingAndLobbyPartition() {
+            const sofaFabric = new THREE.MeshStandardMaterial({ color: 0xf3e8d6, roughness: 0.55 });
+            const sofaAccent = new THREE.MeshStandardMaterial({ color: 0xc27838, roughness: 0.5 });
+            const walnutMat = new THREE.MeshStandardMaterial({ map: createWoodTexture('#6b3e26', '#472818'), roughness: 0.35 });
+            const marbleMat = new THREE.MeshStandardMaterial({ map: createMarbleTexture('#fffbeb', '#d6d3d1'), roughness: 0.15 });
+            const brassMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.25, metalness: 0.85 });
+
+            // 1. Central Feature TV Partition + Planter Unit (200 cm long × 91 cm total width)
+            // Located at X = 0.55, Z = 4.55 (between 206 cm stair passage on left and 207 cm clearance to coffee table on right)
+            const partitionGroup = new THREE.Group();
+
+            // Wooden Media & Shelving Wall (48 cm deep × 200 cm long)
+            const mediaUnit = new THREE.Mesh(new THREE.BoxGeometry(0.48, 1.32, 2.00), walnutMat);
+            mediaUnit.position.set(0.68, 0.66, 4.55);
+            mediaUnit.castShadow = true;
+            partitionGroup.add(mediaUnit);
+
+            // 75" Smart TV mounted facing the Family Living Room (East)
+            const tvScreen = new THREE.Mesh(
+                new THREE.BoxGeometry(0.05, 0.88, 1.65),
+                new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.1, metalness: 0.85 })
+            );
+            tvScreen.position.set(0.94, 0.82, 4.55);
+            partitionGroup.add(tvScreen);
+
+            // Attached Indoor Planter Box on the left/top side of the partition (70 × 53 cm)
+            const partPlanter = createPlanterBox(0.18, 3.90, 0.53, 0.70, 0.52, 3);
+            partitionGroup.add(partPlanter);
+
+            // Two small round tables/poufs at the bottom of the partition (Ø57 cm & Ø36 cm)
+            const pTbl1 = new THREE.Mesh(new THREE.CylinderGeometry(0.285, 0.285, 0.45, 24), marbleMat);
+            pTbl1.position.set(0.45, 0.225, 5.82);
+            partitionGroup.add(pTbl1);
+
+            const pTbl2 = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.52, 20), brassMat);
+            pTbl2.position.set(0.75, 0.26, 5.65);
+            partitionGroup.add(pTbl2);
+
+            furnitureGroup.add(partitionGroup);
+            registerInteractiveItem(partitionGroup, 'lobbyTvPartition', 'lobbyPartition');
+
+            // 2. Two Angled Lobby Armchairs (90 × 90 cm) just below the Dining Room's 200 cm door
+            const lobbyChairsGroup = new THREE.Group();
+            [
+                { x: -1.10, z: 2.38, rot: 0.45, tblX: -1.52 },
+                { x: 2.05,  z: 2.38, rot: -0.45, tblX: 2.48 }
+            ].forEach(lc => {
+                const cGrp = new THREE.Group();
+                cGrp.position.set(lc.x, 0, lc.z);
+                cGrp.rotation.y = lc.rot;
+
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.38, 0.88), sofaFabric);
+                seat.position.y = 0.19;
+                seat.castShadow = true;
+                cGrp.add(seat);
+
+                const back = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.46, 0.20), sofaAccent);
+                back.position.set(0, 0.55, -0.34);
+                back.castShadow = true;
+                cGrp.add(back);
+
+                lobbyChairsGroup.add(cGrp);
+
+                const sideTbl = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.48, 20), brassMat);
+                sideTbl.position.set(lc.tblX, 0.24, lc.z - 0.10);
+                lobbyChairsGroup.add(sideTbl);
+            });
+
+            furnitureGroup.add(lobbyChairsGroup);
+            registerInteractiveItem(lobbyChairsGroup, 'lobbyArmchairs', 'lobbyPartition');
+
+            // 3. Family Living Room Bottom Main Sofa (349 × 92 cm) + Corner Lounge Chair (90 × 98 cm)
+            const familyBottomGroup = new THREE.Group();
+
+            const sofa349Base = new THREE.Mesh(new THREE.BoxGeometry(3.49, 0.14, 0.92), walnutMat);
+            sofa349Base.position.set(2.85, 0.07, 6.12);
+            familyBottomGroup.add(sofa349Base);
+
+            const sofa349Seat = new THREE.Mesh(new THREE.BoxGeometry(3.32, 0.30, 0.86), sofaFabric);
+            sofa349Seat.position.set(2.85, 0.28, 6.08);
+            sofa349Seat.castShadow = true;
+            familyBottomGroup.add(sofa349Seat);
+
+            const sofa349Back = new THREE.Mesh(new THREE.BoxGeometry(3.49, 0.48, 0.22), sofaAccent);
+            sofa349Back.position.set(2.85, 0.58, 6.47);
+            sofa349Back.castShadow = true;
+            familyBottomGroup.add(sofa349Back);
+
+            // Bottom-Right Angled Armchair (90 × 98 cm) + Round Table (Ø52 cm)
+            const cornerChair = new THREE.Group();
+            cornerChair.position.set(5.32, 0, 6.08);
+            cornerChair.rotation.y = -0.45;
+
+            const ccSeat = new THREE.Mesh(new THREE.BoxGeometry(0.90, 0.38, 0.96), sofaFabric);
+            ccSeat.position.y = 0.19;
+            ccSeat.castShadow = true;
+            cornerChair.add(ccSeat);
+
+            const ccBack = new THREE.Mesh(new THREE.BoxGeometry(0.90, 0.48, 0.22), sofaAccent);
+            ccBack.position.set(0, 0.56, 0.36);
+            cornerChair.add(ccBack);
+            familyBottomGroup.add(cornerChair);
+
+            const tbl52 = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.48, 20), brassMat);
+            tbl52.position.set(4.78, 0.24, 5.55);
+            familyBottomGroup.add(tbl52);
+
+            furnitureGroup.add(familyBottomGroup);
+            registerInteractiveItem(familyBottomGroup, 'familyBottomSofa', 'familyLiving');
+
+            // 4. Family Living Room Top Sofa (200 × 75 cm) + Center Coffee Table (160 × 70 cm) + Right Wall Unit (252 × 48 cm)
+            const familyTopGroup = new THREE.Group();
+
+            // Top Sofa (200 × 75 cm)
+            const sofa200Base = new THREE.Mesh(new THREE.BoxGeometry(2.00, 0.14, 0.75), walnutMat);
+            sofa200Base.position.set(3.85, 0.07, 3.08);
+            familyTopGroup.add(sofa200Base);
+
+            const sofa200Seat = new THREE.Mesh(new THREE.BoxGeometry(1.88, 0.28, 0.70), sofaFabric);
+            sofa200Seat.position.set(3.85, 0.26, 3.10);
+            sofa200Seat.castShadow = true;
+            familyTopGroup.add(sofa200Seat);
+
+            const sofa200Back = new THREE.Mesh(new THREE.BoxGeometry(2.00, 0.45, 0.18), sofaAccent);
+            sofa200Back.position.set(3.85, 0.54, 2.80);
+            sofa200Back.castShadow = true;
+            familyTopGroup.add(sofa200Back);
+
+            // Round Side Table (Ø60 cm) beside top sofa
+            const tbl60 = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.30, 0.48, 24), marbleMat);
+            tbl60.position.set(2.55, 0.24, 3.25);
+            familyTopGroup.add(tbl60);
+
+            // Center Coffee Table (160 × 70 cm)
+            const coffee160Top = new THREE.Mesh(new THREE.BoxGeometry(1.60, 0.05, 0.70), marbleMat);
+            coffee160Top.position.set(3.55, 0.42, 4.65);
+            coffee160Top.castShadow = true;
+            familyTopGroup.add(coffee160Top);
+
+            const coffee160Base = new THREE.Mesh(new THREE.BoxGeometry(1.30, 0.38, 0.50), walnutMat);
+            coffee160Base.position.set(3.55, 0.19, 4.65);
+            familyTopGroup.add(coffee160Base);
+
+            // Right Wall Console / Shelving Unit (252 × 48 cm)
+            const rightConsole = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.85, 2.52), walnutMat);
+            rightConsole.position.set(5.88, 0.425, 4.55);
+            rightConsole.castShadow = true;
+            familyTopGroup.add(rightConsole);
+
+            furnitureGroup.add(familyTopGroup);
+            registerInteractiveItem(familyTopGroup, 'familyTopSofaAndTable', 'familyLiving');
+        }
+
+        // ============================================================================
+        // 13. MAIN STAIRCASE (140 cm flights) & GUEST WASHBASINS (210×150) / WC (175×140)
+        // ============================================================================
+        function buildMainStaircaseAndGuestWash() {
+            const stepMarble = new THREE.MeshStandardMaterial({ map: createMarbleTexture('#f8fafc', '#cbd5e1'), roughness: 0.25 });
+            const ceramicMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.15 });
+
+            const stairsMasterGroup = new THREE.Group();
+
+            // 1. Guest Washbasin Room (210 × 150 cm): Vanity Counter + Basin (50 cm) + Planter (45 cm)
+            const counter = new THREE.Mesh(new THREE.BoxGeometry(2.10, 0.78, 0.48), stepMarble);
+            counter.position.set(-3.15, 0.39, 3.05);
+            counter.castShadow = true;
+            stairsMasterGroup.add(counter);
+
+            const basin = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.16, 0.14, 24), ceramicMat);
+            basin.position.set(-3.65, 0.85, 3.05);
+            stairsMasterGroup.add(basin);
+
+            const washPlanter = createPlanterBox(-2.45, 3.05, 0.65, 0.42, 0.82, 2);
+            stairsMasterGroup.add(washPlanter);
+
+            // 2. Guest Powder Room / WC (175 × 140 cm)
+            const wcBase = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.42, 0.54), ceramicMat);
+            wcBase.position.set(-5.55, 0.21, 3.00);
+            stairsMasterGroup.add(wcBase);
+
+            const smallSink = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.15, 20), ceramicMat);
+            smallSink.position.set(-6.15, 0.82, 2.35);
+            stairsMasterGroup.add(smallSink);
+
+            // 3. Main 3-Flight U-Shaped Staircase (140 cm flight widths, 42 cm central gap)
+            const stairGroup = new THREE.Group();
+            for (let i = 0; i < 10; i++) {
+                const tread = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.14, 1.35), stepMarble);
+                tread.position.set(-2.15 - i * 0.30, 0.08 + i * 0.12, 4.10);
+                tread.castShadow = true;
+                tread.receiveShadow = true;
+                stairGroup.add(tread);
+            }
+
+            const landing = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.16, 3.30), stepMarble);
+            landing.position.set(-5.70, 1.28, 5.10);
+            landing.castShadow = true;
+            stairGroup.add(landing);
+
+            for (let i = 0; i < 10; i++) {
+                const tread = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.14, 1.35), stepMarble);
+                tread.position.set(-4.95 + i * 0.30, 1.38 + i * 0.12, 6.10);
+                tread.castShadow = true;
+                stairGroup.add(tread);
+            }
+
+            const balustrade = new THREE.Mesh(new THREE.BoxGeometry(3.05, 0.85, 0.04), glassMat);
+            balustrade.position.set(-3.55, 1.15, 4.80);
+            stairGroup.add(balustrade);
+
+            stairsMasterGroup.add(stairGroup);
+            structureGroup.add(stairsMasterGroup);
+            registerInteractiveItem(stairsMasterGroup, 'groundStaircaseAndWash', 'stairsWash');
+        }
+
+        // Helper to build rectangular planter boxes with 3D greenery
+        function createPlanterBox(cx, cz, w, d, h, numPlants = 4) {
+            const boxGroup = new THREE.Group();
+            boxGroup.position.set(cx, 0, cz);
+
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, roughness: 0.5 });
+            const soilMat = new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 0.9 });
+
+            const boxMesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), rimMat);
+            boxMesh.position.y = h / 2;
+            boxMesh.castShadow = true;
+            boxMesh.receiveShadow = true;
+            boxGroup.add(boxMesh);
+
+            const soilMesh = new THREE.Mesh(new THREE.BoxGeometry(Math.max(0.1, w - 0.08), h + 0.02, Math.max(0.1, d - 0.08)), soilMat);
+            soilMesh.position.y = h / 2;
+            boxGroup.add(soilMesh);
+
+            for (let i = 0; i < numPlants; i++) {
+                const px = (w > d) ? ((i / Math.max(1, numPlants - 1)) - 0.5) * (w * 0.70) : (Math.random() - 0.5) * (w * 0.45);
+                const pz = (d >= w) ? ((i / Math.max(1, numPlants - 1)) - 0.5) * (d * 0.70) : (Math.random() - 0.5) * (d * 0.45);
+                createTropicalPlantCluster(boxGroup, px, h, pz, 0.65 + Math.random() * 0.30);
+            }
+
+            plantsGroup.add(boxGroup);
+            return boxGroup;
+        }
+
+        function createTropicalPlantCluster(parentGroup, x, y, z, scale = 1.0, hasTrunk = false) {
+            const cluster = new THREE.Group();
+            cluster.position.set(x, y, z);
+
+            const greens = [0x15803d, 0x16a34a, 0x22c55e, 0x059669];
+            if (hasTrunk) {
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.8 });
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 0.65 * scale, 10), trunkMat);
+                trunk.position.y = 0.32 * scale;
+                trunk.castShadow = true;
+                cluster.add(trunk);
+            }
+
+            const foliageCount = hasTrunk ? 7 : 5;
+            for (let i = 0; i < foliageCount; i++) {
+                const leafMat = new THREE.MeshStandardMaterial({
+                    color: greens[i % greens.length],
+                    roughness: 0.5
+                });
+                const r = (0.14 + Math.random() * 0.10) * scale;
+                const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 1), leafMat);
+                const angle = (i / foliageCount) * Math.PI * 2;
+                const dist = hasTrunk ? 0.14 * scale : 0.08 * scale;
+                leaf.position.set(
+                    Math.cos(angle) * dist,
+                    (hasTrunk ? 0.62 : 0.14) * scale + Math.random() * 0.12 * scale,
+                    Math.sin(angle) * dist
+                );
+                leaf.scale.set(1.1, 0.75, 1.1);
+                leaf.castShadow = true;
+                cluster.add(leaf);
+            }
+
+            parentGroup.add(cluster);
+        }
+
+        // ============================================================================
+        // 14. FLOATING 3D HTML LABELS, DIMENSION BADGES & SMART BULB PINS
+        // ============================================================================
+        let labelDOMElements = [];
+        let dimDOMElements = [];
+        let bulbPinElements = [];
+
+        function createHTMLOverlays() {
+            const container = document.getElementById('labels-container');
+            container.innerHTML = '';
+            labelDOMElements = [];
+            dimDOMElements = [];
+            bulbPinElements = [];
+
+            const colorClasses = {
+                amber: 'border-amber-400/60 bg-slate-900/85 text-amber-300',
+                sky: 'border-sky-400/60 bg-slate-900/85 text-sky-300',
+                emerald: 'border-emerald-400/60 bg-slate-900/85 text-emerald-300',
+                slate: 'border-slate-400/60 bg-slate-900/85 text-slate-200'
+            };
+
+            // 1. Room Labels
+            floatingRoomLabels.forEach(lbl => {
+                const el = document.createElement('div');
+                el.className = `room-label px-2.5 py-1 rounded-xl border backdrop-blur-md shadow-lg ${colorClasses[lbl.color] || colorClasses.amber}`;
+                el.innerHTML = `
+                    <div class="lbl-title text-[11px] font-extrabold leading-tight">${lbl.name}</div>
+                    <div class="lbl-sub text-[9px] text-slate-300 font-mono leading-tight">${lbl.sub}</div>
+                `;
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    closeRadialLightMenu();
+                    selectZoneFromDock(lbl.id, true);
+                };
+                container.appendChild(el);
+                labelDOMElements.push({ el, pos: new THREE.Vector3(lbl.x, lbl.y, lbl.z) });
+            });
+
+            // 2. Dimension Badges
+            floatingDimBadges.forEach(dim => {
+                const el = document.createElement('div');
+                el.className = 'dim-badge';
+                el.textContent = dim.text;
+                container.appendChild(el);
+                dimDOMElements.push({ el, pos: new THREE.Vector3(dim.x, dim.y, dim.z) });
+            });
+
+            // 3. Interactive Smart Bulb Pins in Every Room
+            smartLights.forEach(lightObj => {
+                const pin = document.createElement('button');
+                pin.type = 'button';
+                pin.className = 'bulb-pin rounded-full px-2 py-1 flex items-center gap-1 border shadow-lg backdrop-blur-md';
+                pin.title = `${lightObj.name} - انقر للتحكم بالإضاءة`;
+                pin.onclick = (e) => {
+                    e.stopPropagation();
+                    const rect = pin.getBoundingClientRect();
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height / 2;
+                    openRadialLightMenu(lightObj, cx, cy);
+                };
+                container.appendChild(pin);
+                lightObj.pinEl = pin;
+                bulbPinElements.push(lightObj);
+                updateSmartBulbPinUI(lightObj);
+            });
+        }
+
+        function updateSmartBulbPinUI(lightObj) {
+            if (!lightObj || !lightObj.pinEl) return;
+            const pin = lightObj.pinEl;
+            const timerText = lightObj.timerRemainingSec > 0
+                ? `<span class="text-[8.5px] font-mono text-sky-300">${Math.ceil(lightObj.timerRemainingSec / 60)}د</span>`
+                : `<span class="text-[8.5px] font-mono opacity-90">${lightObj.isOn ? lightObj.brightness + '%' : 'مطفأ'}</span>`;
+
+            if (lightObj.isOn && lightObj.brightness > 0) {
+                pin.style.backgroundColor = 'rgba(15, 23, 42, 0.88)';
+                pin.style.borderColor = lightObj.colorHex;
+                pin.style.boxShadow = `0 0 14px ${lightObj.colorHex}80`;
+                pin.innerHTML = `
+                    <i class="fa-solid fa-lightbulb text-xs" style="color: ${lightObj.colorHex}; filter: drop-shadow(0 0 5px ${lightObj.colorHex});"></i>
+                    ${timerText}
+                `;
+            } else {
+                pin.style.backgroundColor = 'rgba(15, 23, 42, 0.75)';
+                pin.style.borderColor = 'rgba(148, 163, 184, 0.35)';
+                pin.style.boxShadow = '0 4px 10px rgba(0,0,0,0.4)';
+                pin.innerHTML = `
+                    <i class="fa-regular fa-lightbulb text-xs text-slate-400"></i>
+                    <span class="text-[8.5px] font-mono text-slate-400">مطفأ</span>
+                `;
+            }
+        }
+
+        function updateHTMLOverlaysPosition() {
+            const halfW = window.innerWidth / 2;
+            const halfH = window.innerHeight / 2;
+
+            // Room labels (Hidden for the active focused room so its center bulb is 100% clear)
+            labelDOMElements.forEach((item, index) => {
+                if (!showRoomLabelsFlag) {
+                    item.el.style.display = 'none';
+                    return;
+                }
+                const lblSpec = floatingRoomLabels[index];
+                if (selectedZoneKey !== 'overview' && lblSpec && lblSpec.id === selectedZoneKey) {
+                    item.el.style.display = 'none';
+                    return;
+                }
+                const v = item.pos.clone().project(camera);
+                if (v.z > 1) {
+                    item.el.style.display = 'none';
+                } else {
+                    item.el.style.display = 'block';
+                    item.el.style.left = `${(v.x * halfW) + halfW}px`;
+                    item.el.style.top = `${-(v.y * halfH) + halfH}px`;
+                }
+            });
+
+            // Dimension badges
+            dimDOMElements.forEach(item => {
+                if (!showDimBadgesFlag) {
+                    item.el.style.display = 'none';
+                    return;
+                }
+                const v = item.pos.clone().project(camera);
+                if (v.z > 1) {
+                    item.el.style.display = 'none';
+                } else {
+                    item.el.style.display = 'block';
+                    item.el.style.left = `${(v.x * halfW) + halfW}px`;
+                    item.el.style.top = `${-(v.y * halfH) + halfH}px`;
+                }
+            });
+
+            // Smart Bulb 3D Pins
+            bulbPinElements.forEach(lightObj => {
+                if (!lightObj.pinEl) return;
+                if (!showSmartBulbPinsFlag) {
+                    lightObj.pinEl.style.display = 'none';
+                    return;
+                }
+                const v = lightObj.pos.clone().project(camera);
+                if (v.z > 1) {
+                    lightObj.pinEl.style.display = 'none';
+                } else {
+                    lightObj.pinEl.style.display = 'flex';
+                    lightObj.pinEl.style.left = `${(v.x * halfW) + halfW}px`;
+                    lightObj.pinEl.style.top = `${-(v.y * halfH) + halfH}px`;
+                }
+            });
+        }
+
+        // ============================================================================
+        // 15. RADIAL SMART LIGHT MENU AROUND FINGER
+        // ============================================================================
+        const ARC_CX = 134;
+        const ARC_CY = 134;
+        const ARC_RADIUS = 110;
+        const ARC_START_DEG = 140;
+        const ARC_SWEEP_DEG = 260;
+
+        function polarToCartesian(cx, cy, r, angleDeg) {
+            const rad = (angleDeg * Math.PI) / 180;
+            return {
+                x: cx + r * Math.cos(rad),
+                y: cy + r * Math.sin(rad)
+            };
+        }
+
+        function describeSvgArc(cx, cy, r, startAngleDeg, endAngleDeg) {
+            const start = polarToCartesian(cx, cy, r, startAngleDeg);
+            const end = polarToCartesian(cx, cy, r, endAngleDeg);
+            const sweep = Math.max(0.1, endAngleDeg - startAngleDeg);
+            const largeArcFlag = sweep <= 180 ? '0' : '1';
+            return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+        }
+
+        function openRadialLightMenu(lightObj, screenX, screenY) {
+            if (!lightObj) return;
+            activeSmartLight = lightObj;
+            activeRadialArcMode = null;
+
+            hideContextCard();
+            closeAllPopovers();
+
+            const menu = document.getElementById('radial-light-menu');
+            const margin = 138;
+            const clampedX = Math.max(margin, Math.min(window.innerWidth - margin, screenX));
+            const clampedY = Math.max(margin + 20, Math.min(window.innerHeight - margin - 25, screenY));
+
+            menu.style.left = `${clampedX}px`;
+            menu.style.top = `${clampedY}px`;
+            menu.classList.remove('radial-hidden');
+
+            document.getElementById('radial-arc-svg').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('radial-arc-badge').classList.add('opacity-0');
+
+            ['radial-btn-timer', 'radial-btn-brightness', 'radial-btn-color'].forEach(id => {
+                document.getElementById(id).classList.remove('radial-node-active');
+            });
+
+            syncRadialMenuDisplay();
+        }
+
+        function closeRadialLightMenu(event) {
+            if (event) event.stopPropagation();
+            const menu = document.getElementById('radial-light-menu');
+            if (menu) menu.classList.add('radial-hidden');
+            activeSmartLight = null;
+            activeRadialArcMode = null;
+            isDraggingRadialArc = false;
+        }
+
+        function syncRadialMenuDisplay() {
+            if (!activeSmartLight) return;
+
+            const centerTitle = document.getElementById('radial-center-title');
+            const centerSub = document.getElementById('radial-center-sub');
+            const centerIcon = document.getElementById('radial-center-icon');
+
+            centerTitle.textContent = activeSmartLight.name.replace('لمبة ', '').replace('ثريا ', '').replace('إضاءة ', '');
+            if (activeSmartLight.isOn && activeSmartLight.brightness > 0) {
+                centerSub.textContent = activeSmartLight.timerRemainingSec > 0
+                    ? `${activeSmartLight.brightness}% | ${Math.ceil(activeSmartLight.timerRemainingSec / 60)}د`
+                    : `${activeSmartLight.brightness}%`;
+                centerIcon.style.color = activeSmartLight.colorHex;
+            } else {
+                centerSub.textContent = 'مطفأ';
+                centerIcon.style.color = '#94a3b8';
+            }
+
+            const pwrIcon = document.getElementById('radial-power-icon');
+            const pwrText = document.getElementById('radial-power-text');
+            const pwrBtn = document.getElementById('radial-btn-power');
+
+            if (activeSmartLight.isOn && activeSmartLight.brightness > 0) {
+                pwrText.textContent = 'إطفاء';
+                pwrIcon.className = 'fa-solid fa-power-off text-rose-400 text-xs';
+                pwrBtn.style.borderColor = 'rgba(244, 63, 94, 0.55)';
+            } else {
+                pwrText.textContent = 'تشغيل';
+                pwrIcon.className = 'fa-solid fa-bolt text-emerald-400 text-xs';
+                pwrBtn.style.borderColor = 'rgba(16, 185, 129, 0.65)';
+            }
+        }
+
+        function handleRadialPowerClick(event) {
+            if (event) event.stopPropagation();
+            if (!activeSmartLight) return;
+
+            activeSmartLight.isOn = !activeSmartLight.isOn;
+            if (activeSmartLight.isOn && activeSmartLight.brightness === 0) {
+                activeSmartLight.brightness = 85;
+            }
+            applySmartLightState(activeSmartLight);
+            syncRadialMenuDisplay();
+
+            if (activeRadialArcMode === 'brightness') {
+                renderRadialArcGeometry(activeSmartLight.isOn ? activeSmartLight.brightness / 100 : 0, 'brightness');
+            }
+
+            showToast(activeSmartLight.isOn ? `تم تشغيل ${activeSmartLight.name}` : `تم إطفاء ${activeSmartLight.name}`);
+        }
+
+        function activateRadialArcMode(mode, event) {
+            if (event) event.stopPropagation();
+            if (!activeSmartLight) return;
+
+            activeRadialArcMode = mode;
+
+            ['radial-btn-timer', 'radial-btn-brightness', 'radial-btn-color'].forEach(id => {
+                document.getElementById(id).classList.remove('radial-node-active');
+            });
+            document.getElementById(`radial-btn-${mode}`).classList.add('radial-node-active');
+
+            const svg = document.getElementById('radial-arc-svg');
+            const badge = document.getElementById('radial-arc-badge');
+            svg.classList.remove('opacity-0', 'pointer-events-none');
+            badge.classList.remove('opacity-0');
+
+            const fullTrackD = describeSvgArc(ARC_CX, ARC_CY, ARC_RADIUS, ARC_START_DEG, ARC_START_DEG + ARC_SWEEP_DEG);
+            document.getElementById('radial-arc-bg').setAttribute('d', fullTrackD);
+            document.getElementById('radial-arc-track').setAttribute('d', fullTrackD);
+            document.getElementById('radial-arc-hit').setAttribute('d', fullTrackD);
+
+            let ratio = 0.5;
+            if (mode === 'brightness') {
+                ratio = activeSmartLight.isOn ? (activeSmartLight.brightness / 100) : 0;
+            } else if (mode === 'timer') {
+                ratio = activeSmartLight.timerMinutes / 120;
+            } else if (mode === 'color') {
+                ratio = activeSmartLight.colorRatio ?? 0.16;
+            }
+
+            renderRadialArcGeometry(ratio, mode);
+        }
+
+        function renderRadialArcGeometry(ratio, mode) {
+            ratio = Math.max(0, Math.min(1, ratio));
+            const currentAngleDeg = ARC_START_DEG + ratio * ARC_SWEEP_DEG;
+
+            const activePath = document.getElementById('radial-arc-active');
+            const trackPath = document.getElementById('radial-arc-track');
+            const thumb = document.getElementById('radial-arc-thumb');
+            const thumbDot = document.getElementById('radial-thumb-dot');
+            const badgeIcon = document.getElementById('radial-badge-icon');
+            const badgeText = document.getElementById('radial-badge-text');
+
+            const thumbPt = polarToCartesian(ARC_CX, ARC_CY, ARC_RADIUS, currentAngleDeg);
+            thumb.setAttribute('transform', `translate(${thumbPt.x.toFixed(1)}, ${thumbPt.y.toFixed(1)})`);
+
+            if (mode === 'color') {
+                const fullArcD = describeSvgArc(ARC_CX, ARC_CY, ARC_RADIUS, ARC_START_DEG, ARC_START_DEG + ARC_SWEEP_DEG);
+                activePath.setAttribute('d', fullArcD);
+                activePath.setAttribute('stroke', 'url(#grad-color)');
+                trackPath.setAttribute('stroke', 'transparent');
+
+                const colorInfo = sampleColorSpectrum(ratio);
+                thumbDot.setAttribute('fill', colorInfo.hex);
+                badgeIcon.className = 'fa-solid fa-palette';
+                badgeIcon.style.color = colorInfo.hex;
+                badgeText.textContent = `اللون: ${colorInfo.name}`;
+            } else if (mode === 'brightness') {
+                const subArcD = describeSvgArc(ARC_CX, ARC_CY, ARC_RADIUS, ARC_START_DEG, Math.max(ARC_START_DEG + 1, currentAngleDeg));
+                activePath.setAttribute('d', subArcD);
+                activePath.setAttribute('stroke', 'url(#grad-brightness)');
+                trackPath.setAttribute('stroke', 'rgba(255, 255, 255, 0.18)');
+
+                const pct = Math.round(ratio * 100);
+                thumbDot.setAttribute('fill', '#fbbf24');
+                badgeIcon.className = 'fa-solid fa-sun text-amber-400';
+                badgeIcon.style.color = '#fbbf24';
+                badgeText.textContent = `شدة الإضاءة: ${pct}%`;
+            } else if (mode === 'timer') {
+                const subArcD = describeSvgArc(ARC_CX, ARC_CY, ARC_RADIUS, ARC_START_DEG, Math.max(ARC_START_DEG + 1, currentAngleDeg));
+                activePath.setAttribute('d', subArcD);
+                activePath.setAttribute('stroke', 'url(#grad-timer)');
+                trackPath.setAttribute('stroke', 'rgba(255, 255, 255, 0.18)');
+
+                const mins = Math.round((ratio * 120) / 5) * 5;
+                thumbDot.setAttribute('fill', '#38bdf8');
+                badgeIcon.className = 'fa-solid fa-stopwatch text-sky-400';
+                badgeIcon.style.color = '#38bdf8';
+                badgeText.textContent = mins > 0 ? `المؤقت: ${mins} دقيقة` : 'المؤقت: إيقاف (0 د)';
+            }
+        }
+
+        function sampleColorSpectrum(ratio) {
+            ratio = Math.max(0, Math.min(1, ratio));
+            let closest = COLOR_SPECTRUM_STOPS[0];
+            let minDiff = 999;
+            for (let i = 0; i < COLOR_SPECTRUM_STOPS.length - 1; i++) {
+                const s0 = COLOR_SPECTRUM_STOPS[i];
+                const s1 = COLOR_SPECTRUM_STOPS[i + 1];
+                if (ratio >= s0.t && ratio <= s1.t) {
+                    const localT = (ratio - s0.t) / (s1.t - s0.t);
+                    const c0 = new THREE.Color(s0.hex);
+                    const c1 = new THREE.Color(s1.hex);
+                    c0.lerp(c1, localT);
+                    return {
+                        hex: '#' + c0.getHexString(),
+                        name: localT < 0.5 ? s0.name : s1.name
+                    };
+                }
+                const d = Math.abs(ratio - s0.t);
+                if (d < minDiff) {
+                    minDiff = d;
+                    closest = s0;
+                }
+            }
+            return { hex: closest.hex, name: closest.name };
+        }
+
+        function setupRadialArcInteraction() {
+            const svg = document.getElementById('radial-arc-svg');
+            if (!svg) return;
+
+            const onPointerDown = (e) => {
+                if (!activeSmartLight || !activeRadialArcMode) return;
+                e.stopPropagation();
+                isDraggingRadialArc = true;
+                updateRadialArcValueFromPoint(e.clientX, e.clientY);
+            };
+
+            const onPointerMove = (e) => {
+                if (!isDraggingRadialArc || !activeSmartLight || !activeRadialArcMode) return;
+                e.stopPropagation();
+                updateRadialArcValueFromPoint(e.clientX, e.clientY);
+            };
+
+            const onPointerUp = () => {
+                isDraggingRadialArc = false;
+            };
+
+            svg.addEventListener('pointerdown', onPointerDown);
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+        }
+
+        function updateRadialArcValueFromPoint(clientX, clientY) {
+            if (!activeSmartLight || !activeRadialArcMode) return;
+            const svg = document.getElementById('radial-arc-svg');
+            const rect = svg.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            const dx = clientX - cx;
+            const dy = clientY - cy;
+            let deg = (Math.atan2(dy, dx) * 180) / Math.PI;
+            if (deg < 0) deg += 360;
+
+            let relAngle = deg - ARC_START_DEG;
+            if (relAngle < 0) relAngle += 360;
+
+            if (relAngle > ARC_SWEEP_DEG) {
+                relAngle = (relAngle - ARC_SWEEP_DEG < (360 - ARC_SWEEP_DEG) / 2) ? ARC_SWEEP_DEG : 0;
+            }
+
+            const ratio = Math.max(0, Math.min(1, relAngle / ARC_SWEEP_DEG));
+            renderRadialArcGeometry(ratio, activeRadialArcMode);
+
+            if (activeRadialArcMode === 'brightness') {
+                const pct = Math.round(ratio * 100);
+                activeSmartLight.brightness = pct;
+                activeSmartLight.isOn = pct > 0;
+                applySmartLightState(activeSmartLight);
+                syncRadialMenuDisplay();
+            } else if (activeRadialArcMode === 'color') {
+                const colorInfo = sampleColorSpectrum(ratio);
+                activeSmartLight.colorHex = colorInfo.hex;
+                activeSmartLight.colorRatio = ratio;
+                if (!activeSmartLight.isOn) {
+                    activeSmartLight.isOn = true;
+                    if (activeSmartLight.brightness === 0) activeSmartLight.brightness = 85;
+                }
+                applySmartLightState(activeSmartLight);
+                syncRadialMenuDisplay();
+            } else if (activeRadialArcMode === 'timer') {
+                const mins = Math.round((ratio * 120) / 5) * 5;
+                startBulbTimer(activeSmartLight, mins);
+                syncRadialMenuDisplay();
+            }
+        }
+
+        function startBulbTimer(lightObj, minutes) {
+            if (!lightObj) return;
+            if (lightObj.timerInterval) {
+                clearInterval(lightObj.timerInterval);
+                lightObj.timerInterval = null;
+            }
+            lightObj.timerMinutes = minutes;
+            lightObj.timerRemainingSec = minutes * 60;
+
+            if (minutes > 0) {
+                if (!lightObj.isOn) {
+                    lightObj.isOn = true;
+                    if (lightObj.brightness === 0) lightObj.brightness = 85;
+                }
+                applySmartLightState(lightObj);
+                lightObj.timerInterval = setInterval(() => {
+                    lightObj.timerRemainingSec = Math.max(0, lightObj.timerRemainingSec - 1);
+                    if (lightObj.timerRemainingSec <= 0) {
+                        clearInterval(lightObj.timerInterval);
+                        lightObj.timerInterval = null;
+                        lightObj.timerMinutes = 0;
+                        lightObj.isOn = false;
+                        applySmartLightState(lightObj);
+                        if (activeSmartLight === lightObj) syncRadialMenuDisplay();
+                        showToast(`انتهى المؤقت: تم إطفاء ${lightObj.name} تلقائياً`);
+                    } else {
+                        updateSmartBulbPinUI(lightObj);
+                        if (activeSmartLight === lightObj) syncRadialMenuDisplay();
+                    }
+                }, 1000);
+            } else {
+                updateSmartBulbPinUI(lightObj);
+            }
+        }
+
+        // ============================================================================
+        // 16. AUTO-HIDE TOOLBAR, POPOVERS, CONTEXT CARD & BOTTOM DOCK LOGIC
+        // ============================================================================
+        function scheduleToolbarAutoHide(delayMs = 3500) {
+            clearTimeout(toolbarHideTimer);
+            toolbarHideTimer = setTimeout(() => {
+                if (!activePopover) {
+                    hideToolbarImmediately();
+                }
+            }, delayMs);
+        }
+
+        function pauseToolbarAutoHide() {
+            clearTimeout(toolbarHideTimer);
+        }
+
+        function resetToolbarAutoHide() {
+            clearTimeout(toolbarHideTimer);
+            scheduleToolbarAutoHide(4500);
+        }
+
+        function hideToolbarImmediately(event) {
+            if (event) event.stopPropagation();
+            clearTimeout(toolbarHideTimer);
+            closeAllPopovers();
+            const toolbar = document.getElementById('main-toolbar');
+            const summonBtn = document.getElementById('summon-ui-btn');
+            if (toolbar) toolbar.classList.add('ui-bar-hidden');
+            if (summonBtn) {
+                summonBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function summonMainToolbar(event) {
+            if (event) event.stopPropagation();
+            const toolbar = document.getElementById('main-toolbar');
+            const summonBtn = document.getElementById('summon-ui-btn');
+            if (toolbar) toolbar.classList.remove('ui-bar-hidden');
+            if (summonBtn) {
+                summonBtn.classList.add('opacity-0', 'pointer-events-none');
+            }
+            scheduleToolbarAutoHide(4000);
+        }
+
+        function hideAllUIImmediately() {
+            closeAllPopovers();
+            hideContextCard();
+            closeRadialLightMenu();
+            hideToolbarImmediately();
+        }
+
+        function togglePopoverMenu(menuKey, event) {
+            if (event) event.stopPropagation();
+            closeRadialLightMenu();
+            hideContextCard();
+
+            const roomsPopover = document.getElementById('popover-rooms');
+            const layersPopover = document.getElementById('popover-layers');
+
+            if (activePopover === menuKey) {
+                closeAllPopovers();
+                scheduleToolbarAutoHide(3000);
+                return;
+            }
+
+            roomsPopover.classList.add('popover-hidden');
+            layersPopover.classList.add('popover-hidden');
+
+            if (menuKey === 'rooms') {
+                roomsPopover.classList.remove('popover-hidden');
+                activePopover = 'rooms';
+            } else if (menuKey === 'layers') {
+                layersPopover.classList.remove('popover-hidden');
+                activePopover = 'layers';
+            }
+            pauseToolbarAutoHide();
+        }
+
+        function closeAllPopovers() {
+            const r = document.getElementById('popover-rooms');
+            const l = document.getElementById('popover-layers');
+            if (r) r.classList.add('popover-hidden');
+            if (l) l.classList.add('popover-hidden');
+            activePopover = null;
+        }
+
+        function showContextCardForSpec(spec, isSpecificItem = false) {
+            if (!spec) return;
+            closeAllPopovers();
+            closeRadialLightMenu();
+
+            document.getElementById('ctx-title').textContent = spec.title;
+            document.getElementById('ctx-tag').textContent = spec.tag;
+            document.getElementById('ctx-desc').textContent = spec.desc;
+            document.getElementById('ctx-dim1').textContent = spec.dim1;
+            document.getElementById('ctx-dim2').textContent = spec.dim2;
+
+            const visBtn = document.getElementById('ctx-toggle-vis-btn');
+            if (isSpecificItem && selectedTargetGroup) {
+                visBtn.classList.remove('hidden');
+                document.getElementById('ctx-vis-text').textContent = selectedTargetGroup.visible ? 'إخفاء مؤقت' : 'إظهار العنصر';
+            } else {
+                visBtn.classList.add('hidden');
+            }
+
+            const card = document.getElementById('context-card');
+            card.className = "context-card-anim fixed bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92vw] max-w-sm glass-panel rounded-2xl p-3.5 pointer-events-auto overflow-hidden shadow-2xl";
+
+            startContextCardCountdown(4500);
+        }
+
+        function startContextCardCountdown(durationMs = 4000) {
+            clearInterval(contextCardProgressInterval);
+            contextRemainingMs = durationMs;
+            isContextTimerPaused = false;
+            const prog = document.getElementById('context-progress');
+            if (prog) prog.style.width = '100%';
+
+            contextCardProgressInterval = setInterval(() => {
+                if (isContextTimerPaused) return;
+                contextRemainingMs -= 80;
+                const pct = Math.max(0, (contextRemainingMs / durationMs) * 100);
+                if (prog) prog.style.width = `${pct}%`;
+                if (contextRemainingMs <= 0) {
+                    clearInterval(contextCardProgressInterval);
+                    hideContextCard();
+                }
+            }, 80);
+        }
+
+        function pauseContextCardTimer() {
+            isContextTimerPaused = true;
+        }
+
+        function resumeContextCardTimer() {
+            isContextTimerPaused = false;
+        }
+
+        function hideContextCard() {
+            clearInterval(contextCardProgressInterval);
+            const card = document.getElementById('context-card');
+            if (card) card.classList.add('context-card-hidden');
+            if (selectionBoxHelper) selectionBoxHelper.visible = false;
+        }
+
+        function focusCurrentContextObject() {
+            if (selectedZoneKey) {
+                focusZone(selectedZoneKey, false);
+            }
+            hideContextCard();
+        }
+
+        function toggleSelectedObjectVisibility() {
+            if (!selectedTargetGroup) return;
+            selectedTargetGroup.visible = !selectedTargetGroup.visible;
+            document.getElementById('ctx-vis-text').textContent = selectedTargetGroup.visible ? 'إخفاء مؤقت' : 'إظهار العنصر';
+            if (selectionBoxHelper) selectionBoxHelper.visible = selectedTargetGroup.visible;
+        }
+
+        function selectZoneFromDock(zoneKey, showCard = true) {
+            closeAllPopovers();
+            closeRadialLightMenu();
+            document.querySelectorAll('.dock-btn').forEach(btn => btn.classList.remove('btn-active'));
+            const activeBtn = document.getElementById(`dock-${zoneKey}`);
+            if (activeBtn) {
+                activeBtn.classList.add('btn-active');
+                activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+            focusZone(zoneKey, zoneKey !== 'overview' && showCard);
+        }
+
+        function selectZoneAndClose(zoneKey) {
+            closeAllPopovers();
+            hideToolbarImmediately();
+            selectZoneFromDock(zoneKey, true);
+        }
+
+        function focusZone(zoneKey, showCard = false) {
+            const spec = ZONE_SPECS[zoneKey] || ZONE_SPECS.overview;
+            selectedZoneKey = zoneKey;
+            selectedTargetGroup = null;
+            if (selectionBoxHelper) selectionBoxHelper.visible = false;
+
+            cameraAnim = {
+                startPos: camera.position.clone(),
+                endPos: new THREE.Vector3(spec.camPos.x, spec.camPos.y, spec.camPos.z),
+                startTarget: controls.target.clone(),
+                endTarget: new THREE.Vector3(spec.target.x, spec.target.y, spec.target.z),
+                progress: 0
+            };
+
+            if (showCard) {
+                showContextCardForSpec(spec, false);
+            } else if (zoneKey === 'overview') {
+                hideContextCard();
+            }
+        }
+
+        function setCameraView(mode) {
+            ['cam-orbit', 'cam-top', 'cam-iso'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('btn-active');
+            });
+            const activeEl = document.getElementById(`cam-${mode}`);
+            if (activeEl) activeEl.classList.add('btn-active');
+
+            if (mode === 'top') {
+                cameraAnim = {
+                    startPos: camera.position.clone(),
+                    endPos: new THREE.Vector3(0.4, 22.5, 0.01),
+                    startTarget: controls.target.clone(),
+                    endTarget: new THREE.Vector3(0.4, 0.0, 0.0),
+                    progress: 0
+                };
+            } else if (mode === 'iso') {
+                cameraAnim = {
+                    startPos: camera.position.clone(),
+                    endPos: new THREE.Vector3(14.5, 14.5, 14.5),
+                    startTarget: controls.target.clone(),
+                    endTarget: new THREE.Vector3(0.4, 0.3, -0.2),
+                    progress: 0
+                };
+            } else {
+                focusZone('overview', false);
+            }
+            closeAllPopovers();
+        }
+
+        // ============================================================================
+        // 17. WALL HEIGHT, LAYERS, LIGHTING MODES & OBJ EXPORT
+        // ============================================================================
+        function updateWallHeight(val) {
+            currentWallHeight = parseFloat(val);
+            document.getElementById('wall-height-val').textContent = `${currentWallHeight.toFixed(2)} م`;
+            wallMeshes.forEach(w => {
+                w.body.scale.y = currentWallHeight;
+                w.cap.position.y = currentWallHeight + 0.015;
+            });
+            doorWindowMeshes.forEach(dw => {
+                dw.mesh.scale.y = Math.max(0.08, currentWallHeight - dw.sill);
+            });
+        }
+
+        function setWallHeightPreset(val) {
+            const slider = document.getElementById('wall-height-slider');
+            if (slider) slider.value = val;
+            updateWallHeight(val);
+        }
+
+        function updateCadOverlay(val) {
+            const pct = parseInt(val, 10);
+            document.getElementById('cad-opacity-val').textContent = `${pct}%`;
+            if (cadOverlayMesh) {
+                cadOverlayMesh.material.opacity = pct / 100;
+                cadOverlayMesh.visible = pct > 0;
+            }
+        }
+
+        function setLightingMode(mode) {
+            isNightMode = (mode === 'night');
+            const dayBtn = document.getElementById('light-day');
+            const nightBtn = document.getElementById('light-night');
+            const qIcon = document.getElementById('quick-light-icon');
+            const qText = document.getElementById('quick-light-text');
+
+            if (isNightMode) {
+                if (dayBtn) dayBtn.classList.remove('btn-active');
+                if (nightBtn) nightBtn.classList.add('btn-active');
+                if (qIcon) qIcon.className = 'fa-solid fa-moon text-sky-300';
+                if (qText) qText.textContent = 'ليلي 3000K';
+                scene.background.setHex(0x050811);
+                scene.fog.color.setHex(0x050811);
+                ambientLight.intensity = 0.22;
+                hemiLight.intensity = 0.20;
+                dirLight.intensity = 0.25;
+            } else {
+                if (nightBtn) nightBtn.classList.remove('btn-active');
+                if (dayBtn) dayBtn.classList.add('btn-active');
+                if (qIcon) qIcon.className = 'fa-solid fa-sun text-amber-300';
+                if (qText) qText.textContent = 'نهاري';
+                scene.background.setHex(0x0b1120);
+                scene.fog.color.setHex(0x0b1120);
+                ambientLight.intensity = 0.65;
+                hemiLight.intensity = 0.55;
+                dirLight.intensity = 1.15;
+            }
+
+            smartLights.forEach(sl => applySmartLightState(sl));
+        }
+
+        function toggleDayNightQuick(event) {
+            if (event) event.stopPropagation();
+            setLightingMode(isNightMode ? 'day' : 'night');
+        }
+
+        function toggleGroupVisibility(groupName, visible) {
+            if (groupName === 'furniture' && furnitureGroup) furnitureGroup.visible = visible;
+            if (groupName === 'plants' && plantsGroup) plantsGroup.visible = visible;
+        }
+
+        function toggleRoomLabels(visible) {
+            showRoomLabelsFlag = visible;
+        }
+
+        function toggleDimensionBadges(visible) {
+            showDimBadgesFlag = visible;
+        }
+
+        function toggleSmartBulbPins(visible) {
+            showSmartBulbPinsFlag = visible;
+            smartLights.forEach(sl => {
+                sl.fixtureGroup.visible = visible;
+            });
+            if (!visible) closeRadialLightMenu();
+        }
+
+        function toggleWallXRay(enabled) {
+            isWallXRay = enabled;
+            wallMat.transparent = enabled;
+            wallMat.opacity = enabled ? 0.22 : 1.0;
+            wallMat.needsUpdate = true;
+        }
+
+        function exportSceneToOBJ() {
+            let objContent = "# Villa Hassan Ground Floor 3D Model - Exported from Three.js\n";
+            let vertexOffset = 1;
+
+            scene.traverse(node => {
+                if (node.isMesh && node.visible && node !== cadOverlayMesh) {
+                    const geo = node.geometry;
+                    if (!geo || !geo.attributes || !geo.attributes.position) return;
+
+                    objContent += `o ${node.name || 'Mesh_' + node.id}\n`;
+                    const posAttr = geo.attributes.position;
+                    const v = new THREE.Vector3();
+
+                    for (let i = 0; i < posAttr.count; i++) {
+                        v.fromBufferAttribute(posAttr, i);
+                        v.applyMatrix4(node.matrixWorld);
+                        objContent += `v ${v.x.toFixed(4)} ${v.y.toFixed(4)} ${v.z.toFixed(4)}\n`;
+                    }
+
+                    if (geo.index) {
+                        const idx = geo.index;
+                        for (let i = 0; i < idx.count; i += 3) {
+                            const a = idx.getX(i) + vertexOffset;
+                            const b = idx.getX(i + 1) + vertexOffset;
+                            const c = idx.getX(i + 2) + vertexOffset;
+                            objContent += `f ${a} ${b} ${c}\n`;
+                        }
+                    } else {
+                        for (let i = 0; i < posAttr.count; i += 3) {
+                            const a = i + vertexOffset;
+                            const b = i + 1 + vertexOffset;
+                            const c = i + 2 + vertexOffset;
+                            objContent += `f ${a} ${b} ${c}\n`;
+                        }
+                    }
+                    vertexOffset += posAttr.count;
+                }
+            });
+
+            const blob = new Blob([objContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Villa_Hassan_Ground_Floor_3D.obj';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("تم تصدير وتحميل ملف المجسم Villa_Hassan_Ground_Floor_3D.obj بنجاح");
+        }
+
+        let toastTimer = null;
+        function showToast(text) {
+            const toast = document.getElementById('toast-msg');
+            const toastText = document.getElementById('toast-text');
+            if (!toast || !toastText) return;
+            toastText.textContent = text;
+            toast.classList.remove('opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 3400);
+        }
+
+        // ============================================================================
+        // 18. RAYCASTER CLICK / TOUCH INTERACTION & ANIMATION LOOP
+        // ============================================================================
+        function setupRaycasterInteraction() {
+            const raycaster = new THREE.Raycaster();
+            const pointer = new THREE.Vector2();
+            let downPos = { x: 0, y: 0 };
+            let downTime = 0;
+
+            const domElem = renderer.domElement;
+
+            domElem.addEventListener('pointerdown', (e) => {
+                downPos.x = e.clientX;
+                downPos.y = e.clientY;
+                downTime = performance.now();
+            });
+
+            domElem.addEventListener('pointerup', (e) => {
+                const moveDist = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
+                const elapsed = performance.now() - downTime;
+                if (moveDist > 9 || elapsed > 500) return;
+
+                pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+                pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(pointer, camera);
+                const hits = raycaster.intersectObjects(interactiveObjects, true);
+
+                if (hits.length > 0) {
+                    const hitObj = hits[0].object;
+
+                    // 1. Check if user tapped a 3D Smart Bulb fixture directly
+                    if (hitObj.userData && hitObj.userData.isSmartBulb && hitObj.userData.smartLight) {
+                        openRadialLightMenu(hitObj.userData.smartLight, e.clientX, e.clientY);
+                        return;
+                    }
+
+                    // 2. Check if user tapped a specific piece of furniture or planter
+                    if (hitObj.userData && hitObj.userData.itemKey) {
+                        const itemSpec = ITEM_SPECS[hitObj.userData.itemKey];
+                        if (itemSpec) {
+                            selectedTargetGroup = hitObj.userData.targetGroup || hitObj;
+                            selectedZoneKey = itemSpec.zone || 'overview';
+                            if (selectionBoxHelper && selectedTargetGroup) {
+                                selectionBoxHelper.setFromObject(selectedTargetGroup);
+                                selectionBoxHelper.visible = true;
+                            }
+                            showContextCardForSpec(itemSpec, true);
+                            return;
+                        }
+                    }
+
+                    // 3. Otherwise, floor slab tap -> show room info card above bottom dock
+                    if (hitObj.userData && hitObj.userData.zone) {
+                        const zKey = hitObj.userData.zone;
+                        selectedZoneKey = zKey;
+                        selectedTargetGroup = null;
+                        if (selectionBoxHelper) selectionBoxHelper.visible = false;
+                        showContextCardForSpec(ZONE_SPECS[zKey], false);
+                        return;
+                    }
+                }
+
+                closeRadialLightMenu();
+                hideContextCard();
+                closeAllPopovers();
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (cameraAnim) {
+                cameraAnim.progress += 0.045;
+                if (cameraAnim.progress >= 1) {
+                    camera.position.copy(cameraAnim.endPos);
+                    controls.target.copy(cameraAnim.endTarget);
+                    cameraAnim = null;
+                } else {
+                    const t = 1 - Math.pow(1 - cameraAnim.progress, 3);
+                    camera.position.lerpVectors(cameraAnim.startPos, cameraAnim.endPos, t);
+                    controls.target.lerpVectors(cameraAnim.startTarget, cameraAnim.endTarget, t);
+                }
+            }
+
+            controls.update();
+            updateHTMLOverlaysPosition();
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function () {
+            initScene();
+        };
+    </script>
+</body>
+</html>

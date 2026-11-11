@@ -62,7 +62,10 @@
             if(floor.status==='planned'){
                 const pending=document.createElement('small');pending.textContent='لاحقًا';b.append(pending);
             }
-            b.addEventListener('click',()=>global.VillaFloors.select(floor.id));
+            b.addEventListener('click',()=>{
+                if(floor.id==='ground'){window.location.href='./ground.html?review=1';return;}
+                global.VillaFloors.select(floor.id);
+            });
             wrapper.append(b);
         }
         const status=document.getElementById('floor-switcher-status');

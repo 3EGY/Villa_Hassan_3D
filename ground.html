@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>فيلا حسن بالأثاث - الدور الأرضي | النموذج المعماري ثلاثي الأبعاد 3D</title>
+<!-- Tailwind CSS -->
+<script src="./vendor/tailwind.runtime.js"></script>
+<!-- Google Fonts: Cairo & Tajawal -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Font Awesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<!-- Three.js r128 -->
+<script src="./vendor/three.js"></script>
+<!-- Three.js OrbitControls -->
+<script src="./vendor/OrbitControls.js"></script>
+<link href="./styles/ground/source.css" rel="stylesheet"/>
+<link href="./styles/ground/review.css" rel="stylesheet"/></head>
+<body>
+<!-- 3D WebGL Canvas Container (100% Unobstructed Viewport) -->
+<div id="canvas-container"></div>
+<!-- 3D Floating Room, Dimension & Smart Bulb Labels Overlay -->
+<div id="labels-container"></div>
+<!-- Unobtrusive Mini Summon Button (Visible when main toolbar auto-hides) -->
+<button class="fixed top-3 right-3 z-30 glass-pill rounded-full px-3 py-2 text-xs font-bold text-amber-300 flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg" id="summon-ui-btn" onclick="summonMainToolbar(event)">
+<i class="fa-solid fa-sliders text-amber-400"></i>
+<span class="hidden xs:inline">القائمة</span>
+</button>
+<!-- Quick Reset/Home Mini Button (Top Left) -->
+<button class="fixed top-3 left-3 z-30 glass-pill rounded-full w-9 h-9 flex items-center justify-center text-slate-200 hover:text-amber-300 opacity-65 hover:opacity-100 transition-all duration-200 shadow-md" id="quick-home-btn" onclick="selectZoneAndClose('overview')" title="منظور شامل للدور الأرضي">
+<i class="fa-solid fa-expand text-xs"></i>
+</button>
+<!-- Compact Auto-Hiding Top Floating Pill Bar -->
+<header class="ui-auto-bar fixed top-3 inset-x-0 z-30 flex justify-center px-3 pointer-events-none" id="main-toolbar" onpointerdown="resetToolbarAutoHide()" onpointerenter="pauseToolbarAutoHide()" onpointerleave="scheduleToolbarAutoHide()">
+<div class="glass-panel rounded-full p-1.5 px-2.5 flex items-center gap-1 sm:gap-2 pointer-events-auto max-w-full overflow-x-auto shadow-2xl">
+<!-- Compact Brand Badge -->
+<div class="flex items-center gap-1.5 pr-1 pl-2 border-l border-slate-700/80">
+<div class="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 text-xs shadow">
+<i class="fa-solid fa-building"></i>
+</div>
+<span class="text-[11px] sm:text-xs font-extrabold text-white whitespace-nowrap hidden sm:inline">فيلا حسن - الدور الأرضي</span>
+</div>
+<!-- Menu 1: Camera & Rooms Popover Trigger -->
+<button class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap" id="btn-menu-rooms" onclick="togglePopoverMenu('rooms', event)">
+<i class="fa-solid fa-location-crosshairs text-amber-400"></i>
+<span>الغرف والكاميرا</span>
+<i class="fa-solid fa-chevron-down text-[9px] opacity-70"></i>
+</button>
+<!-- Menu 2: Layers, Wall Height & Lighting Popover Trigger -->
+<button class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap" id="btn-menu-layers" onclick="togglePopoverMenu('layers', event)">
+<i class="fa-solid fa-layer-group text-sky-400"></i>
+<span>الطبقات والإضاءة</span>
+<i class="fa-solid fa-chevron-down text-[9px] opacity-70"></i>
+</button>
+<!-- Quick Day/Night Toggle Button -->
+<button class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-slate-800/90 text-sky-300 border border-amber-500/30 hover:bg-slate-700 transition flex items-center gap-1 whitespace-nowrap" id="quick-light-btn" onclick="toggleDayNightQuick(event)" title="تبديل الإضاءة النهارية / الليلية 3000K">
+<i class="fa-solid fa-moon text-sky-300" id="quick-light-icon"></i>
+<span class="hidden md:inline" id="quick-light-text">ليلي 3000K</span>
+</button>
+<!-- Export OBJ Button -->
+<button class="px-2.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition flex items-center gap-1 whitespace-nowrap" onclick="exportSceneToOBJ(); hideAllUIImmediately();" title="تصدير ملف ثلاثي الأبعاد OBJ">
+<i class="fa-solid fa-download"></i>
+<span class="hidden sm:inline">OBJ</span>
+</button>
+<!-- Hide Toolbar Now Button -->
+<button class="w-7 h-7 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center text-xs transition" onclick="hideToolbarImmediately(event)" title="إخفاء الشريط">
+<i class="fa-solid fa-eye-slash text-[11px]"></i>
+</button>
+</div>
+</header>
+<!-- POPOVER 1: Camera Presets & Room Teleport -->
+<div class="popover-menu popover-hidden fixed top-16 left-1/2 -translate-x-1/2 z-30 w-[92vw] max-w-md glass-panel rounded-2xl p-3 pointer-events-auto" id="popover-rooms" onpointerdown="resetToolbarAutoHide()" onpointerenter="pauseToolbarAutoHide()" onpointerleave="scheduleToolbarAutoHide()">
+<div class="flex items-center justify-between border-b border-slate-700/70 pb-2 mb-2.5">
+<span class="text-xs font-extrabold text-amber-400 flex items-center gap-1.5">
+<i class="fa-solid fa-video"></i>
+<span>زاوية الكاميرا والانتقال لفراغات الدور الأرضي</span>
+</span>
+<button class="w-6 h-6 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center text-xs" onclick="closeAllPopovers()">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+<!-- Camera Mode Row -->
+<div class="grid grid-cols-3 gap-1.5 mb-2.5">
+<button class="btn-active py-1.5 px-2 rounded-xl text-[11px] font-bold bg-slate-800/90 text-slate-200 flex items-center justify-center gap-1 transition" id="cam-orbit" onclick="setCameraView('orbit')">
+<i class="fa-solid fa-cube"></i>
+<span>منظور 3D</span>
+</button>
+<button class="py-1.5 px-2 rounded-xl text-[11px] font-bold bg-slate-800/90 text-slate-200 flex items-center justify-center gap-1 transition" id="cam-top" onclick="setCameraView('top')">
+<i class="fa-solid fa-map"></i>
+<span>مسقط 2D/3D</span>
+</button>
+<button class="py-1.5 px-2 rounded-xl text-[11px] font-bold bg-slate-800/90 text-slate-200 flex items-center justify-center gap-1 transition" id="cam-iso" onclick="setCameraView('iso')">
+<i class="fa-solid fa-vector-square"></i>
+<span>أيزومتري</span>
+</button>
+</div>
+<!-- Room Teleport Grid -->
+<div class="text-[10px] text-slate-400 mb-1.5 font-semibold">اختر الفراغ للتركيز عليه وتوسيط لمبة الإضاءة:</div>
+<div class="grid grid-cols-2 gap-1.5">
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('overview')">
+<i class="fa-solid fa-house text-amber-400 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">كامل الدور الأرضي</div>
+<div class="text-[9px] text-slate-400">13.8 × 15.6 م</div>
+</div>
+</button>
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('grandMajlis')">
+<i class="fa-solid fa-couch text-amber-400 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">المجلس الكبير</div>
+<div class="text-[9px] text-slate-400">بطول 1010 سم وكنبة 590</div>
+</div>
+</button>
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('receptionLounge')">
+<i class="fa-solid fa-chair text-amber-400 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">بهو الاستقبال</div>
+<div class="text-[9px] text-slate-400">قوس 231 وشيزلونج 173</div>
+</div>
+</button>
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('diningRoom')">
+<i class="fa-solid fa-utensils text-amber-400 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">غرفة الطعام</div>
+<div class="text-[9px] text-slate-400">صالة 452 وطاولة 250×90</div>
+</div>
+</button>
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('kitchen')">
+<i class="fa-solid fa-fire-burner text-sky-400 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">المطبخ والجزيرة</div>
+<div class="text-[9px] text-slate-400">عرض 450 وجزيرة 182×92</div>
+</div>
+</button>
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('familyLiving')">
+<i class="fa-solid fa-tv text-amber-400 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">المعيشة العائلية</div>
+<div class="text-[9px] text-slate-400">كنبة 349×92 وطاولة 160</div>
+</div>
+</button>
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('lobbyPartition')">
+<i class="fa-solid fa-seedling text-emerald-400 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">الموزع وحائط التلفزيون</div>
+<div class="text-[9px] text-slate-400">فاصل 200×91 وحوض 70</div>
+</div>
+</button>
+<button class="p-2 rounded-xl text-right text-[11px] font-semibold bg-slate-900/80 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 transition flex items-center gap-2" onclick="selectZoneAndClose('stairsWash')">
+<i class="fa-solid fa-stairs text-slate-300 w-4 text-center"></i>
+<div class="truncate">
+<div class="font-bold">الدرج والمغاسل</div>
+<div class="text-[9px] text-slate-400">مغاسل 210×150 وحمام</div>
+</div>
+</button>
+</div>
+</div>
+<!-- POPOVER 2: Display Layers, Wall Height & Lighting Controls -->
+<div class="popover-menu popover-hidden fixed top-16 left-1/2 -translate-x-1/2 z-30 w-[92vw] max-w-sm glass-panel rounded-2xl p-3.5 pointer-events-auto" id="popover-layers" onpointerdown="resetToolbarAutoHide()" onpointerenter="pauseToolbarAutoHide()" onpointerleave="scheduleToolbarAutoHide()">
+<div class="flex items-center justify-between border-b border-slate-700/70 pb-2 mb-2.5">
+<span class="text-xs font-extrabold text-sky-400 flex items-center gap-1.5">
+<i class="fa-solid fa-sliders"></i>
+<span>التحكم بالجدران والطبقات والإضاءة</span>
+</span>
+<button class="w-6 h-6 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center text-xs" onclick="closeAllPopovers()">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+<!-- Wall Height Control -->
+<div class="bg-slate-900/70 rounded-xl p-2.5 border border-slate-800 mb-2">
+<div class="flex justify-between items-center text-[11px] mb-1">
+<span class="font-semibold text-slate-200">ارتفاع الجدران المقطعية</span>
+<span class="text-amber-400 font-bold font-mono" id="wall-height-val">1.35 م</span>
+</div>
+<input class="w-full" id="wall-height-slider" max="3.20" min="0.15" oninput="updateWallHeight(this.value)" step="0.05" type="range" value="1.35"/>
+<div class="grid grid-cols-3 gap-1 mt-1.5">
+<button class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300" onclick="setWallHeightPreset(0.2); closeAllPopovers();">مخطط 0.2م</button>
+<button class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-amber-300 font-semibold" onclick="setWallHeightPreset(1.35); closeAllPopovers();">مقطعي 1.35م</button>
+<button class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300" onclick="setWallHeightPreset(3.1); closeAllPopovers();">كامل 3.1م</button>
+</div>
+</div>
+<!-- CAD Blueprint Underlay Opacity -->
+<div class="bg-slate-900/70 rounded-xl p-2.5 border border-slate-800 mb-2">
+<div class="flex justify-between items-center text-[11px] mb-1">
+<span class="font-semibold text-slate-200">تطابق خطوط المخطط (CAD)</span>
+<span class="text-sky-400 font-bold font-mono" id="cad-opacity-val">45%</span>
+</div>
+<input class="w-full" id="cad-opacity-slider" max="100" min="0" oninput="updateCadOverlay(this.value)" step="5" type="range" value="45"/>
+</div>
+<!-- Lighting Atmosphere -->
+<div class="grid grid-cols-2 gap-1.5 mb-2.5">
+<button class="py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center gap-1.5" id="light-day" onclick="setLightingMode('day'); closeAllPopovers();">
+<i class="fa-solid fa-sun"></i>
+<span>إضاءة نهارية</span>
+</button>
+<button class="btn-active py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center gap-1.5" id="light-night" onclick="setLightingMode('night'); closeAllPopovers();">
+<i class="fa-solid fa-moon"></i>
+<span>ليلي دافئ 3000K</span>
+</button>
+</div>
+<!-- Layer Checkboxes -->
+<div class="bg-slate-900/70 rounded-xl p-2.5 border border-slate-800 grid grid-cols-2 gap-2 text-[11px]">
+<label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+<input checked="" class="accent-amber-500 w-3.5 h-3.5 rounded" onchange="toggleGroupVisibility('furniture', this.checked)" type="checkbox"/>
+<span>الأثاث والفرش</span>
+</label>
+<label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+<input checked="" class="accent-amber-500 w-3.5 h-3.5 rounded" onchange="toggleGroupVisibility('plants', this.checked)" type="checkbox"/>
+<span>الأحواض والنباتات</span>
+</label>
+<label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+<input checked="" class="accent-amber-500 w-3.5 h-3.5 rounded" onchange="toggleRoomLabels(this.checked)" type="checkbox"/>
+<span>أسماء الغرف</span>
+</label>
+<label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+<input class="accent-amber-500 w-3.5 h-3.5 rounded" onchange="toggleDimensionBadges(this.checked)" type="checkbox"/>
+<span>المقاسات (سم)</span>
+</label>
+<label class="flex items-center gap-2 text-amber-300 cursor-pointer col-span-2 pt-1 border-t border-slate-800">
+<input checked="" class="accent-amber-500 w-3.5 h-3.5 rounded" onchange="toggleSmartBulbPins(this.checked)" type="checkbox"/>
+<span>إظهار لمبات الإضاءة التفاعلية في الغرف</span>
+</label>
+<label class="flex items-center gap-2 text-slate-300 cursor-pointer col-span-2 pt-1 border-t border-slate-800">
+<input class="accent-amber-500 w-3.5 h-3.5 rounded" onchange="toggleWallXRay(this.checked)" type="checkbox"/>
+<span>شفافية الجدران (رؤية X-Ray كاملة للفرش)</span>
+</label>
+</div>
+</div>
+<!-- RADIAL SMART LIGHT CONTROLLER AROUND FINGER -->
+<div class="radial-hidden" id="radial-light-menu">
+<!-- Interactive Arc Slider SVG -->
+<svg class="w-full h-full overflow-visible opacity-0 pointer-events-none transition-opacity duration-200" id="radial-arc-svg" viewbox="0 0 268 268">
+<defs>
+<lineargradient id="grad-brightness" x1="0%" x2="100%" y1="100%" y2="0%">
+<stop offset="0%" stop-color="#334155"></stop>
+<stop offset="40%" stop-color="#f59e0b"></stop>
+<stop offset="100%" stop-color="#fef08a"></stop>
+</lineargradient>
+<lineargradient id="grad-timer" x1="0%" x2="100%" y1="100%" y2="0%">
+<stop offset="0%" stop-color="#0284c7"></stop>
+<stop offset="50%" stop-color="#38bdf8"></stop>
+<stop offset="100%" stop-color="#34d399"></stop>
+</lineargradient>
+<lineargradient id="grad-color" x1="0%" x2="100%" y1="50%" y2="50%">
+<stop offset="0%" stop-color="#ff8c1a"></stop>
+<stop offset="20%" stop-color="#fff4e6"></stop>
+<stop offset="40%" stop-color="#38bdf8"></stop>
+<stop offset="60%" stop-color="#818cf8"></stop>
+<stop offset="80%" stop-color="#f43f5e"></stop>
+<stop offset="100%" stop-color="#10b981"></stop>
+</lineargradient>
+</defs>
+<circle cx="134" cy="134" fill="rgba(15, 23, 42, 0.45)" r="66" stroke="rgba(255, 255, 255, 0.12)" stroke-dasharray="4 4" stroke-width="1.5"></circle>
+<path d="" fill="none" id="radial-arc-bg" stroke="rgba(15, 23, 42, 0.9)" stroke-linecap="round" stroke-width="20"></path>
+<path class="cursor-pointer" d="" fill="none" id="radial-arc-track" stroke="rgba(255, 255, 255, 0.18)" stroke-linecap="round" stroke-width="14" style="pointer-events: stroke;"></path>
+<path class="cursor-pointer" d="" fill="none" id="radial-arc-active" stroke="url(#grad-brightness)" stroke-linecap="round" stroke-width="14" style="pointer-events: stroke;"></path>
+<path class="cursor-pointer" d="" fill="none" id="radial-arc-hit" stroke="transparent" stroke-linecap="round" stroke-width="38" style="pointer-events: stroke;"></path>
+<g class="cursor-grab active:cursor-grabbing" id="radial-arc-thumb" style="pointer-events: all;" transform="translate(134, 22)">
+<circle fill="#0f172a" r="13" stroke="#ffffff" stroke-width="3"></circle>
+<circle fill="#fbbf24" id="radial-thumb-dot" r="6"></circle>
+</g>
+</svg>
+<!-- Floating Live Value Readout Badge at Top of the Arc -->
+<div class="opacity-0 pointer-events-none transition-all duration-150 absolute -top-6 left-1/2 -translate-x-1/2 glass-pill px-3 py-1 rounded-full text-[11px] font-extrabold text-amber-300 whitespace-nowrap shadow-xl flex items-center gap-1.5 border border-amber-400/50" id="radial-arc-badge">
+<i class="fa-solid fa-sun text-amber-400" id="radial-badge-icon"></i>
+<span id="radial-badge-text">شدة الإضاءة: 100%</span>
+</div>
+<!-- Center Finger Hub -->
+<div class="pointer-events-auto cursor-pointer absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full glass-panel border-2 border-amber-400/50 flex flex-col items-center justify-center text-center p-1 shadow-2xl hover:border-amber-300 transition" id="radial-center-hub" onclick="closeRadialLightMenu(event)">
+<i class="fa-solid fa-lightbulb text-amber-400 text-sm mb-0.5" id="radial-center-icon"></i>
+<span class="text-[8.5px] font-extrabold text-white leading-tight line-clamp-1 max-w-[54px]" id="radial-center-title">المجلس</span>
+<span class="text-[8px] text-amber-300 font-mono leading-tight" id="radial-center-sub">90%</span>
+</div>
+<!-- Option 1: Power Toggle -->
+<button class="radial-node" id="radial-btn-power" onclick="handleRadialPowerClick(event)" style="left: 82px; top: 92px;">
+<i class="fa-solid fa-power-off text-rose-400 text-xs" id="radial-power-icon"></i>
+<span class="text-[8.5px] font-bold text-slate-100" id="radial-power-text">إطفاء</span>
+</button>
+<!-- Option 2: Timer -->
+<button class="radial-node" id="radial-btn-timer" onclick="activateRadialArcMode('timer', event)" style="left: 186px; top: 92px;">
+<i class="fa-solid fa-stopwatch text-sky-400 text-xs"></i>
+<span class="text-[8.5px] font-bold text-slate-100">مؤقت</span>
+</button>
+<!-- Option 3: Brightness -->
+<button class="radial-node" id="radial-btn-brightness" onclick="activateRadialArcMode('brightness', event)" style="left: 186px; top: 176px;">
+<i class="fa-solid fa-sun text-amber-400 text-xs"></i>
+<span class="text-[8.5px] font-bold text-slate-100">الشدة</span>
+</button>
+<!-- Option 4: Color -->
+<button class="radial-node" id="radial-btn-color" onclick="activateRadialArcMode('color', event)" style="left: 82px; top: 176px;">
+<i class="fa-solid fa-palette text-fuchsia-400 text-xs"></i>
+<span class="text-[8.5px] font-bold text-slate-100">اللون</span>
+</button>
+</div>
+<!-- CONTEXTUAL POPOVER CARD (Positioned cleanly above the bottom dock) -->
+<div class="context-card-anim context-card-hidden fixed bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92vw] max-w-sm glass-panel rounded-2xl p-3.5 pointer-events-auto overflow-hidden" id="context-card" onpointerdown="pauseContextCardTimer()" onpointerenter="pauseContextCardTimer()" onpointerleave="resumeContextCardTimer()">
+<div class="absolute top-0 inset-x-0 h-1 bg-slate-800/80">
+<div class="h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-100" id="context-progress" style="width: 100%;"></div>
+</div>
+<div class="flex items-start justify-between gap-2 mt-0.5">
+<div class="flex items-center gap-2 min-w-0">
+<div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+<i class="fa-solid fa-ruler-combined text-sm"></i>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h2 class="text-xs sm:text-sm font-extrabold text-white truncate" id="ctx-title">المجلس الرئيسي الكبير</h2>
+<span class="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold shrink-0" id="ctx-tag">الاستقبال</span>
+</div>
+<p class="text-[10.5px] text-slate-300 leading-snug line-clamp-2 mt-0.5" id="ctx-desc">
+                        يمتد بطول 1010 سم ويضم كنبة زاوية 590×190 سم وطاولتي قهوة 180×90 سم وكنبة 251×95 سم.
+                    </p>
+</div>
+</div>
+<button class="w-6 h-6 rounded-lg bg-slate-800/90 text-slate-400 hover:text-white flex items-center justify-center text-xs shrink-0" onclick="hideContextCard()">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+<!-- Dimensions & Quick Interactive Actions Row -->
+<div class="mt-2.5 pt-2 border-t border-slate-800/90 flex items-center justify-between gap-2">
+<div class="flex items-center gap-1.5 text-[10px]">
+<span class="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 text-amber-400 font-bold font-mono" id="ctx-dim1">590 × 190 سم</span>
+<span class="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 text-emerald-400 font-bold font-mono" id="ctx-dim2">طاولات 180×90</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition" id="ctx-focus-btn" onclick="focusCurrentContextObject()">
+<i class="fa-solid fa-magnifying-glass-plus"></i>
+<span>تقريب</span>
+</button>
+<button class="hidden px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold flex items-center gap-1 transition" id="ctx-toggle-vis-btn" onclick="toggleSelectedObjectVisibility()" title="إخفاء / إظهار العنصر المحدد">
+<i class="fa-solid fa-eye-slash"></i>
+<span id="ctx-vis-text">إخفاء مؤقت</span>
+</button>
+</div>
+</div>
+</div>
+<!-- INTERACTIVE BOTTOM DOCK FOR GROUND FLOOR ROOM SELECTION -->
+<nav class="fixed bottom-2.5 inset-x-0 z-30 flex justify-center px-2 pointer-events-none" id="bottom-places-dock">
+<div class="glass-panel rounded-2xl p-1.5 px-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full pointer-events-auto shadow-2xl border border-slate-700/80">
+<button class="dock-btn btn-active px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-overview" onclick="selectZoneFromDock('overview')">
+<i class="fa-solid fa-house text-amber-400"></i>
+<span>كامل الدور الأرضي</span>
+</button>
+<button class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-grandMajlis" onclick="selectZoneFromDock('grandMajlis')">
+<i class="fa-solid fa-couch text-amber-400"></i>
+<span>المجلس الكبير</span>
+</button>
+<button class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-receptionLounge" onclick="selectZoneFromDock('receptionLounge')">
+<i class="fa-solid fa-chair text-amber-400"></i>
+<span>بهو الاستقبال</span>
+</button>
+<button class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-diningRoom" onclick="selectZoneFromDock('diningRoom')">
+<i class="fa-solid fa-utensils text-amber-400"></i>
+<span>غرفة الطعام</span>
+</button>
+<button class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-kitchen" onclick="selectZoneFromDock('kitchen')">
+<i class="fa-solid fa-fire-burner text-sky-400"></i>
+<span>المطبخ والجزيرة</span>
+</button>
+<button class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-familyLiving" onclick="selectZoneFromDock('familyLiving')">
+<i class="fa-solid fa-tv text-amber-400"></i>
+<span>المعيشة العائلية</span>
+</button>
+<button class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-lobbyPartition" onclick="selectZoneFromDock('lobbyPartition')">
+<i class="fa-solid fa-seedling text-emerald-400"></i>
+<span>البهو والفاصل</span>
+</button>
+<button class="dock-btn px-2.5 py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold text-slate-200 hover:bg-slate-800/90 transition flex items-center gap-1.5 whitespace-nowrap shrink-0" id="dock-stairsWash" onclick="selectZoneFromDock('stairsWash')">
+<i class="fa-solid fa-stairs text-slate-300"></i>
+<span>الدرج والمغاسل</span>
+</button>
+</div>
+</nav>
+<!-- Subtle Toast Notification -->
+<div class="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 glass-pill px-3.5 py-1.5 rounded-full text-[11px] font-bold text-amber-300 shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2 whitespace-nowrap" id="toast-msg">
+<i class="fa-solid fa-hand-pointer text-amber-400"></i>
+<span id="toast-text">انقر على أي لمبة إضاءة أو قطعة أثاث للتفاعل معها</span>
+</div>
+
+<a href="./index.html" id="ground-back-to-villa" title="الرجوع إلى نظام الفيلا" style="position:fixed;top:58px;left:12px;z-index:61;border-radius:12px;padding:8px 10px;color:#cdf1ff;background:rgba(9,28,40,.82);border:1px solid #477289;font:700 11px Cairo,system-ui,sans-serif;backdrop-filter:blur(10px);text-decoration:none">↩ نظام الفيلا</a>
+<!-- Same-scene architectural review: controls the ORIGINAL ground.html meshes -->
+<button id="ground-review-toggle" type="button" aria-pressed="false">◫ مراجعة 3D · الفتحات والإضاءة</button>
+<div id="ground-review-layer" hidden aria-label="علامات العناصر على المجسم"></div>
+<div id="gr-info-tip" hidden>اضغط على علامة شباك أو باب أو لمبة داخل المجسم. المعاينة قابلة للتعديل وليست اعتمادًا نهائيًا.</div>
+<section id="ground-review-panel" hidden aria-label="مراجعة عناصر الدور الأرضي">
+  <div class="gr-actions">
+    <div><h2>مراجعة الدور الأرضي على المجسم الأصلي</h2><p>التعديل يظهر على الـ3D فورًا، ولا يغيّر ملفات الدور الأول.</p></div>
+    <button id="gr-close" type="button" title="إغلاق المراجعة">✕</button>
+  </div>
+  <div class="gr-stats" id="gr-stats"></div>
+  <div class="gr-actions">
+    <select id="gr-filter" aria-label="تصفية العناصر"><option value="all">كل العناصر</option><option value="window">الشبابيك</option><option value="door">الأبواب</option><option value="slidingGlass">الأبواب السحاب</option><option value="light">الإضاءة</option></select>
+    <button id="gr-top-view" type="button">مسقط علوي</button>
+    <button id="gr-overview" type="button">كامل الدور</button>
+  </div>
+  <div class="gr-actions">
+    <button id="gr-prev" type="button" title="السابق">❮</button>
+    <select id="gr-select" aria-label="اختر عنصرًا للمراجعة"><option value="">اختر بابًا / شباكًا / إضاءة</option></select>
+    <button id="gr-next" type="button" title="التالي">❯</button>
+  </div>
+  <div id="gr-review-empty">اختار عنصرًا من المجسم أو القائمة. هتقدر تراجع مقاسه وحالته وتضيف ستارة أو شتر بمعاينة مباشرة.</div>
+  <form id="gr-review-form" hidden autocomplete="off">
+    <div class="gr-actions"><strong id="gr-item-title"></strong><span id="gr-approval" class="gr-pill">بانتظار المراجعة</span><button id="gr-focus" type="button">تقريب العنصر</button></div>
+    <div class="gr-grid">
+      <div class="gr-field gr-full"><label for="gr-name">اسم العنصر</label><input id="gr-name" type="text" maxlength="110"></div>
+      <div class="gr-field"><label for="gr-room">الغرفة</label><select id="gr-room"></select></div>
+      <div class="gr-field"><label for="gr-status">القرار</label><select id="gr-status"><option value="pending">بانتظار المراجعة</option><option value="approved">إبقاء / اعتماد</option><option value="remove">إلغاء</option><option value="add">إضافة جديدة</option></select></div>
+    </div>
+    <div class="gr-section-title" id="gr-opening-section">الأبعاد الرأسية والأفقية · سم</div>
+    <div id="gr-opening-fields">
+      <div class="gr-grid">
+        <div class="gr-field"><label for="gr-width">العرض (سم)</label><input type="number" id="gr-width" min="30" max="1000" step="1"></div>
+        <div class="gr-field"><label for="gr-sill">الارتفاع عن الأرض / الجلسة (سم)</label><input type="number" id="gr-sill" min="0" max="450" step="1" placeholder="غير معتمد"></div>
+        <div class="gr-field"><label for="gr-height">ارتفاع الفتحة (سم)</label><input type="number" id="gr-height" min="30" max="450" step="1" placeholder="غير معتمد"></div>
+        <div class="gr-field"><label for="gr-head">أعلى الفتحة من الأرض (سم)</label><input type="number" id="gr-head" readonly placeholder="يحسب تلقائيًا"></div>
+      </div>
+      <div class="gr-section-title">رسم واجهة الفتحة · يظهر منسوبها من الأرض</div>
+      <svg id="gr-elevation" viewBox="0 0 300 158" role="img" aria-label="مقطع واجهة الشباك أو الباب" style="display:block;width:100%;height:144px;border-radius:10px;background:rgba(11,37,53,.62);border:1px solid rgba(135,194,221,.20);margin-bottom:7px"></svg>
+      <div id="gr-source-warning" class="gr-warning" style="margin-top:7px">عرض الفتحة مأخوذ من هندسة المجسم؛ الارتفاع والجلسة لم يتم اعتمادهما بعد.</div>
+      <div class="gr-section-title">ملحقات الفتحة · معاينة حية على الـ3D</div>
+      <div class="gr-switches"><label><input id="gr-curtain" type="checkbox"> ستارة</label><label><input id="gr-shutter" type="checkbox"> شتر</label></div>
+      <div class="gr-grid" style="margin-top:8px">
+        <div class="gr-field"><label for="gr-curtain-side">جهة الستارة على الحائط</label><select id="gr-curtain-side"><option value="1">الوجه الأول</option><option value="-1">الوجه المقابل</option></select></div>
+        <div class="gr-field"><label for="gr-shutter-side">جهة الشتر على الحائط</label><select id="gr-shutter-side"><option value="-1">الوجه المقابل</option><option value="1">الوجه الأول</option></select></div>
+        <div class="gr-field gr-full"><label for="gr-open-slider">معاينة نسبة الفتح <strong id="gr-open-label">50%</strong></label><input id="gr-open-slider" type="range" min="0" max="100" step="1" value="50"></div>
+      </div>
+      <div class="gr-note">تحديد وجه الستارة والشتر قابل للعكس. المعاينة لا تفترض أن أي شباك عليه جهاز إلا بعد اختيارك.</div>
+      <details style="margin-top:7px"><summary style="cursor:pointer;color:#9ac5d7">موضع الفتحة على المخطط (متقدم)</summary>
+        <div class="gr-grid" style="margin-top:7px">
+          <div class="gr-field"><label>X1 بالمتر</label><input id="gr-x1" type="number" step=".01"></div><div class="gr-field"><label>Z1 بالمتر</label><input id="gr-z1" type="number" step=".01"></div>
+          <div class="gr-field"><label>X2 بالمتر</label><input id="gr-x2" type="number" step=".01"></div><div class="gr-field"><label>Z2 بالمتر</label><input id="gr-z2" type="number" step=".01"></div>
+        </div>
+      </details>
+    </div>
+    <div id="gr-light-fields" hidden>
+      <div class="gr-section-title">إضاءة الغرفة · من ملفك الأصلي</div>
+      <div class="gr-grid"><div class="gr-field"><label>موضع X بالمتر</label><input id="gr-light-x" type="number" step=".05"></div><div class="gr-field"><label>موضع Z بالمتر</label><input id="gr-light-z" type="number" step=".05"></div>
+        <div class="gr-field"><label>ارتفاع اللمبة (متر)</label><input id="gr-light-y" type="number" min=".1" max="6" step=".05"></div><div class="gr-field"><label>الشدة %</label><input id="gr-brightness" type="range" min="0" max="100" step="1"></div>
+      </div>
+      <div class="gr-note">النقاط الموجودة مأخوذة من لمبات `ground.html` الثمانية نفسها. التعديلات تؤثر على الإضاءة المعروضة.</div>
+    </div>
+    <div class="gr-field gr-full" style="margin-top:8px"><label for="gr-note">ملاحظات المراجعة</label><textarea id="gr-note" rows="2" placeholder="مثلاً: الشباك يتلغى / يُستبدل بباب / راجع المقاس بالموقع..."></textarea></div>
+    <div class="gr-actions"><button type="button" id="gr-reset-item">استعادة هذا العنصر</button><button type="button" id="gr-delete-item" hidden>حذف الإضافة</button><span class="gr-secondary" id="gr-saved">الحفظ تلقائي</span></div>
+  </form>
+  <div class="gr-section-title">إضافة عنصر على المجسم</div>
+  <div class="gr-actions" id="gr-add-buttons"><button type="button" data-gr-add="window">+ شباك</button><button type="button" data-gr-add="door">+ باب</button><button type="button" data-gr-add="slidingGlass">+ باب سحاب</button><button type="button" data-gr-add="light">+ إضاءة</button><button id="gr-cancel-add" type="button" hidden>إلغاء الإضافة</button></div>
+  <p id="gr-add-tip">اختر نوع الإضافة ثم اضغط موقعها على المجسم. الأبواب والشبابيك الجديدة تنجذب لأقرب جدار.</p>
+  <div class="gr-section-title">حفظ وتسليم القرارات</div>
+  <div class="gr-actions"><button type="button" id="gr-download">تنزيل التعديلات JSON</button><button type="button" id="gr-import">استيراد JSON</button><input id="gr-import-file" type="file" accept="application/json,.json" hidden><button type="button" id="gr-reset-all">إلغاء كل التعديلات المحلية</button></div>
+  <p>التعديلات تُحفظ تلقائيًا على نفس المتصفح. ملف JSON هو الطريقة الآمنة لنقلها بين الأجهزة واعتمادها نهائيًا داخل نظام الفيلا.</p>
+</section>
+
+<script src="./js/floors/ground/review/model-data.js"></script>
+<script src="./js/floors/ground/source/01-rooms.js"></script><script src="./js/floors/ground/source/02-state.js"></script><script src="./js/floors/ground/source/03-textures.js"></script><script src="./js/floors/ground/source/04-scene-init.js"></script><script src="./js/floors/ground/source/05-lighting.js"></script><script src="./js/floors/ground/source/06-floors-slabs.js"></script><script src="./js/floors/ground/source/07-architecture.js"></script><script src="./js/floors/ground/source/08-furniture-majlis.js"></script><script src="./js/floors/ground/source/09-furniture-guest.js"></script><script src="./js/floors/ground/source/10-furniture-dining.js"></script><script src="./js/floors/ground/source/11-furniture-kitchen.js"></script><script src="./js/floors/ground/source/12-furniture-living.js"></script><script src="./js/floors/ground/source/13-furniture-stairs.js"></script><script src="./js/floors/ground/source/14-labels.js"></script><script src="./js/floors/ground/source/15-radial.js"></script><script src="./js/floors/ground/source/16-navigation.js"></script><script src="./js/floors/ground/source/17-tools.js"></script><script src="./js/floors/ground/source/18-interactions.js"></script><script src="./js/floors/ground/review/editor.js"></script></body>
+</html>
